@@ -137,14 +137,13 @@ else:
     s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
     s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
     
-    # REVISÃO SOLICITADA DA REGRA DE SCORE DE POPULAÇÃO
+    # REGRA AJUSTADA: Agora avalia diretamente o campo '% Classe A+' (classe_a_mais)
     if populacao < 40000:
         s_pop = -1
     else:
-        pct_alvo = (residentes_alvo / populacao) if populacao > 0 else 0
-        if pct_alvo >= 0.40:
+        if classe_a_mais >= 0.40:
             s_pop = 1
-        elif pct_alvo >= 0.25:
+        elif classe_a_mais >= 0.25:
             s_pop = 0
         else:
             s_pop = -1
@@ -278,7 +277,7 @@ else:
         {"Unidade": "Fast Tennis Saul Macedo - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
         {"Unidade": "Fast Tennis Sete Lagoas - Sete Lagoas", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1"},
         {"Unidade": "Fast Tennis Setor Bueno - Goiânia", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Tirol- Natal", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Tirol - Natal", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
         {"Unidade": "Fast Tennis Vilhena - Rondônia", "Cidade": "Vilhena", "IsSP": False, "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1"}
     ]
     
