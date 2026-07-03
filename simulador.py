@@ -204,7 +204,7 @@ dados_unidades_existentes = [
     {"Unidade": "Fast Tennis São Caetano", "Estado": "SP", "Renda Média": 10200, "População": 122900, "% Classe A+": 0.13, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Saúde", "Estado": "SP", "Renda Média": 17700, "População": 186000, "% Classe A+": 0.32, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Taquaral", "Estado": "SP", "Renda Média": 12738, "População": 40203, "% Classe A+": 0.22, "Praça": "Residencial", "REGIC": "Capital Regional A"},
-    {"Unidade": "Fast Tennis Três Poderes", "Estado": "SP", "Renda Média": 18100, "População": 587000, "% Classe A+": 0.32, "Praça": "Comercial", "REGIC": "Grande Metrópole"},
+    {"Unidade": "Fast Tennis Três Poderes", "Estado": "SP", "Renda Média": 18100, "População": 587000, "% Classe A+": 0.32, "Comercial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Verbo Divino", "Estado": "SP", "Renda Média": 24800, "População": 77600, "% Classe A+": 0.48, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Vila Olímpia", "Estado": "SP", "Renda Média": 30900, "População": 160900, "% Classe A+": 0.60, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     
@@ -239,39 +239,30 @@ dados_unidades_existentes = [
 ]
 df_unidades = pd.DataFrame(dados_unidades_existentes)
 
-# Inputs de Dados com pequenas diretrizes textuais acima do título
-col_in1, col_in2, col_in3 = st.columns(3)
-with col_in1:
-    st.caption("🔽 Selecione:")
-    estado = st.selectbox("Estado (UF):", estados_br, index=24)
-    st.caption("🔽 Selecione:")
-    cidades_disponiveis = buscar_cidades_ibge(estado)
-    cidade = st.selectbox("Cidade:", cidades_disponiveis)
-    st.caption("✍️ Preencha:")
-    populacao = st.number_input("População Total da Área:", min_value=0, value=85000, step=1000)
-    st.caption("✍️ Preencha:")
-    media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x):", min_value=0.0, value=405.0, step=10.0)
+# CAIXA CINZA TRANSPARENTE ENVELOPANDO OS INPUTS
+with st.container(border=True):
+    col_in1, col_in2, col_in3 = st.columns(3)
+    with col_in1:
+        estado = st.selectbox("Estado (UF):", estados_br, index=24)
+        cidades_disponiveis = buscar_cidades_ibge(estado)
+        cidade = st.selectbox("Cidade:", cidades_disponiveis)
+        populacao = st.number_input("População Total da Área:", min_value=0, value=85000, step=1000)
+        media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x):", min_value=0.0, value=405.0, step=10.0)
 
-with col_in2:
-    st.caption("🔽 Selecione:")
-    regic = st.selectbox("Classificação REGIC:", ["Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=5)
-    st.caption("✍️ Preencha:")
-    residentes_alvo = st.number_input("Residentes (Público-Alvo B1, A+ e A++):", min_value=0, value=16500, step=500)
-    st.caption("✍️ Preencha:")
-    classe_a_mais_input = st.number_input("% Classe A+ (ex: 0.35 para 35%):", min_value=0.0, max_value=1.0, value=0.35, step=0.01)
+    with col_in2:
+        regic = st.selectbox("Classificação REGIC:", ["Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=5)
+        residentes_alvo = st.number_input("Residentes (Público-Alvo B1, A+ e A++):", min_value=0, value=16500, step=500)
+        classe_a_mais_input = st.number_input("% Classe A+ (ex: 0.35 para 35%):", min_value=0.0, max_value=1.0, value=0.35, step=0.01)
 
-with col_in3:
-    st.caption("🔽 Selecione:")
-    tipo_praca = st.selectbox("Tipo de Praça (Perfil):", ["Comercial", "Mista", "Residencial", "Mista Qualificada"], index=2)
-    st.caption("✍️ Preencha:")
-    renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=19700.0, step=500.0)
-    st.caption("✍️ Preencha:")
-    tempo_proxima = st.number_input("Tempo até a unidade mais próxima (em minutos):", min_value=0, value=30, step=1)
+    with col_in3:
+        tipo_praca = st.selectbox("Tipo de Praça (Perfil):", ["Comercial", "Mista", "Residencial", "Mista Qualificada"], index=2)
+        renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=19700.0, step=500.0)
+        tempo_proxima = st.number_input("Tempo até a unidade mais próxima (em minutos):", min_value=0, value=30, step=1)
 
 st.markdown("---")
 
 # =========================================================================
-# LÓGICA DE DECISÃO SEGUIDO AS DIRETRIZES DO COMITÊ (CORRIGIDA)
+# LÓGICA DE DECISÃO SEGUIDO AS DIRETRIZES DO COMITÊ
 # =========================================================================
 
 # 1. Definição RÍGIDA do Intervalo de Tabelas prioritário por Renda Média
@@ -282,7 +273,7 @@ if estado == "SP":
         tab_min, tab_max = 2, 3
     elif renda_media <= 19500.0:
         tab_min, tab_max = 3, 4
-    else:  # Acima de 19.500 até 30.000+
+    else:
         tab_min, tab_max = 4, 5
 else:
     if renda_media <= 8500.0:
@@ -291,14 +282,14 @@ else:
         tab_min, tab_max = 2, 3
     elif renda_media <= 29500.0:
         tab_min, tab_max = 3, 4
-    else:  # Acima de 29.500 até 35.000+
+    else:
         tab_min, tab_max = 4, 5
 
 # 2. Definição dos Scores Secundários de Ajuste
 score_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
 score_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Capital Regional A": 0, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
 
-# Regra exata do Score de População
+# Regra do Score de População
 if populacao < 40000:
     score_populacao = -1
 else:
@@ -310,10 +301,8 @@ score_total = score_praca + score_regic + score_populacao
 # 3. Premissa de Seleção Final de Tabela baseada no Score Acumulado
 if score_total >= 1:
     tabela_sugerida = tab_max
-    classificacao = f"Score Superior ({score_total} pts) -> Escolhe Tabela Maior"
 else:
     tabela_sugerida = tab_min
-    classificacao = f"Score Conservador/Zero ({score_total} pts) -> Escolhe Tabela Menor"
 
 # Valores de referência de mercado
 precos_plano_plus = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
@@ -348,13 +337,10 @@ st.markdown(f"""
 if tempo_proxima <= 15:
     st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
 
-col_m1, col_m2, col_m3 = st.columns(3)
+col_m1, col_m2 = st.columns(2)
 with col_m1: 
-    st.markdown(f"<small style='color:#6C757D; font-weight:600;'>MÉTRICA DE DECISÃO</small><br><span style='font-size:15px; font-weight:700;'>{classificacao}</span>", unsafe_allow_html=True)
-    st.caption(f"Praça: {score_praca} | REGIC: {score_regic} | População: {score_populacao}")
-with col_m2: 
     st.markdown(f"<small style='color:#6C757D; font-weight:600;'>INTERVALO FIXADO PELA RENDA</small><br><span style='font-size:18px; font-weight:700;'>Tab {tab_min} a {tab_max}</span>", unsafe_allow_html=True)
-with col_m3: 
+with col_m2: 
     st.markdown(f"<small style='color:#6C757D; font-weight:600;'>DIFERENÇA MERCADO X FAST</small><br><span style='font-size:18px; font-weight:700;'>{diferenca_fast_mercado*100:+.1f}%</span>", unsafe_allow_html=True)
 
 st.markdown('<div class="espacador-bloco"></div>', unsafe_allow_html=True)
