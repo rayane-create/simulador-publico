@@ -137,9 +137,9 @@ else:
     s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
     s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
     
-    # Nova regra calibrada de score de população por %
+    # REVISÃO SOLICITADA DA REGRA DE SCORE DE POPULAÇÃO
     if populacao < 40000:
-        s_pop = 0
+        s_pop = -1
     else:
         pct_alvo = (residentes_alvo / populacao) if populacao > 0 else 0
         if pct_alvo >= 0.40:
@@ -147,7 +147,7 @@ else:
         elif pct_alvo >= 0.25:
             s_pop = 0
         else:
-            s_pop = 0
+            s_pop = -1
 
     score_total = s_praca + s_regic + s_pop
     tabela_sugerida = tab_max if score_total >= 1 else tab_min
@@ -209,7 +209,7 @@ else:
             st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
 
     # ==========================================
-    # CÁLCULO DE SIMILARIDADE REAL PARALELO POR REGIAO
+    # CÁLCULO DE SIMILARIDADE REAL POR REGIAO
     # ==========================================
     st.write("")
     st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
@@ -252,7 +252,7 @@ else:
         {"Unidade": "Fast Tennis Vila Olímpia - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
         {"Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
         
-        # --- FORA DE SP (IsSP: False) ---
+        # --- FORA DE SP ---
         {"Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "IsSP": False, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4"},
         {"Unidade": "Fast Tennis Belvedere - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
         {"Unidade": "Fast Tennis Boa Viagem - Recife", "Cidade": "Recife", "IsSP": False, "Renda Média": 12214, "População": 102900, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
@@ -285,12 +285,10 @@ else:
     df_base = pd.DataFrame(df_existentes)
     
     if not df_base.empty:
-        # CRUCIAL: Separação rígida da base com base no input do usuário
         alvo_sp = (estado == "SP")
         df_filtrado = df_base[df_base['IsSP'] == alvo_sp].copy()
         
         if not df_filtrado.empty:
-            # Cálculo de similaridade real focado apenas no grupo correto (SP ou Fora de SP)
             df_filtrado['Distancia'] = np.sqrt(
                 ((df_filtrado['Renda Média'] - renda_media) / (renda_media if renda_media > 0 else 1))**2 + 
                 ((df_filtrado['População'] - populacao) / (populacao if populacao > 0 else 1))**2
