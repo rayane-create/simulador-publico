@@ -89,7 +89,7 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS - Iniciando limpos ou com opção de seleção neutra
+# CAIXA DE INPUTS
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
@@ -209,89 +209,97 @@ else:
             st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
 
     # ==========================================
-    # CÁLCULO DE SIMILARIDADE REAL COM AS 63 UNIDADES
+    # CÁLCULO DE SIMILARIDADE REAL PARALELO POR REGIAO
     # ==========================================
     st.write("")
     st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
     
     df_existentes = [
-        {"Unidade": "Fast Tennis Alphaville - São Paulo", "Cidade": "Barueri", "Renda Média": 27400, "População": 44300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Alto da Boa Vista - São Paulo", "Cidade": "São Paulo", "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Alto de Pinheiros - São Paulo", "Cidade": "São Paulo", "Renda Média": 23900, "População": 82500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Alto do Ipiranga - São Paulo", "Cidade": "São Paulo", "Renda Média": 19775, "População": 177000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Anhanguera - Jundiaí", "Cidade": "Jundiaí", "Renda Média": 11650, "População": 67900, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Bebedouro - Bebedouro", "Cidade": "Bebedouro", "Renda Média": 5900, "População": 44900, "REGIC": "Centro Sub-Regional B", "Tabela Praticada": "Tabela 1"},
-        {"Unidade": "Fast Tennis Botafogo - Campinas", "Cidade": "Campinas", "Renda Média": 12300, "População": 96574, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Brooklin - São Paulo", "Cidade": "São Paulo", "Renda Média": 29400, "População": 162400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Campo Belo - São Paulo", "Cidade": "São Paulo", "Renda Média": 27328, "População": 117500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Cantareira - São Paulo", "Cidade": "São Paulo", "Renda Média": 11500, "População": 95500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Centro São Bernardo - São Bernardo do Campo", "Cidade": "São Bernardo do Campo", "Renda Média": 10800, "População": 164300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Chacará Inglesa - São Paulo", "Cidade": "São Paulo", "Renda Média": 21400, "População": 178712, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Chacará Santo Antônio - São Paulo", "Cidade": "São Paulo", "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Indaiatuba - São Paulo", "Cidade": "Indaiatuba", "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Jardim - São Paulo", "Cidade": "São Paulo", "Renda Média": 14195, "População": 128600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Jardim Portal da Colina - Sorocaba", "Cidade": "Sorocaba", "Renda Média": 11900, "População": 52624, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Lapa - São Paulo", "Cidade": "São Paulo", "Renda Média": 14200, "População": 107250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Moema - São Paulo", "Cidade": "São Paulo", "Renda Média": 28900, "População": 143796, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Monte Pascal - São Paulo", "Cidade": "São Paulo", "Renda Média": 21446, "População": 90476, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Mooca - São Paulo", "Cidade": "São Paulo", "Renda Média": 13400, "População": 147000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Morumbi - São Paulo", "Cidade": "São Paulo", "Renda Média": 14200, "População": 165700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Nova Aliança Sul - Ribeirão Preto", "Cidade": "Ribeirão Preto", "Renda Média": 12900, "População": 90800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Parque Piqueri - São Paulo", "Cidade": "São Paulo", "Renda Média": 12800, "População": 138700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Praia Grande - Praia Grande", "Cidade": "Praia Grande", "Renda Média": 8900, "População": 84400, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "FastTennis Radial Leste - São Paulo", "Cidade": "São Paulo", "Renda Média": 15700, "População": 146400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Rio Claro - São Paulo", "Cidade": "Rio Claro", "Renda Média": 7400, "População": 72800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1"},
-        {"Unidade": "Fast Tennis Salto - São Paulo", "Cidade": "Salto", "Renda Média": 6560, "População": 54900, "REGIC": "Centro Sub-Regional A", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Santana - São Paulo", "Cidade": "São Paulo", "Renda Média": 17700, "População": 153100, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Santo Amaro", "Cidade": "São Paulo", "Renda Média": 21100, "População": 82400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis São Caetano - São Caetano do Sul", "Cidade": "São Caetano do Sul", "Renda Média": 10200, "População": 122900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Saúde - São Paulo", "Cidade": "São Paulo", "Renda Média": 17700, "População": 186000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Taquaral - Campinas", "Cidade": "Campinas", "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Três Poderes - São Paulo", "Cidade": "São Paulo", "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Verbo Divino - São Paulo", "Cidade": "São Paulo", "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Vila Olímpia - São Paulo", "Cidade": "São Paulo", "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
-        {"Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Belvedere - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Boa Viagem - Recife", "Cidade": "Recife", "Renda Média": 12214, "População": 102900, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Buritis I - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 16700, "População": 80900, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Calafate - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 13100, "População": 121200, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 1"},
-        {"Unidade": "Fast Tennis Capim Macio - Natal", "Cidade": "Natal", "Renda Média": 14700, "População": 64400, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Castelo - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 10500, "População": 111575, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Cidade Nova - Cidade Nova", "Cidade": "Belo Horizonte", "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Contagem - Contagem", "Cidade": "Contagem", "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1"},
-        {"Unidade": "Fast Tennis Estoril - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Estrela Sul - Juiz de Fora", "Cidade": "Juiz de Fora", "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1"},
-        {"Unidade": "Fast Tennis Guararapes - Fortaleza", "Cidade": "Fortaleza", "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Morada da Colina - Uberlândia", "Cidade": "Uberlândia", "Renda Média": 14528, "População": 54900, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Orla da Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 9940, "População": 42149, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 11675, "População": 75076, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Ponte JK - Brasília", "Cidade": "Brasília", "Renda Média": 25400, "População": 95617, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4"},
-        {"Unidade": "Fast Tennis Praia do Canto - Vitória", "Cidade": "Vitória", "Renda Média": 16840, "População": 83239, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Recreio - Rio de Janeiro", "Cidade": "Rio de Janeiro", "Renda Média": 22000, "População": 74360, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Salgado Filho - Curitiba", "Cidade": "Curitiba", "Renda Média": 8900, "População": 64000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Santa Lúcia - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 19400, "População": 88597, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Santa Rosa - Niterói", "Cidade": "Niterói", "Renda Média": 17400, "População": 178510, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis São Bento - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 16700, "População": 127317, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Saul Macedo - Belo Horizonte", "Cidade": "Belo Horizonte", "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Sete Lagoas - Sete Lagoas", "Cidade": "Sete Lagoas", "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1"},
-        {"Unidade": "Fast Tennis Setor Bueno - Goiânia", "Cidade": "Goiânia", "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
-        {"Unidade": "Fast Tennis Tirol- Natal", "Cidade": "Natal", "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
-        {"Unidade": "Fast Tennis Vilhena - Rondônia", "Cidade": "Vilhena", "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1"}
+        {"Unidade": "Fast Tennis Alphaville - São Paulo", "Cidade": "Barueri", "IsSP": True, "Renda Média": 27400, "População": 44300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Alto da Boa Vista - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Alto de Pinheiros - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 23900, "População": 82500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Alto do Ipiranga - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19775, "População": 177000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Anhanguera - Jundiaí", "Cidade": "Jundiaí", "IsSP": True, "Renda Média": 11650, "População": 67900, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Bebedouro - Bebedouro", "Cidade": "Bebedouro", "IsSP": True, "Renda Média": 5900, "População": 44900, "REGIC": "Centro Sub-Regional B", "Tabela Praticada": "Tabela 1"},
+        {"Unidade": "Fast Tennis Botafogo - Campinas", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12300, "População": 96574, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Brooklin - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 29400, "População": 162400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Campo Belo - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 27328, "População": 117500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Cantareira - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 11500, "População": 95500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Centro São Bernardo - São Bernardo do Campo", "Cidade": "São Bernardo do Campo", "IsSP": True, "Renda Média": 10800, "População": 164300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Chacará Inglesa - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21400, "População": 178712, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Chacará Santo Antônio - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Indaiatuba - São Paulo", "Cidade": "Indaiatuba", "IsSP": True, "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Jardim - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14195, "População": 128600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Jardim Portal da Colina - Sorocaba", "Cidade": "Sorocaba", "IsSP": True, "Renda Média": 11900, "População": 52624, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Lapa - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14200, "População": 107250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Moema - São Paulo", "Cidade": "São Paulo", "Renda Média": 28900, "População": 143796, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "IsSP": True},
+        {"Unidade": "Fast Tennis Monte Pascal - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21446, "População": 90476, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Mooca - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 13400, "População": 147000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Morumbi - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14200, "População": 165700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Nova Aliança Sul - Ribeirão Preto", "Cidade": "Ribeirão Preto", "IsSP": True, "Renda Média": 12900, "População": 90800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Parque Piqueri - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 12800, "População": 138700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Praia Grande - Praia Grande", "Cidade": "Praia Grande", "IsSP": True, "Renda Média": 8900, "População": 84400, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "FastTennis Radial Leste - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 15700, "População": 146400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Rio Claro - São Paulo", "Cidade": "Rio Claro", "IsSP": True, "Renda Média": 7400, "População": 72800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1"},
+        {"Unidade": "Fast Tennis Salto - São Paulo", "Cidade": "Salto", "IsSP": True, "Renda Média": 6560, "População": 54900, "REGIC": "Centro Sub-Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Santana - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 153100, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Santo Amaro", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21100, "População": 82400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis São Caetano - São Caetano do Sul", "Cidade": "São Caetano do Sul", "IsSP": True, "Renda Média": 10200, "População": 122900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Saúde - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 186000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Taquaral - Campinas", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Três Poderes - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Verbo Divino - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Vila Olímpia - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        {"Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5"},
+        
+        # --- FORA DE SP (IsSP: False) ---
+        {"Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "IsSP": False, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Belvedere - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Boa Viagem - Recife", "Cidade": "Recife", "IsSP": False, "Renda Média": 12214, "População": 102900, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Buritis I - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 16700, "População": 80900, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Calafate - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 13100, "População": 121200, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 1"},
+        {"Unidade": "Fast Tennis Capim Macio - Natal", "Cidade": "Natal", "IsSP": False, "Renda Média": 14700, "População": 64400, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Castelo - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10500, "População": 111575, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Cidade Nova - Cidade Nova", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Contagem - Contagem", "Cidade": "Contagem", "IsSP": False, "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1"},
+        {"Unidade": "Fast Tennis Estoril - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Estrela Sul - Juiz de Fora", "Cidade": "Juiz de Fora", "IsSP": False, "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1"},
+        {"Unidade": "Fast Tennis Guararapes - Fortaleza", "Cidade": "Fortaleza", "IsSP": False, "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Morada da Colina - Uberlândia", "Cidade": "Uberlândia", "IsSP": False, "Renda Média": 14528, "População": 54900, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Orla da Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 9940, "População": 42149, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 11675, "População": 75076, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Ponte JK - Brasília", "Cidade": "Brasília", "IsSP": False, "Renda Média": 25400, "População": 95617, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4"},
+        {"Unidade": "Fast Tennis Praia do Canto - Vitória", "Cidade": "Vitória", "IsSP": False, "Renda Média": 16840, "População": 83239, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Recreio - Rio de Janeiro", "Cidade": "Rio de Janeiro", "IsSP": False, "Renda Média": 22000, "População": 74360, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Salgado Filho - Curitiba", "Cidade": "Curitiba", "IsSP": False, "Renda Média": 8900, "População": 64000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Santa Lúcia - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19400, "População": 88597, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Santa Rosa - Niterói", "Cidade": "Niterói", "IsSP": False, "Renda Média": 17400, "População": 178510, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis São Bento - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 16700, "População": 127317, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Saul Macedo - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Sete Lagoas - Sete Lagoas", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1"},
+        {"Unidade": "Fast Tennis Setor Bueno - Goiânia", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3"},
+        {"Unidade": "Fast Tennis Tirol- Natal", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2"},
+        {"Unidade": "Fast Tennis Vilhena - Rondônia", "Cidade": "Vilhena", "IsSP": False, "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1"}
     ]
     
     df_base = pd.DataFrame(df_existentes)
     
     if not df_base.empty:
-        # Cálculo de distância euclidiana normalizada para evitar distorções de escala
-        df_base['Distancia'] = np.sqrt(
-            ((df_base['Renda Média'] - renda_media) / (renda_media if renda_media > 0 else 1))**2 + 
-            ((df_base['População'] - populacao) / (populacao if populacao > 0 else 1))**2
-        )
-        # Apresenta as top 3 unidades ordenadas pela menor distância (mais similares)
-        df_ranking = df_base.sort_values(by='Distancia').head(3)
-        st.dataframe(df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada"]], use_container_width=True, hide_index=True)
+        # CRUCIAL: Separação rígida da base com base no input do usuário
+        alvo_sp = (estado == "SP")
+        df_filtrado = df_base[df_base['IsSP'] == alvo_sp].copy()
+        
+        if not df_filtrado.empty:
+            # Cálculo de similaridade real focado apenas no grupo correto (SP ou Fora de SP)
+            df_filtrado['Distancia'] = np.sqrt(
+                ((df_filtrado['Renda Média'] - renda_media) / (renda_media if renda_media > 0 else 1))**2 + 
+                ((df_filtrado['População'] - populacao) / (populacao if populacao > 0 else 1))**2
+            )
+            df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
+            st.dataframe(df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada"]], use_container_width=True, hide_index=True)
+        else:
+            st.info("Nenhuma unidade encontrada nessa região regional para comparação.")
     else:
-        st.info("Nenhuma unidade cadastrada na base de dados para comparação.")
+        st.info("Nenhuma unidade cadastrada na base de dados.")
 
     st.markdown(f"""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
