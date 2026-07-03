@@ -90,104 +90,123 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS
+# CAIXA DE INPUTS - Iniciando limpos ou com opção de seleção neutra
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
-        estado = st.selectbox("Estado (UF):", ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"], index=14)
-        cidade = st.text_input("Cidade (Preencha):", value="Belo Horizonte")
-        populacao = st.number_input("População Total (Área):", min_value=0, value=85000)
+        lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
+        estado = st.selectbox("Estado (UF):", lista_estados, index=0)
+        cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
+        populacao = st.number_input("População Total (Área):", min_value=0, value=0)
     with c2:
-        regic = st.selectbox("REGIC:", ["Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=4)
-        residentes_alvo = st.number_input("Público Alvo (B1, A+, A++):", min_value=0, value=16500)
-        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.35):", min_value=0.0, max_value=1.0, value=0.35)
+        regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
+        residentes_alvo = st.number_input("Público Alvo (B1, A+, A++):", min_value=0, value=0)
+        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.35):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     with col_in3:
-        tipo_praca = st.selectbox("Perfil da Praça:", ["Comercial", "Mista", "Residencial", "Mista Qualificada"], index=2)
-        renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=19700.0)
-        tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=30)
-        media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=405.0)
+        tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
+        renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=0.0, step=100.0)
+        tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
+        media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
-# ==========================================
-# LÓGICA MATEMÁTICA (GOVERNANÇA)
-# ==========================================
+# Verificação se o usuário já preencheu os dados mínimos para calcular
+dados_preenchidos = (
+    estado != "Selecione..." and 
+    regic != "Selecione..." and 
+    tipo_praca != "Selecione..." and 
+    cidade.strip() != "" and 
+    renda_media > 0 and 
+    media_mercado > 0
+)
 
-if estado == "SP":
-    if renda_media <= 8500: tab_min, tab_max = 1, 2
-    elif renda_media <= 15000: tab_min, tab_max = 2, 3
-    elif renda_media <= 19500: tab_min, tab_max = 3, 4
-    else: tab_min, tab_max = 4, 5
+if not dados_preenchidos:
+    st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
-    if renda_media <= 8500: tab_min, tab_max = 1, 2
-    elif renda_media <= 15000: tab_min, tab_max = 2, 3
-    elif renda_media <= 29500: tab_min, tab_max = 3, 4
-    else: tab_min, tab_max = 4, 5
+    # ==========================================
+    # LÓGICA MATEMÁTICA (GOVERNANÇA)
+    # ==========================================
+    if estado == "SP":
+        if renda_media <= 8500: tab_min, tab_max = 1, 2
+        elif renda_media <= 15000: tab_min, tab_max = 2, 3
+        elif renda_media <= 19500: tab_min, tab_max = 3, 4
+        else: tab_min, tab_max = 4, 5
+    else:
+        if renda_media <= 8500: tab_min, tab_max = 1, 2
+        elif renda_media <= 15000: tab_min, tab_max = 2, 3
+        elif renda_media <= 29500: tab_min, tab_max = 3, 4
+        else: tab_min, tab_max = 4, 5
 
-s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
-s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
-s_pop = -1 if populacao < 40000 else (1 if residentes_alvo >= 15000 else 0)
-score_total = s_praca + s_regic + s_pop
+    s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
+    s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
+    s_pop = -1 if populacao < 40000 else (1 if residentes_alvo >= 15000 else 0)
+    score_total = s_praca + s_regic + s_pop
 
-tabela_sugerida = tab_max if score_total >= 1 else tab_min
+    tabela_sugerida = tab_max if score_total >= 1 else tab_min
 
-precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
-tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
-preco_ref = precos[tabela_sugerida]
-tkm_ref = tkms[tabela_sugerida]
-dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
+    precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
+    tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
+    preco_ref = precos[tabela_sugerida]
+    tkm_ref = tkms[tabela_sugerida]
+    dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
-if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
+    if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
+    elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
+    else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
-# ==========================================
-# PAINEL DE RESULTADOS (AGRUPADOS)
-# ==========================================
-st.markdown('<div class="faixa-resultados">📊 Análise de dados e recomendações</div>', unsafe_allow_html=True)
+    # ==========================================
+    # PAINEL DE RESULTADOS (AGRUPADOS)
+    # ==========================================
+    st.markdown('<div class="faixa-resultados">📊 Análise de dados e recomendações</div>', unsafe_allow_html=True)
 
-# BLOCO 1: TABELA E MERCADO
-with st.container(border=True):
-    st.markdown(f"""
-        <div class="tabela-sugerida-box">
-            <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Inicial Sugerida</p>
-            <h2>Tabela {tabela_sugerida}</h2>
-            <p style="margin:0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
-        </div>
-    """, unsafe_allow_html=True)
+    # BLOCO 1: TABELA E MERCADO
+    with st.container(border=True):
+        st.markdown(f"""
+            <div class="tabela-sugerida-box">
+                <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Inicial Sugerida</p>
+                <h2>Tabela {tabela_sugerida}</h2>
+                <p style="margin:0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+            </div>
+        """, unsafe_allow_html=True)
 
-    if tempo_proxima <= 15:
-        st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
+        if tempo_proxima <= 15 and tempo_proxima > 0:
+            st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
 
-    st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
-    st.markdown("---")
-    
-    st.markdown("##### 🔍 Relatório de Viabilidade de Mercado")
-    cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
-    with cv1: 
-        st.info(f"**Diretriz:** {diag}\n\n**Status:** {status}")
-    with cv2: 
-        st.warning(f"**Recomendação:** {rec}")
-    with cv3:
-        st.metric(label="Diferença Mercado x Fast:", value=f"{dif_mercado*100:+.1f}%")
+        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
+        st.markdown("---")
+        
+        st.markdown("##### 🔍 Relatório de Viabilidade de Mercado")
+        cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
+        with cv1: 
+            st.info(f"**Diretriz:** {diag}\n\n**Status:** {status}")
+        with cv2: 
+            st.warning(f"**Recomendação:** {rec}")
+        with cv3:
+            # AJUSTADO: Agora em texto menor e limpo, sem o box gigante do st.metric
+            st.markdown(f"""
+                <div style="background-color: #F8F9FA; padding: 12px; border-radius: 4px; border: 1px solid #E0E0E0; height: 100%;">
+                    <span style="color:#6C757D; font-size:13px; font-weight:500;">Diferença Mercado x Fast</span><br>
+                    <span style="font-size:20px; font-weight:700; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
 
-# BLOCO 2: RENTABILIDADE
-st.write("")
-with st.container(border=True):
-    st.markdown("##### 📈 Viabilidade de Rentabilidade do Business Plan (BP)")
-    cbp1, cb2 = st.columns(2)
-    with cbp1:
-        st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
-    with cb2:
-        viabilidade_bp = st.selectbox("Status de rentabilidade projetada:", ["Aguardando simulação...", "Viável (Rentabilidade Saudável)", "Inviável (Rentabilidade Comprometida)"])
-        st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
+    # BLOCO 2: RENTABILIDADE
+    st.write("")
+    with st.container(border=True):
+        st.markdown("##### 📈 Viabilidade de Rentabilidade do Business Plan (BP)")
+        cbp1, cb2 = st.columns(2)
+        with cbp1:
+            st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
+        with cb2:
+            viabilidade_bp = st.selectbox("Status de rentabilidade projetada:", ["Aguardando simulação...", "Viável (Rentabilidade Saudável)", "Inviável (Rentabilidade Comprometida)"])
+            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
 
-# UNIDADES SIMILARES
-st.write("")
-st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
-df_existentes = [
-    {"Unidade": "Fast Tennis Alphaville", "Estado": "SP", "Renda": 27400, "Pop": 44300},
-    {"Unidade": "Fast Tennis Belvedere", "Estado": "MG", "Renda": 23100, "Pop": 63400},
-    {"Unidade": "Fast Tennis Capim Macio", "Estado": "RN", "Renda": 14700, "Pop": 64400}
-]
-st.dataframe(pd.DataFrame(df_existentes), use_container_width=True, hide_index=True)
+    # UNIDADES SIMILARES
+    st.write("")
+    st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
+    df_existentes = [
+        {"Unidade": "Fast Tennis Alphaville", "Estado": "SP", "Renda": 27400, "Pop": 44300},
+        {"Unidade": "Fast Tennis Belvedere", "Estado": "MG", "Renda": 23100, "Pop": 63400},
+        {"Unidade": "Fast Tennis Capim Macio", "Estado": "RN", "Renda": 14700, "Pop": 64400}
+    ]
+    st.dataframe(pd.DataFrame(df_existentes), use_container_width=True, hide_index=True)
 
-st.markdown(f"""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
