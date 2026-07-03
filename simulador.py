@@ -219,7 +219,7 @@ dados_unidades_existentes = [
     {"Unidade": "Fast Tennis Cidade Nova", "Estado": "MG", "Renda Média": 10969, "População": 123470, "% Classe A+": 0.18, "Praça": "Residencial", "REGIC": "Metrópole"},
     {"Unidade": "Fast Tennis Contagem", "Estado": "MG", "Renda Média": 7860, "População": 73600, "% Classe A+": 0.10, "Praça": "Mista", "REGIC": "Capital Regional B"},
     {"Unidade": "Fast Tennis Estoril", "Estado": "MG", "Renda Média": 12612, "População": 85000, "% Classe A+": 0.23, "Praça": "Residencial", "REGIC": "Metrópole"},
-    {"Unidade": "Fast Tennis Estrela sul", "Estado": "MG", "Renda Média": 10480, "População": 113000, "% Classe A+": 0.15, "Praça": "Residencial", "REGIC": "Capital Regional B"},
+    {"Unidade": "Fast Tennis Estrela sul", "Primeiro": "MG", "Renda Média": 10480, "População": 113000, "% Classe A+": 0.15, "Praça": "Residencial", "REGIC": "Capital Regional B"},
     {"Unidade": "Fast Tennis Guararapes", "Estado": "CE", "Renda Média": 12450, "População": 54706, "% Classe A+": 0.25, "Praça": "Mista", "REGIC": "Capital Regional A"},
     {"Unidade": "Fast Tennis Morada da Colina", "Estado": "MG", "Renda Média": 14528, "População": 54900, "% Classe A+": 0.25, "Praça": "Mista", "REGIC": "Capital Regional B"},
     {"Unidade": "Fast Tennis Orla da Pampulha", "Estado": "MG", "Renda Média": 9940, "População": 42149, "% Classe A+": 0.16, "Praça": "Mista", "REGIC": "Metrópole"},
@@ -270,34 +270,52 @@ with col_in3:
 
 st.markdown("---")
 
-# Processamento lógico
-score_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
-score_populacao = -1 if populacao < 40000 else (1 if residentes_alvo >= 15000 else 0)
-score_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Capital Regional A": 0, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
-score_total = score_praca + score_populacao + score_regic
+# =========================================================================
+# LÓGICA DE DECISÃO SEGUIDO AS DIRETRIZES DO COMITÊ (CORRIGIDA)
+# =========================================================================
 
+# 1. Definição RÍGIDA do Intervalo de Tabelas prioritário por Renda Média
 if estado == "SP":
-    if renda_media <= 8500: tab_min, tab_max = 1, 2
-    elif renda_media <= 15000: tab_min, tab_max = 2, 3
-    elif renda_media <= 19500: tab_min, tab_max = 3, 4
-    else: tab_min, tab_max = 4, 5
+    if renda_media <= 8500.0:
+        tab_min, tab_max = 1, 2
+    elif renda_media <= 15000.0:
+        tab_min, tab_max = 2, 3
+    elif renda_media <= 19500.0:
+        tab_min, tab_max = 3, 4
+    else:  # Acima de 19.500 até 30.000+
+        tab_min, tab_max = 4, 5
 else:
-    if renda_media <= 8500: tab_min, tab_max = 1, 2
-    elif renda_media <= 15000: tab_min, tab_max = 2, 3
-    elif renda_media <= 29500: tab_min, tab_max = 3, 4
-    else: tab_min, tab_max = 4, 5
+    if renda_media <= 8500.0:
+        tab_min, tab_max = 1, 2
+    elif renda_media <= 15000.0:
+        tab_min, tab_max = 2, 3
+    elif renda_media <= 29500.0:
+        tab_min, tab_max = 3, 4
+    else:  # Acima de 29.500 até 35.000+
+        tab_min, tab_max = 4, 5
 
-# Mapeamento da classificação e tabela recomendada
-if score_total <= -1:
-    classificacao = "Inferior"
-    tabela_sugerida = tab_min
-elif score_total in [0, 1]:
-    classificacao = "Intermediário"
-    tabela_sugerida = int(np.median([tab_min, tab_max]))
+# 2. Definição dos Scores Secundários de Ajuste
+score_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
+score_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Capital Regional A": 0, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
+
+# Regra exata do Score de População
+if populacao < 40000:
+    score_populacao = -1
 else:
-    classificacao = "Superior"
+    score_populacao = 1 if residentes_alvo >= 15000 else 0
+
+# Somatório Final do Score
+score_total = score_praca + score_regic + score_populacao
+
+# 3. Premissa de Seleção Final de Tabela baseada no Score Acumulado
+if score_total >= 1:
     tabela_sugerida = tab_max
+    classificacao = f"Score Superior ({score_total} pts) -> Escolhe Tabela Maior"
+else:
+    tabela_sugerida = tab_min
+    classificacao = f"Score Conservador/Zero ({score_total} pts) -> Escolhe Tabela Menor"
 
+# Valores de referência de mercado
 precos_plano_plus = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
 tabelas_tkm = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
@@ -332,10 +350,10 @@ if tempo_proxima <= 15:
 
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1: 
-    st.markdown(f"<small style='color:#6C757D; font-weight:600;'>PONTUAÇÃO DA ÁREA</small><br><span style='font-size:18px; font-weight:700;'>{score_total}</span> <span style='font-size:14px; color:#6C757D;'>({classificacao})</span>", unsafe_allow_html=True)
-    st.caption(f"Praça: {score_praca} | População: {score_populacao} | REGIC: {score_regic}")
+    st.markdown(f"<small style='color:#6C757D; font-weight:600;'>MÉTRICA DE DECISÃO</small><br><span style='font-size:15px; font-weight:700;'>{classificacao}</span>", unsafe_allow_html=True)
+    st.caption(f"Praça: {score_praca} | REGIC: {score_regic} | População: {score_populacao}")
 with col_m2: 
-    st.markdown(f"<small style='color:#6C757D; font-weight:600;'>INTERVALO DE TABELAS POSSÍVEIS</small><br><span style='font-size:18px; font-weight:700;'>Tab {tab_min} a {tab_max}</span>", unsafe_allow_html=True)
+    st.markdown(f"<small style='color:#6C757D; font-weight:600;'>INTERVALO FIXADO PELA RENDA</small><br><span style='font-size:18px; font-weight:700;'>Tab {tab_min} a {tab_max}</span>", unsafe_allow_html=True)
 with col_m3: 
     st.markdown(f"<small style='color:#6C757D; font-weight:600;'>DIFERENÇA MERCADO X FAST</small><br><span style='font-size:18px; font-weight:700;'>{diferenca_fast_mercado*100:+.1f}%</span>", unsafe_allow_html=True)
 
@@ -367,4 +385,4 @@ if not df_filtrado.empty:
     df_filtrado["% Classe A+"] = df_filtrado["% Classe A+"].apply(lambda x: f"{x*100:.0f}%")
     st.dataframe(df_filtrado[["Unidade", "Praça", "REGIC", "Renda Média", "População", "% Classe A+", "Similaridade"]].head(3), use_container_width=True, hide_index=True)
 
-st.markdown(f"""<div class="nota-rodape">💡 <b>Observação Relevante de Governança:</b> O simulador atua exclusivamente como um direcionador estratégico inicial, toda decisão deve ser validada no <b>Comitê de Expansão</b>.</div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="nota-rodape">💡 <b>Observação Relevante de Governança:</b> O simulador atua exclusivamente como um direcionador strategic inicial, toda decisão deve ser validada no <b>Comitê de Expansão</b>.</div>""", unsafe_allow_html=True)
