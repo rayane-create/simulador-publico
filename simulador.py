@@ -147,8 +147,18 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 @st.cache_data(ttl=86400)
 def buscar_cidades_ibge(uf):
+    # Dicionário interno para garantir que as siglas corretas busquem os dados certos no IBGE
+    mapa_uf_correto = {
+        "AMAZONAS": "AM",
+        "GOIÁS": "GO",
+        "MATO GROSSO DO SUL": "MS",
+        "PARANÁ": "PR",
+        "RIO GRANDE DO NORTE": "RN",
+        "TOCANTINS": "TO"
+    }
+    uf_busca = mapa_uf_correto.get(uf, uf)
     try:
-        url = f"https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios"
+        url = f"https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf_busca}/municipios"
         resposta = requests.get(url, timeout=5)
         if resposta.status_code == 200:
             lista_cidades = [c["nome"] for c in resposta.json()]
@@ -157,6 +167,7 @@ def buscar_cidades_ibge(uf):
         pass
     return ["São Paulo", "Belo Horizonte", "Rio de Janeiro", "Curitiba"]
 
+# LISTA EXIBIDA CORRIGIDA EXATAMENTE COMO VOCÊ PEDIU:
 estados_br = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
     "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
