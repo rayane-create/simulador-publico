@@ -82,7 +82,7 @@ with col_header2:
 st.markdown("---")
 
 # ==========================================
-# SEÇÃO 1: INPUTS (EM BLOCO CINZA)
+# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO
 # ==========================================
 st.subheader("📊 1. Dados da Área de Estudo e Mercado")
 
@@ -110,7 +110,6 @@ with st.container(border=True):
 # LÓGICA MATEMÁTICA (GOVERNANÇA)
 # ==========================================
 
-# 1. Intervalo por Renda
 if estado == "SP":
     if renda_media <= 8500: tab_min, tab_max = 1, 2
     elif renda_media <= 15000: tab_min, tab_max = 2, 3
@@ -122,13 +121,11 @@ else:
     elif renda_media <= 29500: tab_min, tab_max = 3, 4
     else: tab_min, tab_max = 4, 5
 
-# 2. Scores
 s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
 s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
 s_pop = -1 if populacao < 40000 else (1 if residentes_alvo >= 15000 else 0)
 score_total = s_praca + s_regic + s_pop
 
-# 3. Decisão
 tabela_sugerida = tab_max if score_total >= 1 else tab_min
 
 precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
@@ -137,7 +134,6 @@ preco_ref = precos[tabela_sugerida]
 tkm_ref = tkms[tabela_sugerida]
 dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
-# Status Viabilidade
 if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
 elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
 else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
@@ -173,7 +169,7 @@ with st.container(border=True):
     with cv2: st.warning(f"**Recomendação:** {rec}")
 
 # BLOCO 2: RENTABILIDADE
-st.markdown("<br>", unsafe_allow_html=True)
+st.write("")
 with st.container(border=True):
     st.markdown("##### 📈 Viabilidade de Rentabilidade do Business Plan (BP)")
     cbp1, cb2 = st.columns(2)
@@ -181,9 +177,13 @@ with st.container(border=True):
         st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
     with cb2:
         viabilidade_bp = st.selectbox("Status de rentabilidade projetada:", ["Aguardando simulação...", "Viável (Rentabilidade Saudável)", "Inviável (Rentabilidade Comprometida)"])
+        # Pequena observação condicional adicionada abaixo
+        if viabilidade_bp == "Inviável (Rentabilidade Comprometida)":
+            st.caption("⚠️ *Nota de Governança: Caso não haja viabilidade financeira no BP, há a necessidade mandatória de revisar o posicionamento estratégico de precificação.*")
 
 # UNIDADES SIMILARES
-st.markdown("<br>##### 🏢 Unidades da Rede com Perfil Similar")
+st.write("")
+st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
 df_existentes = [
     {"Unidade": "Fast Tennis Alphaville", "Estado": "SP", "Renda": 27400, "Pop": 44300},
     {"Unidade": "Fast Tennis Belvedere", "Estado": "MG", "Renda": 23100, "Pop": 63400},
