@@ -85,16 +85,18 @@ st.markdown("---")
 # SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO
 # ==========================================
 st.subheader("📊 1. Dados da Área de Estudo e Mercado")
+# Introdução recuperada com sucesso:
+st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
 
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
-    st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
+    st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansion.")
 
 # CAIXA DE INPUTS
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
         estado = st.selectbox("Estado (UF):", ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"], index=14)
-        cidade = st.text_input("Cidade (Preencha):", value="Belo Horizonte")
+        cidade = st.text_input("Cidade:", value="Belo Horizonte")
         populacao = st.number_input("População Total (Área):", min_value=0, value=85000)
     with c2:
         regic = st.selectbox("REGIC:", ["Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=4)
@@ -104,7 +106,8 @@ with st.container(border=True):
         tipo_praca = st.selectbox("Perfil da Praça:", ["Comercial", "Mista", "Residencial", "Mista Qualificada"], index=2)
         renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=19700.0)
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=30)
-        media_mercado = st.number_input("Preço Médio Concorrentes:", min_value=0.0, value=405.0)
+        # Observação entre parênteses recuperada com sucesso:
+        media_mercado = st.number_input("Preço Médio Concorrentes (Plano Plus 1x - Grupo):", min_value=0.0, value=405.0)
 
 # ==========================================
 # LÓGICA MATEMÁTICA (GOVERNANÇA)
@@ -143,7 +146,7 @@ else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preç
 # ==========================================
 st.markdown('<div class="faixa-resultados">📊 Análise de dados e recomendações</div>', unsafe_allow_html=True)
 
-# BLOCO 1: TABELA E MERCADO
+# BLOCO 1: TABELA E MERCADO (JUNTO NO MESMO QUADRADO)
 with st.container(border=True):
     st.markdown(f"""
         <div class="tabela-sugerida-box">
@@ -156,39 +159,19 @@ with st.container(border=True):
     if tempo_proxima <= 15:
         st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
 
-    col_res1, col_res2 = st.columns([1, 1])
-    with col_res1:
-        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis:</small><br><b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
-    with col_res2:
-        st.markdown(f"<p style='text-align:right;'><small style='color:#6C757D;'>Diferença mercado x Fast:</small><br><b>{dif_mercado*100:+.1f}%</b></p>", unsafe_allow_html=True)
-
+    # Intervalo de Tabelas mantido aqui de forma limpa
+    st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("##### 🔍 Relatório de Viabilidade de Mercado")
+    
+    # Diferença mercado x Fast trazida para cá (próxima das informações de viabilidade de mercado)
+    st.markdown(f"##### 🔍 Relatório de Viabilidade de Mercado &nbsp;&nbsp;<span style='font-size:14px; color:#6C757D; font-weight:normal;'>(Diferença mercado x Fast: <b>{dif_mercado*100:+.1f}%</b>)</span>", unsafe_allow_html=True)
+    
     cv1, cv2 = st.columns(2)
     with cv1: st.info(f"**Diretriz:** {diag}\n\n**Status:** {status}")
     with cv2: st.warning(f"**Recomendação:** {rec}")
 
-# BLOCO 2: RENTABILIDADE
+# BLOCO 2: RENTABILIDADE (SOZINHO)
 st.write("")
 with st.container(border=True):
     st.markdown("##### 📈 Viabilidade de Rentabilidade do Business Plan (BP)")
-    cbp1, cb2 = st.columns(2)
-    with cbp1:
-        st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
-    with cb2:
-        viabilidade_bp = st.selectbox("Status de rentabilidade projetada:", ["Aguardando simulação...", "Viável (Rentabilidade Saudável)", "Inviável (Rentabilidade Comprometida)"])
-        # Pequena observação condicional adicionada abaixo
-        if viabilidade_bp == "Inviável (Rentabilidade Comprometida)":
-            st.caption("⚠️ *Nota de Governança: Caso não haja viabilidade financeira no BP, há a necessidade mandatória de revisar o posicionamento estratégico de precificação.*")
-
-# UNIDADES SIMILARES
-st.write("")
-st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
-df_existentes = [
-    {"Unidade": "Fast Tennis Alphaville", "Estado": "SP", "Renda": 27400, "Pop": 44300},
-    {"Unidade": "Fast Tennis Belvedere", "Estado": "MG", "Renda": 23100, "Pop": 63400},
-    {"Unidade": "Fast Tennis Capim Macio", "Estado": "RN", "Renda": 14700, "Pop": 64400}
-]
-st.dataframe(pd.DataFrame(df_existentes), use_container_width=True, hide_index=True)
-
-st.markdown(f"""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
+    cb
