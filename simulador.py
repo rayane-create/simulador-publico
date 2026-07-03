@@ -204,7 +204,7 @@ dados_unidades_existentes = [
     {"Unidade": "Fast Tennis São Caetano", "Estado": "SP", "Renda Média": 10200, "População": 122900, "% Classe A+": 0.13, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Saúde", "Estado": "SP", "Renda Média": 17700, "População": 186000, "% Classe A+": 0.32, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Taquaral", "Estado": "SP", "Renda Média": 12738, "População": 40203, "% Classe A+": 0.22, "Praça": "Residencial", "REGIC": "Capital Regional A"},
-    {"Unidade": "Fast Tennis Três Poderes", "Estado": "SP", "Renda Média": 18100, "População": 587000, "% Classe A+": 0.32, "Comercial", "REGIC": "Grande Metrópole"},
+    {"Unidade": "Fast Tennis Três Poderes", "Estado": "SP", "Renda Média": 18100, "População": 587000, "% Classe A+": 0.32, "Praça": "Comercial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Verbo Divino", "Estado": "SP", "Renda Média": 24800, "População": 77600, "% Classe A+": 0.48, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     {"Unidade": "Fast Tennis Vila Olímpia", "Estado": "SP", "Renda Média": 30900, "População": 160900, "% Classe A+": 0.60, "Praça": "Residencial", "REGIC": "Grande Metrópole"},
     
