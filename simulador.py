@@ -147,7 +147,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 @st.cache_data(ttl=86400)
 def buscar_cidades_ibge(uf):
-    # Dicionário interno para garantir que as siglas corretas busquem os dados certos no IBGE
+    # Dicionário interno para garantir que os estados corretos busquem os dados certos no IBGE
     mapa_uf_correto = {
         "AMAZONAS": "AM",
         "GOIÁS": "GO",
