@@ -112,10 +112,10 @@ with col_header1:
 st.markdown("---")
 
 # ==========================================
-# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO
+# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO (UNIFICADA)
 # ==========================================
-st.subheader("📊 1. Dados da Área de Estudo")
-st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça.</p>", unsafe_allow_html=True)
+st.subheader("📊 1. Dados da Área de Estudo e Mercado")
+st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
 
 with st.expander("📌 Diretrizes de Delimitação da Área de Estudo (Clique para expandir/recolher)"):
     st.markdown("""
@@ -147,7 +147,6 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 @st.cache_data(ttl=86400)
 def buscar_cidades_ibge(uf):
-    # Dicionário interno para garantir que os estados corretos busquem os dados certos no IBGE
     mapa_uf_correto = {
         "AMAZONAS": "AM",
         "GOIÁS": "GO",
@@ -167,7 +166,6 @@ def buscar_cidades_ibge(uf):
         pass
     return ["São Paulo", "Belo Horizonte", "Rio de Janeiro", "Curitiba"]
 
-# LISTA EXIBIDA CORRIGIDA EXATAMENTE COMO VOCÊ PEDIU:
 estados_br = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
     "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
@@ -241,32 +239,36 @@ dados_unidades_existentes = [
 ]
 df_unidades = pd.DataFrame(dados_unidades_existentes)
 
-# Inputs de Dados
+# Inputs de Dados com pequenas diretrizes textuais acima do título
 col_in1, col_in2, col_in3 = st.columns(3)
 with col_in1:
+    st.caption("🔽 Selecione:")
     estado = st.selectbox("Estado (UF):", estados_br, index=24)
+    st.caption("🔽 Selecione:")
     cidades_disponiveis = buscar_cidades_ibge(estado)
     cidade = st.selectbox("Cidade:", cidades_disponiveis)
+    st.caption("✍️ Preencha:")
     populacao = st.number_input("População Total da Área:", min_value=0, value=85000, step=1000)
+    st.caption("✍️ Preencha:")
+    media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x):", min_value=0.0, value=405.0, step=10.0)
 
 with col_in2:
+    st.caption("🔽 Selecione:")
     regic = st.selectbox("Classificação REGIC:", ["Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=5)
+    st.caption("✍️ Preencha:")
     residentes_alvo = st.number_input("Residentes (Público-Alvo B1, A+ e A++):", min_value=0, value=16500, step=500)
+    st.caption("✍️ Preencha:")
     classe_a_mais_input = st.number_input("% Classe A+ (ex: 0.35 para 35%):", min_value=0.0, max_value=1.0, value=0.35, step=0.01)
 
 with col_in3:
+    st.caption("🔽 Selecione:")
     tipo_praca = st.selectbox("Tipo de Praça (Perfil):", ["Comercial", "Mista", "Residencial", "Mista Qualificada"], index=2)
+    st.caption("✍️ Preencha:")
     renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=19700.0, step=500.0)
+    st.caption("✍️ Preencha:")
+    tempo_proxima = st.number_input("Tempo até a unidade mais próxima (em minutos):", min_value=0, value=30, step=1)
 
 st.markdown("---")
-
-# ==========================================
-# SEÇÃO 2: DADOS DE MERCADO
-# ==========================================
-st.subheader("📊 2. Dados de Mercado")
-col_merc1, col_merc2 = st.columns([1, 2])
-with col_merc1:
-    media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x):", min_value=0.0, value=405.0, step=10.0)
 
 # Processamento lógico
 score_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
@@ -314,7 +316,7 @@ else:
 # PAINEL DE RESULTADOS DA SIMULAÇÃO
 # ==========================================
 st.markdown('<div class="faixa-resultados">📊 Análise de dados e recomendações</div>', unsafe_allow_html=True)
-st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:20px;'>Diretrizes e recomendações considerando os dados da área de estudo imputados.</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:20px;'>Diretrizes e recomendações considerando os dados imputados.</p>", unsafe_allow_html=True)
 
 st.markdown(f"""
     <div class="tabela-sugerida-box">
@@ -323,6 +325,10 @@ st.markdown(f"""
         <p>Preço de Referência do Plano Plus 1x: <b>R$ {preco_fast_automatico},00</b> &nbsp;|&nbsp; TKM Técnico da Tabela: <b>R$ {tabela_tkm_sugerido},00</b></p>
     </div>
 """, unsafe_allow_html=True)
+
+# Lógica de Proteção de Rede logo abaixo da tabela sugerida
+if tempo_proxima <= 15:
+    st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
 
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1: 
