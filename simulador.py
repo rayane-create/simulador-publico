@@ -89,7 +89,7 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS
+# CAIXA DE INPUTS MANTENDO O PADRÃO DE 3 COLUNAS
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
@@ -97,15 +97,17 @@ with st.container(border=True):
         estado = st.selectbox("Estado (UF):", lista_estados, index=0)
         cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
         populacao = st.number_input("População Total (Área):", min_value=0, value=0)
+        classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     with c2:
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
         residentes_alvo = st.number_input("Público Alvo (B1, A+, A++):", min_value=0, value=0)
-        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.35):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     with col_in3:
         tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
         renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=0.0, step=100.0)
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
+        classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
 
 # Verificação se o usuário já preencheu os dados mínimos para calcular
 dados_preenchidos = (
@@ -137,13 +139,15 @@ else:
     s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
     s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
     
-    # Regra avaliando o campo '% Classe A+'
+    # ALTERAÇÃO SOLICITADA: Soma automática de A+ com A++ para validação do potencial de score
+    soma_classes_altas = classe_a_mais + classe_a_mais_mais
+
     if populacao < 40000:
         s_pop = -1
     else:
-        if classe_a_mais >= 0.40:
+        if soma_classes_altas >= 0.40:
             s_pop = 1
-        elif classe_a_mais >= 0.25:
+        elif soma_classes_altas >= 0.25:
             s_pop = 0
         else:
             s_pop = -1
@@ -166,7 +170,6 @@ else:
     # ==========================================
     st.markdown('<div class="faixa-resultados">📊 Análise de dados e recomendações</div>', unsafe_allow_html=True)
 
-    # BLOCO 1: TABELA E MERCADO
     with st.container(border=True):
         st.markdown(f"""
             <div class="tabela-sugerida-box">
@@ -196,7 +199,6 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-    # BLOCO 2: RENTABILIDADE
     st.write("")
     with st.container(border=True):
         st.markdown("##### 📈 Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -205,81 +207,79 @@ else:
             st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
         with cb2:
             viabilidade_bp = st.selectbox("Status de rentabilidade projetada:", ["Aguardando simulação...", "Viável (Rentabilidade Saudável)", "Inviável (Rentabilidade Comprometida)"])
-            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
+            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decision*")
 
     # ==========================================
-    # CÁLCULO DE SIMILARIDADE REAL POR REGIAO (AJUSTADO E CORRIGIDO)
+    # CÁLCULO DE SIMILARIDADE REAL MULTI-CLASSES
     # ==========================================
     st.write("")
     st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
     
-    # Base de dados atualizada incluindo a estimativa padrão de % Classe A+ para as unidades existentes
     df_existentes = [
-        {"Unidade": "Fast Tennis Alphaville - São Paulo", "Cidade": "Barueri", "IsSP": True, "Renda Média": 27400, "População": 44300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.45},
-        {"Unidade": "Fast Tennis Alto da Boa Vista - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.38},
-        {"Unidade": "Fast Tennis Alto de Pinheiros - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 23900, "População": 82500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.40},
-        {"Unidade": "Fast Tennis Alto do Ipiranga - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19775, "População": 177000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.28},
-        {"Unidade": "Fast Tennis Anhanguera - Jundiaí", "Cidade": "Jundiaí", "IsSP": True, "Renda Média": 11650, "População": 67900, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 3", "Classe_A": 0.22},
-        {"Unidade": "Fast Tennis Bebedouro - Bebedouro", "Cidade": "Bebedouro", "IsSP": True, "Renda Média": 5900, "População": 44900, "REGIC": "Centro Sub-Regional B", "Tabela Praticada": "Tabela 1", "Classe_A": 0.12},
-        {"Unidade": "Fast Tennis Botafogo - Campinas", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12300, "População": 96574, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "Classe_A": 0.24},
-        {"Unidade": "Fast Tennis Brooklin - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 29400, "População": 162400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.48},
-        {"Unidade": "Fast Tennis Campo Belo - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 27328, "População": 117500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.42},
-        {"Unidade": "Fast Tennis Cantareira - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 11500, "População": 95500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.20},
-        {"Unidade": "Fast Tennis Centro São Bernardo - São Bernardo do Campo", "Cidade": "São Bernardo do Campo", "IsSP": True, "Renda Média": 10800, "População": 164300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.18},
-        {"Unidade": "Fast Tennis Chacará Inglesa - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21400, "População": 178712, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.30},
-        {"Unidade": "Fast Tennis Chacará Santo Antônio - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.40},
-        {"Unidade": "Fast Tennis Indaiatuba - São Paulo", "Cidade": "Indaiatuba", "IsSP": True, "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 2", "Classe_A": 0.15},
-        {"Unidade": "Fast Tennis Jardim - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14195, "População": 128600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "Classe_A": 0.26},
-        {"Unidade": "Fast Tennis Jardim Portal da Colina - Sorocaba", "Cidade": "Sorocaba", "IsSP": True, "Renda Média": 11900, "População": 52624, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3", "Classe_A": 0.23},
-        {"Unidade": "Fast Tennis Lapa - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14200, "População": 107250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "Classe_A": 0.25},
-        {"Unidade": "Fast Tennis Moema - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 28900, "População": 143796, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.46},
-        {"Unidade": "Fast Tennis Monte Pascal - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21446, "População": 90476, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.32},
-        {"Unidade": "Fast Tennis Mooca - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 13400, "População": 147000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "Classe_A": 0.22},
-        {"Unidade": "Fast Tennis Morumbi - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14200, "População": 165700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.35},
-        {"Unidade": "Fast Tennis Nova Aliança Sul - Ribeirão Preto", "Cidade": "Ribeirão Preto", "IsSP": True, "Renda Média": 12900, "População": 90800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "Classe_A": 0.24},
-        {"Unidade": "Fast Tennis Parque Piqueri - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 12800, "População": 138700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "Classe_A": 0.21},
-        {"Unidade": "Fast Tennis Praia Grande - Praia Grande", "Cidade": "Praia Grande", "IsSP": True, "Renda Média": 8900, "População": 84400, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3", "Classe_A": 0.16},
-        {"Unidade": "FastTennis Radial Leste - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 15700, "População": 146400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "Classe_A": 0.24},
-        {"Unidade": "Fast Tennis Rio Claro - São Paulo", "Cidade": "Rio Claro", "IsSP": True, "Renda Média": 7400, "População": 72800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1", "Classe_A": 0.13},
-        {"Unidade": "Fast Tennis Salto - São Paulo", "Cidade": "Salto", "IsSP": True, "Renda Média": 6560, "População": 54900, "REGIC": "Centro Sub-Regional A", "Tabela Praticada": "Tabela 2", "Classe_A": 0.14},
-        {"Unidade": "Fast Tennis Santana - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 153100, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.27},
-        {"Unidade": "Fast Tennis Santo Amaro", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21100, "População": 82400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.33},
-        {"Unidade": "Fast Tennis São Caetano - São Caetano do Sul", "Cidade": "São Caetano do Sul", "IsSP": True, "Renda Média": 10200, "População": 122900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.19},
-        {"Unidade": "Fast Tennis Saúde - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 186000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.28},
-        {"Unidade": "Fast Tennis Taquaral - Campinas", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "Classe_A": 0.23},
-        {"Unidade": "Fast Tennis Três Poderes - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.32},
-        {"Unidade": "Fast Tennis Verbo Divino - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.39},
-        {"Unidade": "Fast Tennis Vila Olímpia - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.50},
-        {"Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "Classe_A": 0.30},
-        
-        # --- FORA DE SP ---
-        {"Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "IsSP": False, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4", "Classe_A": 0.34},
-        {"Unidade": "Fast Tennis Belvedere - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.36},
-        {"Unidade": "Fast Tennis Boa Viagem - Recife", "Cidade": "Recife", "IsSP": False, "Renda Média": 12214, "População": 102900, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "Classe_A": 0.20},
-        {"Unidade": "Fast Tennis Buritis I - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 16700, "População": 80900, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.25},
-        {"Unidade": "Fast Tennis Calafate - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 13100, "População": 121200, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 1", "Classe_A": 0.18},
-        {"Unidade": "Fast Tennis Capim Macio - Natal", "Cidade": "Natal", "IsSP": False, "Renda Média": 14700, "População": 64400, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "Classe_A": 0.22},
-        {"Unidade": "Fast Tennis Castelo - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10500, "População": 111575, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.16},
-        {"Unidade": "Fast Tennis Cidade Nova - Cidade Nova", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.17},
-        {"Unidade": "Fast Tennis Contagem - Contagem", "Cidade": "Contagem", "IsSP": False, "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "Classe_A": 0.12},
-        {"Unidade": "Fast Tennis Estoril - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.19},
-        {"Unidade": "Fast Tennis Estrela Sul - Juiz de Fora", "Cidade": "Juiz de Fora", "IsSP": False, "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "Classe_A": 0.15},
-        {"Unidade": "Fast Tennis Guararapes - Fortaleza", "Cidade": "Fortaleza", "IsSP": False, "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "Classe_A": 0.21},
-        {"Unidade": "Fast Tennis Morada da Colina - Uberlândia", "Cidade": "Uberlândia", "IsSP": False, "Renda Média": 14528, "População": 54900, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 2", "Classe_A": 0.23},
-        {"Unidade": "Fast Tennis Orla da Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 9940, "População": 42149, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.14},
-        {"Unidade": "Fast Tennis Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 11675, "População": 75076, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.18},
-        {"Unidade": "Fast Tennis Ponte JK - Brasília", "Cidade": "Brasília", "IsSP": False, "Renda Média": 25400, "População": 95617, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4", "Classe_A": 0.42},
-        {"Unidade": "Fast Tennis Praia do Canto - Vitória", "Cidade": "Vitória", "IsSP": False, "Renda Média": 16840, "População": 83239, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.29},
-        {"Unidade": "Fast Tennis Recreio - Rio de Janeiro", "Cidade": "Rio de Janeiro", "IsSP": False, "Renda Média": 22000, "População": 74360, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.31},
-        {"Unidade": "Fast Tennis Salgado Filho - Curitiba", "Cidade": "Curitiba", "IsSP": False, "Renda Média": 8900, "População": 64000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.14},
-        {"Unidade": "Fast Tennis Santa Lúcia - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19400, "População": 88597, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.30},
-        {"Unidade": "Fast Tennis Santa Rosa - Niterói", "Cidade": "Niterói", "IsSP": False, "Renda Média": 17400, "População": 178510, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "Classe_A": 0.25},
-        {"Unidade": "Fast Tennis São Bento - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 16700, "População": 127317, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "Classe_A": 0.24},
-        {"Unidade": "Fast Tennis Saul Macedo - Belo Horizonte", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.36},
-        {"Unidade": "Fast Tennis Sete Lagoas - Sete Lagoas", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "Classe_A": 0.16},
-        {"Unidade": "Fast Tennis Setor Bueno - Goiânia", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "Classe_A": 0.28},
-        {"Unidade": "Fast Tennis Tirol - Natal", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "Classe_A": 0.24},
-        {"Unidade": "Fast Tennis Vilhena - Rondônia", "Cidade": "Vilhena", "IsSP": False, "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1", "Classe_A": 0.11}
+        {"Unidade": "FT AGUAS CLARAS - DF", "Cidade": "Brasília", "IsSP": False, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4", "A++": 0.23, "A+": 0.27, "B1": 0.21},
+        {"Unidade": "FT ALPHAVILLE - SP", "Cidade": "Barueri", "IsSP": True, "Renda Média": 27400, "População": 44300, "REGIC": "Grande Metrórole", "Tabela Praticada": "Tabela 5", "A++": 0.15, "A+": 0.23, "B1": 0.21},
+        {"Unidade": "FT ALTO DA BOA VISTA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.17, "A+": 0.20, "B1": 0.18},
+        {"Unidade": "FT ALTO DOS PINHEIROS - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 23900, "População": 82500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.20, "B1": 0.18},
+        {"Unidade": "FT ALTO DO IPIRANGA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19775, "População": 177000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.14, "A+": 0.16, "B1": 0.15},
+        {"Unidade": "FT ANHANGUERA - SP", "Cidade": "Jundiaí", "IsSP": True, "Renda Média": 11650, "População": 67900, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 3", "A++": 0.00, "A+": 0.10, "B1": 0.18},
+        {"Unidade": "FT BEBEDOURO - SP", "Cidade": "Bebedouro", "IsSP": True, "Renda Média": 5900, "População": 44900, "REGIC": "Centro Sub-Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.02, "A+": 0.09, "B1": 0.15},
+        {"Unidade": "FT BELVEDERE - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
+        {"Unidade": "FT BOA VIAGEM - PE", "Cidade": "Recife", "IsSP": False, "Renda Média": 12214, "População": 102000, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.14, "B1": 0.16},
+        {"Unidade": "FT BOTAFOGO - SP", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12300, "População": 96574, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.07, "A+": 0.13, "B1": 0.20},
+        {"Unidade": "FT BROOKLIN - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 29400, "População": 162400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.30, "A+": 0.27, "B1": 0.15},
+        {"Unidade": "FT BURITIS - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 16700, "População": 80900, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.10, "A+": 0.24, "B1": 0.24},
+        {"Unidade": "FT CALAFATE - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 13100, "População": 121200, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.17, "B1": 0.20},
+        {"Unidade": "FT CAMPO BELO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 27328, "População": 117500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.27, "A+": 0.25, "B1": 0.15},
+        {"Unidade": "FT CANTAREIRA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 11500, "População": 95500, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.09, "A+": 0.18, "B1": 0.23},
+        {"Unidade": "FT CAPIM MACIO - RN", "Cidade": "Natal", "IsSP": False, "Renda Média": 14700, "População": 64400, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.10, "A+": 0.18, "B1": 0.22},
+        {"Unidade": "FT CASTELO - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10500, "População": 111575, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.13, "B1": 0.20},
+        {"Unidade": "FT CENTRO SÃO BERNARDO - SP", "Cidade": "São Bernardo do Campo", "IsSP": True, "Renda Média": 10800, "População": 164300, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.05, "A+": 0.12, "B1": 0.18},
+        {"Unidade": "FT CHÁCARA INGLESA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21400, "População": 178712, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.18, "A+": 0.22, "B1": 0.15},
+        {"Unidade": "FT CHÁCARA SANTO ANTÔNIO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.24, "A+": 0.25, "B1": 0.14},
+        {"Unidade": "FT CIDADE NOVA - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.15, "B1": 0.19},
+        {"Unidade": "FT CONTAGEM - MG", "Cidade": "Contagem", "IsSP": False, "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.00, "A+": 0.08, "B1": 0.15},
+        {"Unidade": "FT ESTORIL - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.17, "B1": 0.22},
+        {"Unidade": "FT ESTRELA SUL - JF", "Cidade": "Juiz de Fora", "IsSP": False, "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.04, "A+": 0.12, "B1": 0.18},
+        {"Unidade": "FT GUARARAPES - CE", "Cidade": "Fortaleza", "IsSP": False, "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.14, "B1": 0.21},
+        {"Unidade": "FT INDAIATUBA - SP", "Cidade": "Indaiatuba", "IsSP": True, "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 2", "A++": 0.02, "A+": 0.10, "B1": 0.14},
+        {"Unidade": "FT JARDIM - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14195, "População": 128600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "A++": 0.07, "A+": 0.18, "B1": 0.23},
+        {"Unidade": "FT JARDIM PORTAL DA COLINA - SP", "Cidade": "Sorocaba", "IsSP": True, "Renda Média": 11900, "População": 52624, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3", "A++": 0.02, "A+": 0.10, "B1": 0.14},
+        {"Unidade": "FT JARDIM SOCIAL - PR", "Cidade": "Curitiba", "IsSP": False, "Renda Média": 31000, "População": 56708, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.31, "B1": 0.21},
+        {"Unidade": "FT LAPA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14200, "População": 107250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "A++": 0.08, "A+": 0.18, "B1": 0.22},
+        {"Unidade": "FT MOEMA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 28900, "População": 143796, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.30, "A+": 0.26, "B1": 0.13},
+        {"Unidade": "FT MOOCA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 13400, "População": 147000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "A++": 0.07, "A+": 0.18, "B1": 0.23},
+        {"Unidade": "FT MORADA DA COLINA - MG", "Cidade": "Uberlândia", "IsSP": False, "Renda Média": 14528, "População": 54900, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 2", "A++": 0.07, "A+": 0.16, "B1": 0.18},
+        {"Unidade": "FT MORUMBI - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 14200, "População": 165700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.12, "A+": 0.21, "B1": 0.20},
+        {"Unidade": "FT NOVA ALIANÇA SUL - SP", "Cidade": "Ribeirão Preto", "IsSP": True, "Renda Média": 12900, "População": 90800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.15, "B1": 0.18},
+        {"Unidade": "FT ORLA PAMPULHA - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 9940, "População": 42149, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.01, "A+": 0.11, "B1": 0.17},
+        {"Unidade": "FT PAMPULHA - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 11675, "População": 75076, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.04, "A+": 0.12, "B1": 0.18},
+        {"Unidade": "FT PARQUE PIQUERI - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 12800, "População": 138700, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "A++": 0.08, "A+": 0.14, "B1": 0.17},
+        {"Unidade": "FT PONTE JK - DF", "Cidade": "Brasília", "IsSP": False, "Renda Média": 25400, "População": 95617, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4", "A++": 0.24, "A+": 0.30, "B1": 0.14},
+        {"Unidade": "FT PRAIA DO CANTO - ES", "Cidade": "Vitória", "IsSP": False, "Renda Média": 16840, "População": 83239, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.11, "A+": 0.18, "B1": 0.22},
+        {"Unidade": "FT PRAIA GRANDE - SP", "Cidade": "Praia Grande", "IsSP": True, "Renda Média": 8900, "População": 84400, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 3", "A++": 0.02, "A+": 0.11, "B1": 0.18},
+        {"Unidade": "FT RADIAL LESTE TATUAPÉ - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 15700, "População": 146400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 4", "A++": 0.11, "A+": 0.19, "B1": 0.21},
+        {"Unidade": "FT RECREIO - RJ", "Cidade": "Rio de Janeiro", "IsSP": False, "Renda Média": 22000, "População": 74360, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.16, "A+": 0.25, "B1": 0.24},
+        {"Unidade": "FT RIO CLARO - SP", "Cidade": "Rio Claro", "IsSP": True, "Renda Média": 7400, "População": 72800, "REGIC": "Centro Sub-Regional I", "Tabela Praticada": "Tabela 1", "A++": 0.01, "A+": 0.04, "B1": 0.12},
+        {"Unidade": "FT SALGADO FILHO - PR", "Cidade": "Curitiba", "IsSP": False, "Renda Média": 8900, "População": 64000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.02, "A+": 0.08, "B1": 0.14},
+        {"Unidade": "FT SALTO - SP", "Cidade": "Salto", "IsSP": True, "Renda Média": 6560, "População": 54900, "REGIC": "Centro Sub-Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.01, "A+": 0.04, "B1": 0.10},
+        {"Unidade": "FT SANTA LÚCIA - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19400, "População": 88597, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.16, "A+": 0.24, "B1": 0.24},
+        {"Unidade": "FT SANTA ROSA - RJ", "Cidade": "Niterói", "IsSP": False, "Renda Média": 17400, "População": 178510, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.18, "B1": 0.24},
+        {"Unidade": "FT SANTANA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 153100, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.15, "A+": 0.22, "B1": 0.18},
+        {"Unidade": "FT SANTO AMARO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 21100, "População": 82400, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.17, "A+": 0.21, "B1": 0.22},
+        {"Unidade": "FT SÃO BENTO - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 16700, "População": 127317, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.22, "B1": 0.24},
+        {"Unidade": "FT SÃO CAETANO - SP", "Cidade": "São Caetano do Sul", "IsSP": True, "Renda Média": 10200, "População": 122900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.04, "A+": 0.06, "B1": 0.19},
+        {"Unidade": "FT SAÚDE - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 186000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.13, "A+": 0.19, "B1": 0.21},
+        {"Unidade": "FT SAUL MACEDO - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
+        {"Unidade": "FT SAVASSI - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19885, "População": 192365, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.27, "B1": 0.22},
+        {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
+        {"Unidade": "FT SETOR BUENO - GO", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.24, "B1": 0.22},
+        {"Unidade": "FT TAQUARAL - SP", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.23},
+        {"Unidade": "FT TIROL - RN", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.18, "B1": 0.24},
+        {"Unidade": "FT TRÊS PODERES - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.19, "A+": 0.18, "B1": 0.22},
+        {"Unidade": "FT VERBO DIVINO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.23, "B1": 0.18},
+        {"Unidade": "FT VILA OLIMPIA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.33, "A+": 0.26, "B1": 0.12},
+        {"Unidade": "FT VILHENA - RO", "Cidade": "Vilhena", "IsSP": False, "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 1", "A++": 0.03, "A+": 0.10, "B1": 0.17},
+        {"Unidade": "FT YPIRANGA - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.17, "B1": 0.20}
     ]
     
     df_base = pd.DataFrame(df_existentes)
@@ -289,25 +289,31 @@ else:
         df_filtrado = df_base[df_base['IsSP'] == alvo_sp].copy()
         
         if not df_filtrado.empty:
-            # NOVO CRUZAMENTO DE TRÊS DADOS: Renda, População e % Classe A+ normalizados
+            # Referências de normalização para evitar divisão por zero
             r_ref = renda_media if renda_media > 0 else 1
             p_ref = populacao if populacao > 0 else 1
-            a_ref = classe_a_mais if classe_a_mais > 0 else 1
+            a2_ref = classe_a_mais_mais if classe_a_mais_mais > 0 else 1
+            a1_ref = classe_a_mais if classe_a_mais > 0 else 1
+            b1_ref = classe_b1 if classe_b1 > 0 else 1
             
-            # Cálculo da distância geométrica considerando os 3 fatores combinados
+            # Cálculo da distância vetorial expandido (Renda, População, A++, A+ e B1)
             df_filtrado['Distancia'] = np.sqrt(
                 ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
                 ((df_filtrado['População'] - populacao) / p_ref)**2 +
-                ((df_filtrado['Classe_A'] - classe_a_mais) / (a_ref if a_ref > 0 else 1))**2
+                ((df_filtrado['A++'] - classe_a_mais_mais) / a2_ref)**2 +
+                ((df_filtrado['A+'] - classe_a_mais) / a1_ref)**2 +
+                ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
             )
             
-            # Transformação da distância matemática em um percentual amigável de Similaridade (0% a 100%)
-            df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1)) * 100)):.1f}%")
+            # Conversão matemática de distância para percentual de similaridade limpo
+            df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
+                lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
+            )
             
-            # Ordena pelos mais próximos e seleciona os 3 primeiros
+            # Ordena e seleciona o Top 3
             df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
             
-            # Exibe a tabela organizada exatamente com a nova coluna ao lado da tabela praticada
+            # Exibição dos dados com o layout original preservado
             st.dataframe(
                 df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada", "% Similaridade"]], 
                 use_container_width=True, 
