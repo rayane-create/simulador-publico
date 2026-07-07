@@ -106,14 +106,14 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS REORGANIZADA
+# CAIXA DE INPUTS
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
         estado = st.selectbox("Estado (UF):", lista_estados, index=0)
         
-        # AJUSTE AUTOMÁTICO: Puxa a lista de cidades do estado ou deixa caixa de texto livre
+        # Puxa a lista de cidades do estado ou deixa caixa de texto livre
         if estado in cidades_por_estado:
             lista_cidades_uf = ["Selecione a cidade..."] + sorted(cidades_por_estado[estado])
             cidade = st.selectbox("Cidade:", lista_cidades_uf, index=0)
@@ -143,13 +143,16 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
-# Verificação se o usuário preencheu tudo corretamente para liberar o cálculo
+# CORREÇÃO CRÍTICA AQUI: Validação inteligente que aceita tanto texto quanto selectbox sem travar
+cidade_valida = False
+if isinstance(cidade, str):
+    cidade_valida = (cidade.strip() != "" and cidade != "Selecione a cidade...")
+
 dados_preenchidos = (
     estado != "Selecione..." and 
     regic != "Selecione..." and 
     tipo_praca != "Selecione..." and 
-    cidade != "" and 
-    cidade != "Selecione a cidade..." and
+    cidade_valida and
     renda_media > 0 and 
     media_mercado > 0
 )
