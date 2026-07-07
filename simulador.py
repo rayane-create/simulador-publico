@@ -81,23 +81,6 @@ with col_header2:
 st.markdown("---")
 
 # ==========================================
-# MAPEAMENTO DINÂMICO DE CIDADES POR ESTADO
-# ==========================================
-cidades_por_estado = {
-    "SP": ["São Paulo", "Barueri", "Campinas", "Jundiaí", "Bebedouro", "Sorocaba", "Indaiatuba", "Praia Grande", "Rio Claro", "Salto", "São Caetano do Sul"],
-    "MG": ["Belo Horizonte", "Contagem", "Uberlândia", "Juiz de Fora", "Sete Lagoas"],
-    "DF": ["Brasília"],
-    "PE": ["Recife"],
-    "RN": ["Natal"],
-    "CE": ["Fortaleza"],
-    "PR": ["Curitiba"],
-    "RJ": ["Rio de Janeiro", "Niterói"],
-    "ES": ["Vitória"],
-    "GO": ["Goiânia"],
-    "RO": ["Vilhena"]
-}
-
-# ==========================================
 # SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO
 # ==========================================
 st.subheader("📊 1. Dados da Área de Estudo e Mercado")
@@ -106,19 +89,13 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS
+# CAIXA DE INPUTS - RETORNADO PARA O PADRÃO ORIGINAL DE PREENCHIMENTO DE CIDADE
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
         estado = st.selectbox("Estado (UF):", lista_estados, index=0)
-        
-        if estado in cidades_por_estado:
-            lista_cidades_uf = ["Selecione a cidade..."] + sorted(cidades_por_estado[estado])
-            cidade = st.selectbox("Cidade:", lista_cidades_uf, index=0)
-        else:
-            cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
-            
+        cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
         populacao = st.number_input("População Total (Área):", min_value=0, value=0)
         
         st.markdown("**📌 Percentuais de Classes (Geofusion)**")
@@ -141,16 +118,11 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
-# CORREÇÃO EFETUADA AQUI: Substituído 'city' por 'cidade' para evitar o erro de NameError
-cidade_valida = False
-if isinstance(cidade, str):
-    cidade_valida = (cidade.strip() != "" and cidade != "Selecione a cidade...")
-
 dados_preenchidos = (
     estado != "Selecione..." and 
     regic != "Selecione..." and 
     tipo_praca != "Selecione..." and 
-    cidade_valida and
+    cidade.strip() != "" and
     renda_media > 0 and 
     media_mercado > 0
 )
@@ -159,7 +131,7 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (GOVERNANÇA)
+    # LÓGICA MATEMÁTICA (GOVERNANÇA RECENTE)
     # ==========================================
     if estado == "SP":
         if renda_media <= 9500: tab_min, tab_max = 1, 2
@@ -246,7 +218,7 @@ else:
                 [
                     "Aguardando simulação...", 
                     "Viável (Alinhado às Diretrizes do BP)", 
-                    "Payback projetado superior a 60 meses", 
+                    "Inviável (Payback projetado superior a 60 meses)", 
                     "Margem Líquida abaixo de R$ 10.000,00", 
                     "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", 
                     "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", 
