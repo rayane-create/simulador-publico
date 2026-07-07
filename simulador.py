@@ -141,9 +141,10 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
+# CORREÇÃO EFETUADA AQUI: Substituído 'city' por 'cidade' para evitar o erro de NameError
 cidade_valida = False
 if isinstance(cidade, str):
-    cidade_valida = (cidade.strip() != "" and city != "Selecione a cidade...")
+    cidade_valida = (cidade.strip() != "" and cidade != "Selecione a cidade...")
 
 dados_preenchidos = (
     estado != "Selecione..." and 
@@ -240,7 +241,6 @@ else:
         with cbp1:
             st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
         with cb2:
-            # AJUSTE DIRETO DA MARGEM LÍQUIDA PURO E SEM ADJETIVOS
             viabilidade_bp = st.selectbox(
                 "Status de rentabilidade projetada:", 
                 [
@@ -284,7 +284,7 @@ else:
         {"Unidade": "FT CHÁCARA SANTO ANTÔNIO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.24, "A+": 0.25, "B1": 0.14},
         {"Unidade": "FT CIDADE NOVA - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.15, "B1": 0.19},
         {"Unidade": "FT CONTAGEM - MG", "Cidade": "Contagem", "IsSP": False, "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.00, "A+": 0.08, "B1": 0.15},
-        {"Unidade": "FT ESTORIL - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrórole", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.17, "B1": 0.22},
+        {"Unidade": "FT ESTORIL - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.17, "B1": 0.22},
         {"Unidade": "FT ESTRELA SUL - JF", "Cidade": "Juiz de Fora", "IsSP": False, "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.04, "A+": 0.12, "B1": 0.18},
         {"Unidade": "FT GUARARAPES - CE", "Cidade": "Fortaleza", "IsSP": False, "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.14, "B1": 0.21},
         {"Unidade": "FT INDAIATUBA - SP", "Cidade": "Indaiatuba", "IsSP": True, "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 2", "A++": 0.02, "A+": 0.10, "B1": 0.14},
