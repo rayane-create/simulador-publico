@@ -113,7 +113,6 @@ with st.container(border=True):
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
         estado = st.selectbox("Estado (UF):", lista_estados, index=0)
         
-        # Puxa a lista de cidades do estado ou deixa caixa de texto livre
         if estado in cidades_por_estado:
             lista_cidades_uf = ["Selecione a cidade..."] + sorted(cidades_por_estado[estado])
             cidade = st.selectbox("Cidade:", lista_cidades_uf, index=0)
@@ -131,7 +130,6 @@ with st.container(border=True):
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
         tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
         
-        # Cálculo automático de Público Alvo
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
         
@@ -143,10 +141,9 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
-# CORREÇÃO CRÍTICA AQUI: Validação inteligente que aceita tanto texto quanto selectbox sem travar
 cidade_valida = False
 if isinstance(cidade, str):
-    cidade_valida = (cidade.strip() != "" and cidade != "Selecione a cidade...")
+    cidade_valida = (cidade.strip() != "" and city != "Selecione a cidade...")
 
 dados_preenchidos = (
     estado != "Selecione..." and 
@@ -161,7 +158,7 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (GOVERNANÇA RECENTE)
+    # LÓGICA MATEMÁTICA (GOVERNANÇA)
     # ==========================================
     if estado == "SP":
         if renda_media <= 9500: tab_min, tab_max = 1, 2
@@ -243,8 +240,20 @@ else:
         with cbp1:
             st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
         with cb2:
-            viabilidade_bp = st.selectbox("Status de rentabilidade projetada:", ["Aguardando simulação...", "Viável (Rentabilidade Saudável)", "Inviável (Rentabilidade Comprometida)"])
-            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decision*")
+            # AJUSTE DIRETO DA MARGEM LÍQUIDA PURO E SEM ADJETIVOS
+            viabilidade_bp = st.selectbox(
+                "Status de rentabilidade projetada:", 
+                [
+                    "Aguardando simulação...", 
+                    "Viável (Alinhado às Diretrizes do BP)", 
+                    "Inviável (Payback projetado superior a 60 meses)", 
+                    "Margem Líquida abaixo de R$ 10.000,00", 
+                    "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", 
+                    "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", 
+                    "Margem Líquida acima de R$ 20.000,00"
+                ]
+            )
+            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
 
     # ==========================================
     # CÁLCULO DE SIMILARIDADE REAL MULTI-CLASSES
@@ -275,7 +284,7 @@ else:
         {"Unidade": "FT CHÁCARA SANTO ANTÔNIO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.24, "A+": 0.25, "B1": 0.14},
         {"Unidade": "FT CIDADE NOVA - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.15, "B1": 0.19},
         {"Unidade": "FT CONTAGEM - MG", "Cidade": "Contagem", "IsSP": False, "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.00, "A+": 0.08, "B1": 0.15},
-        {"Unidade": "FT ESTORIL - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.17, "B1": 0.22},
+        {"Unidade": "FT ESTORIL - BH", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 12612, "População": 85000, "REGIC": "Metrórole", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.17, "B1": 0.22},
         {"Unidade": "FT ESTRELA SUL - JF", "Cidade": "Juiz de Fora", "IsSP": False, "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Tabela Praticada": "Tabela 1", "A++": 0.04, "A+": 0.12, "B1": 0.18},
         {"Unidade": "FT GUARARAPES - CE", "Cidade": "Fortaleza", "IsSP": False, "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.14, "B1": 0.21},
         {"Unidade": "FT INDAIATUBA - SP", "Cidade": "Indaiatuba", "IsSP": True, "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Tabela Praticada": "Tabela 2", "A++": 0.02, "A+": 0.10, "B1": 0.14},
