@@ -246,7 +246,7 @@ else:
                 [
                     "Aguardando simulação...", 
                     "Viável (Alinhado às Diretrizes do BP)", 
-                    "Inviável (Payback projetado superior a 60 meses)", 
+                    "Payback projetado superior a 60 meses", 
                     "Margem Líquida abaixo de R$ 10.000,00", 
                     "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", 
                     "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", 
