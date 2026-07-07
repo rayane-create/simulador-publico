@@ -81,6 +81,23 @@ with col_header2:
 st.markdown("---")
 
 # ==========================================
+# MAPEAMENTO DINÂMICO DE CIDADES POR ESTADO
+# ==========================================
+cidades_por_estado = {
+    "SP": ["São Paulo", "Barueri", "Campinas", "Jundiaí", "Bebedouro", "Sorocaba", "Indaiatuba", "Praia Grande", "Rio Claro", "Salto", "São Caetano do Sul"],
+    "MG": ["Belo Horizonte", "Contagem", "Uberlândia", "Juiz de Fora", "Sete Lagoas"],
+    "DF": ["Brasília"],
+    "PE": ["Recife"],
+    "RN": ["Natal"],
+    "CE": ["Fortaleza"],
+    "PR": ["Curitiba"],
+    "RJ": ["Rio de Janeiro", "Niterói"],
+    "ES": ["Vitória"],
+    "GO": ["Goiânia"],
+    "RO": ["Vilhena"]
+}
+
+# ==========================================
 # SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO
 # ==========================================
 st.subheader("📊 1. Dados da Área de Estudo e Mercado")
@@ -89,16 +106,22 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS REORGANIZADA COM EMPILHAMENTO DE %
+# CAIXA DE INPUTS REORGANIZADA
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
         estado = st.selectbox("Estado (UF):", lista_estados, index=0)
-        cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
+        
+        # AJUSTE AUTOMÁTICO: Puxa a lista de cidades do estado ou deixa caixa de texto livre
+        if estado in cidades_por_estado:
+            lista_cidades_uf = ["Selecione a cidade..."] + sorted(cidades_por_estado[estado])
+            cidade = st.selectbox("Cidade:", lista_cidades_uf, index=0)
+        else:
+            cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
+            
         populacao = st.number_input("População Total (Área):", min_value=0, value=0)
         
-        # Percentuais concentrados todos na mesma coluna
         st.markdown("**📌 Percentuais de Classes (Geofusion)**")
         classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
         classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
@@ -108,7 +131,7 @@ with st.container(border=True):
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
         tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
         
-        # Campo calculando automaticamente a soma dos % vezes a população inserida
+        # Cálculo automático de Público Alvo
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
         
@@ -120,12 +143,13 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
-# Verificação se o usuário já preencheu os dados mínimos para calcular
+# Verificação se o usuário preencheu tudo corretamente para liberar o cálculo
 dados_preenchidos = (
     estado != "Selecione..." and 
     regic != "Selecione..." and 
     tipo_praca != "Selecione..." and 
-    cidade.strip() != "" and 
+    cidade != "" and 
+    cidade != "Selecione a cidade..." and
     renda_media > 0 and 
     media_mercado > 0
 )
@@ -134,7 +158,7 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (GOVERNANÇA ATUALIZADA)
+    # LÓGICA MATEMÁTICA (GOVERNANÇA RECENTE)
     # ==========================================
     if estado == "SP":
         if renda_media <= 9500: tab_min, tab_max = 1, 2
@@ -150,7 +174,6 @@ else:
     s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
     s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
     
-    # Regra de potencial de score: Soma automática de A+ com A++
     soma_classes_altas = classe_a_mais + classe_a_mais_mais
 
     if populacao < 40000:
