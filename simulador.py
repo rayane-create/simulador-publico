@@ -87,9 +87,9 @@ st.subheader("📊 1. Dados da Área de Estudo e Mercado")
 st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
 
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
-    st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
+    st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansion.")
 
-# CAIXA DE INPUTS MANTENDO O PADRÃO DE 3 COLUNAS
+# CAIXA DE INPUTS REORGANIZADA CONFORME SOLICITADO
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
@@ -97,17 +97,28 @@ with st.container(border=True):
         estado = st.selectbox("Estado (UF):", lista_estados, index=0)
         cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
         populacao = st.number_input("População Total (Área):", min_value=0, value=0)
+        
+        # AJUSTE 1: Concentrando todos os preenchimentos de % na mesma coluna (Coluna 1)
+        st.markdown("**📌 Percentuais de Classes (Geofusion)**")
         classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+        classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+        
     with c2:
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
-        residentes_alvo = st.number_input("Público Alvo (B1, A+, A++):", min_value=0, value=0)
-        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
-    with col_in3:
         tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
+        
+        # AJUSTE 2: Campo calculando automaticamente a soma dos % vezes a população inserida
+        soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
+        calculo_alvo = int(soma_percentuais * populacao)
+        
+        st.metric(label="🎯 Público Alvo Calculado (B1 + A+ + A++):", value=f"{calculo_alvo:,} hab.")
+        st.caption(f"Soma das classes: {soma_percentuais*100:.1f}% da população total.")
+
+    with col_in3:
         renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=0.0, step=100.0)
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
-        classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
 
 # Verificação se o usuário já preencheu os dados mínimos para calcular
 dados_preenchidos = (
@@ -139,7 +150,7 @@ else:
     s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
     s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
     
-    # ALTERAÇÃO SOLICITADA: Soma automática de A+ com A++ para validação do potencial de score
+    # Regra de potencial de score: Soma automática de A+ com A++
     soma_classes_altas = classe_a_mais + classe_a_mais_mais
 
     if populacao < 40000:
@@ -289,7 +300,6 @@ else:
         df_filtrado = df_base[df_base['IsSP'] == alvo_sp].copy()
         
         if not df_filtrado.empty:
-            # Referências de normalização para evitar divisão por zero
             r_ref = renda_media if renda_media > 0 else 1
             p_ref = populacao if populacao > 0 else 1
             a2_ref = classe_a_mais_mais if classe_a_mais_mais > 0 else 1
@@ -305,15 +315,14 @@ else:
                 ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
             )
             
-            # Conversão matemática de distância para percentual de similaridade limpo
+            # Conversão matemática de distância para percentual de similaridade
             df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
                 lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
             )
             
-            # Ordena e seleciona o Top 3
+            # Ranking Top 3
             df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
             
-            # Exibição dos dados com o layout original preservado
             st.dataframe(
                 df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada", "% Similaridade"]], 
                 use_container_width=True, 
