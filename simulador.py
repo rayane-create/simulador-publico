@@ -87,9 +87,9 @@ st.subheader("📊 1. Dados da Área de Estudo e Mercado")
 st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
 
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
-    st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansion.")
+    st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS REORGANIZADA CONFORME SOLICITADO
+# CAIXA DE INPUTS REORGANIZADA COM EMPILHAMENTO DE %
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
@@ -98,7 +98,7 @@ with st.container(border=True):
         cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
         populacao = st.number_input("População Total (Área):", min_value=0, value=0)
         
-        # AJUSTE 1: Concentrando todos os preenchimentos de % na mesma coluna (Coluna 1)
+        # Percentuais concentrados todos na mesma coluna
         st.markdown("**📌 Percentuais de Classes (Geofusion)**")
         classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
         classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
@@ -108,7 +108,7 @@ with st.container(border=True):
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
         tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
         
-        # AJUSTE 2: Campo calculando automaticamente a soma dos % vezes a população inserida
+        # Campo calculando automaticamente a soma dos % vezes a população inserida
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
         
@@ -134,15 +134,15 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (GOVERNANÇA)
+    # LÓGICA MATEMÁTICA (GOVERNANÇA ATUALIZADA)
     # ==========================================
     if estado == "SP":
-        if renda_media <= 8500: tab_min, tab_max = 1, 2
+        if renda_media <= 9500: tab_min, tab_max = 1, 2
         elif renda_media <= 15000: tab_min, tab_max = 2, 3
-        elif renda_media <= 19500: tab_min, tab_max = 3, 4
+        elif renda_media <= 18500: tab_min, tab_max = 3, 4
         else: tab_min, tab_max = 4, 5
     else:
-        if renda_media <= 8500: tab_min, tab_max = 1, 2
+        if renda_media <= 10500: tab_min, tab_max = 1, 2
         elif renda_media <= 15000: tab_min, tab_max = 2, 3
         elif renda_media <= 29500: tab_min, tab_max = 3, 4
         else: tab_min, tab_max = 4, 5
@@ -306,7 +306,7 @@ else:
             a1_ref = classe_a_mais if classe_a_mais > 0 else 1
             b1_ref = classe_b1 if classe_b1 > 0 else 1
             
-            # Cálculo da distância vetorial expandido (Renda, População, A++, A+ e B1)
+            # Cálculo da distância vetorial expandido
             df_filtrado['Distancia'] = np.sqrt(
                 ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
                 ((df_filtrado['População'] - populacao) / p_ref)**2 +
