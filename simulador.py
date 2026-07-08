@@ -89,7 +89,7 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS - RETORNADO PARA O PADRÃO ORIGINAL DE PREENCHIMENTO DE CIDADE
+# CAIXA DE INPUTS (CIDADE LIVRE)
 with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
@@ -131,15 +131,15 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (GOVERNANÇA RECENTE)
+    # LÓGICA MATEMÁTICA (DIRETRIZES ATUALIZADAS)
     # ==========================================
     if estado == "SP":
-        if renda_media <= 9500: tab_min, tab_max = 1, 2
+        if renda_media <= 10999: tab_min, tab_max = 1, 2
         elif renda_media <= 15000: tab_min, tab_max = 2, 3
         elif renda_media <= 18500: tab_min, tab_max = 3, 4
         else: tab_min, tab_max = 4, 5
     else:
-        if renda_media <= 10500: tab_min, tab_max = 1, 2
+        if renda_media <= 11500: tab_min, tab_max = 1, 2
         elif renda_media <= 15000: tab_min, tab_max = 2, 3
         elif renda_media <= 29500: tab_min, tab_max = 3, 4
         else: tab_min, tab_max = 4, 5
@@ -225,7 +225,7 @@ else:
                     "Margem Líquida acima de R$ 20.000,00"
                 ]
             )
-            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decisão*")
+            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decision*")
 
     # ==========================================
     # CÁLCULO DE SIMILARIDADE REAL MULTI-CLASSES
@@ -291,7 +291,7 @@ else:
         {"Unidade": "FT SAVASSI - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19885, "População": 192365, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.27, "B1": 0.22},
         {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
         {"Unidade": "FT SETOR BUENO - GO", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.24, "B1": 0.22},
-        {"Unidade": "FT TAQUARAL - SP", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.23},
+        {"Unidade": "FT TAQUARAL - SP", "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.23},
         {"Unidade": "FT TIROL - RN", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.18, "B1": 0.24},
         {"Unidade": "FT TRÊS PODERES - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.19, "A+": 0.18, "B1": 0.22},
         {"Unidade": "FT VERBO DIVINO - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.23, "B1": 0.18},
