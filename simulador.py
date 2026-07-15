@@ -40,6 +40,26 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
+# FUNÇÃO PARA LIMPAR OS CAMPOS (NOVA SIMULAÇÃO)
+# ==========================================
+def limpar_campos():
+    st.session_state["val_estado"] = "Selecione..."
+    st.session_state["val_cidade"] = ""
+    st.session_state["val_populacao"] = 0
+    st.session_state["val_classe_a_mais_mais"] = 0.0
+    st.session_state["val_classe_a_mais"] = 0.0
+    st.session_state["val_classe_b1"] = 0.0
+    st.session_state["val_regic"] = "Selecione..."
+    st.session_state["val_tipo_praca"] = "Selecione..."
+    st.session_state["val_renda_media"] = 0.0
+    st.session_state["val_tempo_proxima"] = 0
+    st.session_state["val_media_mercado"] = 0.0
+
+# Inicialização do session_state para os inputs se ainda não existirem
+if "val_estado" not in st.session_state:
+    limpar_campos()
+
+# ==========================================
 # AMBIENTE AUTENTICADO - ESTILOS E HEADER
 # ==========================================
 
@@ -94,18 +114,20 @@ with st.container(border=True):
     c1, c2, col_in3 = st.columns(3)
     with c1:
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
-        estado = st.selectbox("Estado (UF):", lista_estados, index=0)
-        cidade = st.text_input("Cidade:", value="", placeholder="Digite a cidade...")
-        populacao = st.number_input("População Total (Área):", min_value=0, value=0)
+        
+        # Associando os valores ao session_state para permitir a limpeza
+        estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
+        cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
+        populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
         
         st.markdown("**📌 Percentuais de Classes (Geofusion)**")
-        classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
-        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
-        classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+        classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
+        classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais")
+        classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_b1")
         
     with c2:
-        regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], index=0)
-        tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], index=0)
+        regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], key="val_regic")
+        tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], key="val_tipo_praca")
         
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
@@ -114,9 +136,16 @@ with st.container(border=True):
         st.caption(f"Soma das classes: {soma_percentuais*100:.1f}% da população total.")
 
     with col_in3:
-        renda_media = st.number_input("Renda Média (R$):", min_value=0.0, value=0.0, step=100.0)
-        tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
-        media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
+        renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
+        tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
+        media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, step=10.0, key="val_media_mercado")
+
+    # Linha para o botão de reset (Nova Simulação) alinhado no canto inferior direito
+    st.write("")
+    col_btn1, col_btn2 = st.columns([5, 1])
+    with col_btn2:
+        # Quando clicado, roda a função de limpar e força o Streamlit a re-renderizar a página limpa
+        st.button("🧹 Nova Simulação", on_click=limpar_campos, use_container_width=True)
 
 # Validação dos campos obrigatórios
 dados_preenchidos = (
@@ -133,7 +162,7 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (SUAS NOVAS FAIXAS ATUALIZADAS)
+    # LÓGICA MATEMÁTICA (SUAS FAIXAS ATUALIZADAS)
     # ==========================================
     if estado == "SP":
         if renda_media <= 11000.00:
@@ -179,7 +208,6 @@ else:
     preco_ref = precos[tabela_sugerida]
     tkm_ref = tkms[tabela_sugerida]
     
-    # Inversão corrigida para evitar distorções visuais (Fast vs Mercado)
     dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
     if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
@@ -303,6 +331,7 @@ else:
         {"Unidade": "FT SAÚDE - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 17700, "População": 186000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.13, "A+": 0.19, "B1": 0.21},
         {"Unidade": "FT SAUL MACEDO - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
         {"Unidade": "FT SAVASSI - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19885, "População": 192365, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.27, "B1": 0.22},
+        {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
         {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
         {"Unidade": "FT SETOR BUENO - GO", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.24, "B1": 0.22},
         {"Unidade": "FT TAQUARAL - SP", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.23},
