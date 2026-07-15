@@ -118,7 +118,7 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, value=0)
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, value=0.0, step=10.0)
 
-# Correção da validação para usar consistentemente a variável 'cidade'
+# Validação dos campos obrigatórios
 dados_preenchidos = (
     estado != "Selecione..." and 
     regic != "Selecione..." and 
@@ -133,18 +133,28 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (DIRETRIZES ATUALIZADAS)
+    # LÓGICA MATEMÁTICA (SUAS NOVAS FAIXAS ATUALIZADAS)
     # ==========================================
     if estado == "SP":
-        if renda_media <= 10999: tab_min, tab_max = 1, 2
-        elif renda_media <= 15000: tab_min, tab_max = 2, 3
-        elif renda_media <= 18500: tab_min, tab_max = 3, 4
-        else: tab_min, tab_max = 4, 5
+        if renda_media <= 11000.00:
+            tab_min, tab_max = 1, 2
+        elif renda_media <= 13500.00:
+            tab_min, tab_max = 2, 3
+        elif renda_media <= 17500.00:
+            tab_min, tab_max = 3, 4
+        elif renda_media <= 25000.00:
+            tab_min, tab_max = 4, 5
+        else:
+            tab_min, tab_max = 5, 5
     else:
-        if renda_media <= 11500: tab_min, tab_max = 1, 2
-        elif renda_media <= 15000: tab_min, tab_max = 2, 3
-        elif renda_media <= 29500: tab_min, tab_max = 3, 4
-        else: tab_min, tab_max = 4, 5
+        if renda_media <= 11500.00:
+            tab_min, tab_max = 1, 2
+        elif renda_media <= 15500.00:
+            tab_min, tab_max = 2, 3
+        elif renda_media <= 25000.00:
+            tab_min, tab_max = 3, 4
+        else:
+            tab_min, tab_max = 4, 5
 
     s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
     s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
@@ -168,6 +178,8 @@ else:
     tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
     preco_ref = precos[tabela_sugerida]
     tkm_ref = tkms[tabela_sugerida]
+    
+    # Inversão corrigida para evitar distorções visuais (Fast vs Mercado)
     dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
     if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
@@ -293,7 +305,6 @@ else:
         {"Unidade": "FT SAVASSI - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19885, "População": 192365, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.27, "B1": 0.22},
         {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
         {"Unidade": "FT SETOR BUENO - GO", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.24, "B1": 0.22},
-        # Chave "Cidade": adicionada com sucesso abaixo para resolver o SyntaxError
         {"Unidade": "FT TAQUARAL - SP", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.23},
         {"Unidade": "FT TIROL - RN", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.18, "B1": 0.24},
         {"Unidade": "FT TRÊS PODERES - SP", "Cidade": "São Paulo", "IsSP": True, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Tabela Praticada": "Tabela 5", "A++": 0.19, "A+": 0.18, "B1": 0.22},
