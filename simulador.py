@@ -2,8 +2,73 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Configuração da página
+# Configuração da página corporativa da Fast Tennis
 st.set_page_config(page_title="Fast Tennis - Simulador Estratégico", layout="wide")
+
+# ==========================================
+# APLICAÇÃO DA IDENTIDADE VISUAL FAST TENNIS (GUIDELINE 2025)
+# Paleta Oficial: Blue FT (#053CD8), Navy FT (#022D8A), Green FT (#0DF205), Black (#000000)
+# Tipografia: Bw Nista Geometric / Montserrat
+# ==========================================
+st.markdown(
+    """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,800;1,800&display=swap');
+        
+        html, body, [class*="css"] {
+            font-family: 'Bw Nista Geometric', 'Montserrat', sans-serif !important;
+        }
+        
+        /* Títulos institucionais em Navy FT (#022D8A) */
+        h1, h2, h3, h4, h5, h6 {
+            color: #022D8A !important;
+            font-weight: 800 !important;
+        }
+        
+        /* Botões padronizados em Green FT (#0DF205) com cantos arredondados */
+        div.stButton > button {
+            background-color: #0DF205 !important;
+            color: #022D8A !important;
+            font-weight: 800 !important;
+            border-radius: 20px !important;
+            border: none !important;
+            padding: 8px 24px !important;
+        }
+        div.stButton > button:hover {
+            background-color: #053CD8 !important;
+            color: #FFFFFF !important;
+        }
+        
+        /* Faixa de Destaque de Resultados */
+        .faixa-resultados {
+            background-color: #022D8A;
+            color: #FFFFFF;
+            padding: 15px 20px;
+            margin: 25px -4rem 15px -4rem; 
+            font-size: 20px; 
+            font-weight: 800;
+            border-left: 6px solid #0DF205;
+        }
+        
+        /* Caixa do Destaque da Tabela Sugerida */
+        .tabela-sugerida-box {
+            background-color: #F8F9FA;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 6px solid #0DF205;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .tabela-sugerida-box h2 {
+            margin: 4px 0;
+            color: #022D8A !important;
+            font-size: 28px;
+            font-weight: 800;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # ==========================================
 # CONTROLE DE AMBIENTE SEGURO (AUTENTICAÇÃO)
@@ -29,8 +94,8 @@ if not st.session_state["autenticado"]:
     with col_l2:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style="background-color:#F8F9FA; padding:30px; border-radius:8px; border-top:5px solid #0D47A1; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                <h3 style="color:#1E2229; margin-top:0; margin-bottom:5px;">Acesso Restrito Fast Tennis</h3>
+            <div style="background-color:#F8F9FA; padding:30px; border-radius:12px; border-top:6px solid #022D8A; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                <h3 style="color:#022D8A; margin-top:0; margin-bottom:5px; font-weight:800;">🔒 Acesso Restrito Fast Tennis</h3>
                 <p style="color:#6C757D; font-size:13px; margin-bottom:25px;">Insira suas credenciais corporativas autorizadas.</p>
             </div>
         """, unsafe_allow_html=True)
@@ -55,43 +120,16 @@ def limpar_campos():
     st.session_state["val_tempo_proxima"] = 0
     st.session_state["val_media_mercado"] = 0.0
 
-# Inicialização do session_state para os inputs se ainda não existirem
 if "val_estado" not in st.session_state:
     limpar_campos()
 
 # ==========================================
-# AMBIENTE AUTENTICADO - ESTILOS E HEADER
+# AMBIENTE AUTENTICADO - HEADER
 # ==========================================
-
-st.markdown("""
-    <style>
-        .faixa-resultados {
-            background-color: #E3F2FD;
-            color: #0D47A1;
-            padding: 15px 20px;
-            margin: 25px -4rem 15px -4rem; 
-            font-size: 22px; 
-            font-weight: 700;
-            border-left: 6px solid #1E88E5;
-        }
-        .tabela-sugerida-box {
-            background-color: #F8F9FA;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 5px solid #A3D133;
-            margin-bottom: 15px;
-        }
-        .tabela-sugerida-box h2 {
-            margin: 0;
-            color: #1E2229 !important;
-            font-size: 26px;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 col_header1, col_header2 = st.columns([3, 1])
 with col_header1:
-    st.title("Simulador Estratégico de Precificação")
+    st.title("🎾 Simulador Estratégico de Precificação")
 with col_header2:
     st.markdown(f"<p style='text-align:right; font-size:12px; color:#6C757D;'>Sessão: <b>{st.session_state['usuario_logado']}</b></p>", unsafe_allow_html=True)
     if st.button("Logout", use_container_width=True):
@@ -115,7 +153,6 @@ with st.container(border=True):
     with c1:
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
         
-        # Associando os valores ao session_state para permitir a limpeza
         estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
         cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
         populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
@@ -140,11 +177,9 @@ with st.container(border=True):
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, step=10.0, key="val_media_mercado")
 
-    # Linha para o botão de reset (Nova Simulação) alinhado no canto inferior direito
     st.write("")
     col_btn1, col_btn2 = st.columns([5, 1])
     with col_btn2:
-        # Quando clicado, roda a função de limpar e força o Streamlit a re-renderizar a página limpa
         st.button("🧹 Nova Simulação", on_click=limpar_campos, use_container_width=True)
 
 # Validação dos campos obrigatórios
@@ -162,7 +197,7 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA (SUAS FAIXAS ATUALIZADAS)
+    # LÓGICA MATEMÁTICA DE PRECIFICAÇÃO
     # ==========================================
     if estado == "SP":
         if renda_media <= 11000.00:
@@ -215,16 +250,16 @@ else:
     else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
     # ==========================================
-    # PAINEL DE RESULTADOS (AGRUPADOS)
+    # PAINEL DE RESULTADOS E RECOMENDAÇÕES
     # ==========================================
-    st.markdown('<div class="faixa-resultados">📊 Análise de dados e recomendações</div>', unsafe_allow_html=True)
+    st.markdown('<div class="faixa-resultados">📊 Análise de Dados e Recomendações</div>', unsafe_allow_html=True)
 
     with st.container(border=True):
         st.markdown(f"""
             <div class="tabela-sugerida-box">
                 <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Inicial Sugerida</p>
                 <h2>Tabela {tabela_sugerida}</h2>
-                <p style="margin:0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -242,9 +277,9 @@ else:
             st.warning(f"**Recomendação:** {rec}")
         with cv3:
             st.markdown(f"""
-                <div style="background-color: #F8F9FA; padding: 12px; border-radius: 4px; border: 1px solid #E0E0E0; height: 100%;">
+                <div style="background-color: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #E0E0E0; height: 100%;">
                     <span style="color:#6C757D; font-size:13px; font-weight:500;">Diferença Mercado x Fast</span><br>
-                    <span style="font-size:20px; font-weight:700; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
+                    <span style="font-size:20px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -267,7 +302,7 @@ else:
                     "Margem Líquida acima de R$ 20.000,00"
                 ]
             )
-            st.caption("⚠️ *Nota: Em caso de inviabilidade necessário revisar decision*")
+            st.caption("⚠️ *Nota: Em caso de inviabilidade é necessário revisar a decisão no Comitê.*")
 
     # ==========================================
     # CÁLCULO DE SIMILARIDADE REAL MULTI-CLASSES
@@ -332,7 +367,6 @@ else:
         {"Unidade": "FT SAUL MACEDO - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
         {"Unidade": "FT SAVASSI - MG", "Cidade": "Belo Horizonte", "IsSP": False, "Renda Média": 19885, "População": 192365, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.27, "B1": 0.22},
         {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
-        {"Unidade": "FT SETE LAGOAS - MG", "Cidade": "Sete Lagoas", "IsSP": False, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.16},
         {"Unidade": "FT SETOR BUENO - GO", "Cidade": "Goiânia", "IsSP": False, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Tabela Praticada": "Tabela 3", "A++": 0.15, "A+": 0.24, "B1": 0.22},
         {"Unidade": "FT TAQUARAL - SP", "Cidade": "Campinas", "IsSP": True, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.23},
         {"Unidade": "FT TIROL - RN", "Cidade": "Natal", "IsSP": False, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.18, "B1": 0.24},
@@ -379,8 +413,8 @@ else:
                 hide_index=True
             )
         else:
-            st.info("Nenhuma unidade encontrada nessa região regional para comparação.")
+            st.info("Nenhuma unidade encontrada nessa região para comparação.")
     else:
         st.info("Nenhuma unidade cadastrada na base de dados.")
 
-    st.markdown(f"""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
+    st.markdown("""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
