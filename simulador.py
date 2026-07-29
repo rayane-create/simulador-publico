@@ -169,6 +169,7 @@ def limpar_campos():
     st.session_state["val_renda_media"] = 0.0
     st.session_state["val_tempo_proxima"] = 0
     st.session_state["val_media_mercado"] = 0.0
+    st.session_state["val_viabilidade_bp"] = "Aguardando simulação..."
 
 if "val_estado" not in st.session_state:
     limpar_campos()
@@ -409,7 +410,8 @@ else:
                     "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", 
                     "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", 
                     "Margem Líquida acima de R$ 20.000,00"
-                ]
+                ],
+                key="val_viabilidade_bp"
             )
             st.caption("Nota: Em caso de inviabilidade é necessário revisar a decisão no Comitê de Expansão.")
 
@@ -581,6 +583,7 @@ else:
                 <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
                 <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Variação vs Concorrência: {dif_mercado*100:+.1f}%)</p>
                 <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
+                <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
             </div>
 
             <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:14px;">Unidades da Rede com Perfil Similar:</h4>
@@ -602,6 +605,6 @@ else:
             </button>
         </div>
         """
-        st.components.v1.html(html_relatorio, height=520, scrolling=True)
+        st.components.v1.html(html_relatorio, height=560, scrolling=True)
 
     st.markdown("""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;"><b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
