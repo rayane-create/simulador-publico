@@ -197,46 +197,49 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA DE PRECIFICAÇÃO
+    # LÓGICA MATEMÁTICA DE PRECIFICAÇÃO (REGRAS ATUALIZADAS)
     # ==========================================
+    
+    # 1º PONTO: INTERVALO DE TABELAS BASEADO NA RENDA MÉDIA
     if estado == "SP":
-        if renda_media <= 11000.00:
+        if renda_media <= 8500.00:
+            tab_min, tab_max = 1, 2
+        elif renda_media <= 11500.00:
+            tab_min, tab_max = 2, 3
+        elif renda_media <= 16000.00:
+            tab_min, tab_max = 3, 4
+        elif renda_media <= 22000.00:
+            tab_min, tab_max = 4, 5
+        else:
+            tab_min, tab_max = 5, 5
+    else:
+        if renda_media <= 9500.00:
             tab_min, tab_max = 1, 2
         elif renda_media <= 13500.00:
             tab_min, tab_max = 2, 3
-        elif renda_media <= 17500.00:
+        elif renda_media <= 18000.00:
             tab_min, tab_max = 3, 4
         elif renda_media <= 25000.00:
             tab_min, tab_max = 4, 5
         else:
             tab_min, tab_max = 5, 5
-    else:
-        if renda_media <= 11500.00:
-            tab_min, tab_max = 1, 2
-        elif renda_media <= 15500.00:
-            tab_min, tab_max = 2, 3
-        elif renda_media <= 25000.00:
-            tab_min, tab_max = 3, 4
-        else:
-            tab_min, tab_max = 4, 5
 
-    s_praca = {"Comercial": -1, "Mista": 0, "Residencial": 1, "Mista Qualificada": 1}.get(tipo_praca, 0)
-    s_regic = {"Centro Sub-Regional": -1, "Capital Regional B": -1, "Capital Regional C": -1, "Metrópole": 0, "Grande Metrópole": 1, "Metrópole Nacional": 1}.get(regic, 0)
-    
-    soma_classes_altas = classe_a_mais + classe_a_mais_mais
-
+    # 2º PONTO: DIRECIONAMENTO DENTRO DO INTERVALO (SUPERIOR OU INFERIOR)
     if populacao < 40000:
-        s_pop = -1
+        tabela_sugerida = tab_min
     else:
-        if soma_classes_altas >= 0.40:
-            s_pop = 1
-        elif soma_classes_altas >= 0.25:
-            s_pop = 0
+        # População >= 40.000 habitantes -> Análise de público-alvo
+        if calculo_alvo >= 25000:
+            tabela_sugerida = tab_max
         else:
-            s_pop = -1
-
-    score_total = s_praca + s_regic + s_pop
-    tabela_sugerida = tab_max if score_total >= 1 else tab_min
+            # Avaliação da representatividade % do público-alvo
+            if soma_percentuais >= 0.40:  # 40% ou mais
+                tabela_sugerida = tab_max
+            elif soma_percentuais >= 0.30:  # Entre 30% e 39.9%
+                # Faixa intermediária (calcula a média arredondada se houver amplitude, ex: Tab 2 e 3)
+                tabela_sugerida = int(np.round((tab_min + tab_max) / 2))
+            else:  # Menos de 30%
+                tabela_sugerida = tab_min
 
     precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
     tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
