@@ -103,14 +103,14 @@ st.markdown(
             margin-bottom: 12px;
         }
 
-        /* AJUSTE FINO DO QUADRANTE: Impede vazamento e desalinhamento */
-        .box-relatorio {
+        /* CORREÇÃO DEFINITIVA DO ALINHAMENTO DOS BALÕES DE VIABILIDADE */
+        .box-relatorio-equilibrado {
             background-color: #F8F9FA;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #E2E8F0;
-            padding: 14px;
-            min-height: 95px;
-            box-sizing: border-box;
+            padding: 14px 18px;
+            height: 110px !important; /* Altura idêntica travada */
+            box-sizing: border-box !important;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -338,7 +338,7 @@ else:
 
         tabela_final = tabela_escolhida
         
-        # Caixa da Tabela de Exceção Escolhida (Verde Translúcido Executivo)
+        # Caixa da Tabela de Exceção Escolhida
         st.markdown(f"""
             <div class="tabela-excecao-box">
                 <p style="margin:0; font-size:11px; color:#166534; font-weight:bold; text-transform:uppercase;">Tabela Escolhida por Decisão Técnica (Exceção)</p>
@@ -366,30 +366,30 @@ else:
     elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
     else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
-    # BLOCO DE RELATÓRIO DE VIABILIDADE SEM BORDA CONFLITANTE
+    # BLOCO DE RELATÓRIO DE VIABILIDADE TOTALMENTE ALINHADO E EQUILIBRADO
     st.write("")
     st.markdown("##### Relatório de Viabilidade de Mercado")
     cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
     with cv1: 
         st.markdown(f"""
-            <div class="box-relatorio">
-                <span style="color:#6C757D; font-size:11px; font-weight:700;">DIRETRIZ E STATUS</span><br>
-                <span style="font-size:13px; color:#022D8A;"><b>Diretriz:</b> {diag}</span><br>
-                <span style="font-size:13px; color:#022D8A;"><b>Status:</b> {status}</span>
+            <div class="box-relatorio-equilibrado">
+                <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
+                <span style="font-size:13px; color:#022D8A; margin-top:4px;"><b>Diretriz:</b> {diag}</span>
+                <span style="font-size:13px; color:#022D8A; margin-top:2px;"><b>Status:</b> {status}</span>
             </div>
         """, unsafe_allow_html=True)
     with cv2: 
         st.markdown(f"""
-            <div class="box-relatorio" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
-                <span style="color:#975A16; font-size:11px; font-weight:700;">RECOMENDAÇÃO</span><br>
-                <span style="font-size:13px; color:#2D3748;">{rec}</span>
+            <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
+                <span style="color:#975A16; font-size:11px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
+                <span style="font-size:13px; color:#2D3748; margin-top:4px; line-height:1.3;">{rec}</span>
             </div>
         """, unsafe_allow_html=True)
     with cv3:
         st.markdown(f"""
-            <div class="box-relatorio">
-                <span style="color:#6C757D; font-size:11px; font-weight:700;">DIFERENÇA MERCADO X FAST</span><br>
-                <span style="font-size:22px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
+            <div class="box-relatorio-equilibrado">
+                <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
+                <span style="font-size:24px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'}; margin-top:2px;">{dif_mercado*100:+.1f}%</span>
             </div>
         """, unsafe_allow_html=True)
 
@@ -522,7 +522,6 @@ else:
                 hide_index=True
             )
 
-            # Preparação de HTML para o relatório
             for _, r in df_ranking.iterrows():
                 linhas_similares_html += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
