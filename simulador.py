@@ -82,13 +82,13 @@ st.markdown(
             font-weight: 800;
         }
 
-        /* Card Interno de Métricas e Destaques */
+        /* Card Interno de Métricas Ajustado */
         .card-destaque {
             background-color: #F8F9FA;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
-            padding: 14px;
-            margin-top: 10px;
+            padding: 12px 15px;
+            margin-top: 6px;
         }
 
         /* Banner de Alerta Fino e Executivo */
@@ -196,7 +196,7 @@ st.markdown("<p style='font-size:13.5px; color:#5A6578; margin-bottom:15px;'>Os 
 with st.expander("Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS EQUILIBRADA VISUALMENTE
+# CAIXA DE INPUTS COM ALINHAMENTO PROPORCIONAL
 with st.container(border=True):
     c1, c2, c3 = st.columns(3)
     
@@ -209,7 +209,7 @@ with st.container(border=True):
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], key="val_regic")
         populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
 
-    # COLUNA 2: PERCENTUAIS DE CLASSES E PÚBLICO ALVO
+    # COLUNA 2: PERCENTUAIS DE CLASSES E PÚBLICO ALVO CALCULADO
     with c2:
         st.markdown("**Percentuais de Classes (Geofusion)**")
         classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
@@ -219,9 +219,10 @@ with st.container(border=True):
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
         
+        # CARD DE RESULTADO DO PÚBLICO ALVO COM EMOJI
         st.markdown(f"""
             <div class="card-destaque">
-                <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">Público Alvo Calculado (B1 + A+ + A++)</span><br>
+                <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span><br>
                 <span style="font-size:22px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
                 <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população.</small>
             </div>
@@ -315,9 +316,10 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # CHECKBOX DE EXCEÇÃO TÉCNICA (LAYOUT LIMPO)
+        # CHECKBOX DE EXCEÇÃO TÉCNICA (SEM TÍTULO REPETIDO)
         aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrevir tabela baseada no comportamento de mercado além dos dados)", key="chk_excecao")
 
+        justificativa_excecao = ""
         if aplicar_excecao:
             col_exc1, col_exc2 = st.columns([1, 2])
             with col_exc1:
@@ -523,5 +525,57 @@ else:
             st.info("Nenhuma unidade encontrada nessa região para comparação.")
     else:
         st.info("Nenhuma unidade cadastrada na base de dados.")
+
+    # ==========================================
+    # 📄 RELATÓRIO OFICIAL DE SIMULAÇÃO (PARA E-MAIL / PDF)
+    # ==========================================
+    st.write("")
+    st.markdown("---")
+    with st.expander("📄 Relatório Oficial de Simulação (Para E-mail, PDF e Comitê)", expanded=False):
+        st.info("Você pode copiar o código HTML ou clicar no botão verde para gerar e imprimir o PDF oficial da simulação.")
+        
+        modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
+        
+        html_relatorio = f"""
+        <div id="print-area" style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color:#022D8A; margin:0;">Fast Tennis - Relatório de Precificação Estratégica</h2>
+                <span style="font-size:12px; color:#6C757D;">Comitê de Expansão</span>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                <tr style="background-color:#F8F9FA;">
+                    <td style="padding:8px; border:1px solid #ddd;"><b>Praça / Cidade:</b> {cidade} - {estado}</td>
+                    <td style="padding:8px; border:1px solid #ddd;"><b>População:</b> {populacao:,} hab.</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média:</b> R$ {renda_media:,.2f}</td>
+                    <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
+                </tr>
+                <tr style="background-color:#F8F9FA;">
+                    <td style="padding:8px; border:1px solid #ddd;"><b>REGIC / Perfil:</b> {regic} / {tipo_praca}</td>
+                    <td style="padding:8px; border:1px solid #ddd;"><b>Preço Média Concorrentes:</b> R$ {media_mercado:,.2f}</td>
+                </tr>
+            </table>
+
+            <div style="background-color:#022D8A; color:#ffffff; padding:15px; border-radius:6px; margin-bottom:20px;">
+                <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
+            </div>
+
+            <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
+                <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
+                <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Variação vs Concorrência: {dif_mercado*100:+.1f}%)</p>
+                <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
+            </div>
+
+            <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">
+                🖨️ Imprimir / Salvar PDF
+            </button>
+        </div>
+        """
+        st.components.v1.html(html_relatorio, height=420, scrolling=True)
 
     st.markdown("""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;"><b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
