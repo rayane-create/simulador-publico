@@ -156,7 +156,7 @@ if not st.session_state["autenticado"]:
 # SIDEBAR - SELEÇÃO DE MÓDULO DO DASHBOARD
 # ==========================================
 with st.sidebar:
-    st.image("https://fasttennis.com.br/wp-content/uploads/2023/11/logo-fast-tennis.png", width=180) if False else st.markdown("<h3 style='color:#022D8A;'>🎾 Fast Tennis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#FFFFFF; font-weight:800;'>🎾 Fast Tennis</h3>", unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("**Navegação da Plataforma**")
     
