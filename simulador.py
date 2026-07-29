@@ -43,9 +43,9 @@ st.markdown(
         .faixa-resultados {
             background-color: #022D8A;
             color: #FFFFFF;
-            padding: 15px 20px;
+            padding: 14px 20px;
             margin: 25px -4rem 15px -4rem; 
-            font-size: 20px; 
+            font-size: 18px; 
             font-weight: 800;
             border-left: 6px solid #0DF205;
         }
@@ -55,30 +55,30 @@ st.markdown(
             background-color: #F8F9FA;
             padding: 18px;
             border-radius: 8px;
-            border-left: 6px solid #0DF205;
+            border-left: 6px solid #022D8A;
             margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
         .tabela-sugerida-box h2 {
             margin: 4px 0;
             color: #022D8A !important;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
         }
 
-        /* Caixa de Exceção Selecionada */
+        /* Caixa de Exceção Selecionada (Verde Translúcido Executivo) */
         .tabela-excecao-box {
-            background-color: #FFF8E1;
+            background-color: #F0FDF4;
             padding: 18px;
             border-radius: 8px;
-            border-left: 6px solid #FFB300;
+            border-left: 6px solid #0DF205;
             margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #DCFCE7;
         }
         .tabela-excecao-box h2 {
             margin: 4px 0;
-            color: #B78103 !important;
-            font-size: 28px;
+            color: #166534 !important;
+            font-size: 26px;
             font-weight: 800;
         }
 
@@ -87,8 +87,32 @@ st.markdown(
             background-color: #F8F9FA;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
-            padding: 15px;
+            padding: 14px;
             margin-top: 10px;
+        }
+
+        /* Banner de Alerta Fino e Executivo */
+        .alerta-fino {
+            background-color: #FEF2F2;
+            color: #991B1B;
+            border-left: 4px solid #EF4444;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        /* Padronização de altura dos relatórios de viabilidade */
+        .box-relatorio {
+            background-color: #F8F9FA;
+            border-radius: 6px;
+            border: 1px solid #E2E8F0;
+            padding: 12px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
     </style>
     """,
@@ -120,7 +144,7 @@ if not st.session_state["autenticado"]:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
         st.markdown("""
             <div style="background-color:#F8F9FA; padding:30px; border-radius:12px; border-top:6px solid #022D8A; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                <h3 style="color:#022D8A; margin-top:0; margin-bottom:5px; font-weight:800;">🔒 Acesso Restrito Fast Tennis</h3>
+                <h3 style="color:#022D8A; margin-top:0; margin-bottom:5px; font-weight:800;">Acesso Restrito Fast Tennis</h3>
                 <p style="color:#6C757D; font-size:13px; margin-bottom:25px;">Insira suas credenciais corporativas autorizadas.</p>
             </div>
         """, unsafe_allow_html=True)
@@ -154,7 +178,7 @@ if "val_estado" not in st.session_state:
 
 col_header1, col_header2 = st.columns([3, 1])
 with col_header1:
-    st.title("🎾 Simulador Estratégico de Precificação")
+    st.title("Simulador Estratégico de Precificação")
 with col_header2:
     st.markdown(f"<p style='text-align:right; font-size:12px; color:#6C757D;'>Sessão: <b>{st.session_state['usuario_logado']}</b></p>", unsafe_allow_html=True)
     if st.button("Logout", use_container_width=True):
@@ -164,30 +188,30 @@ with col_header2:
 st.markdown("---")
 
 # ==========================================
-# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO (LAYOUT REORGANIZADO)
+# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO
 # ==========================================
-st.subheader("📊 1. Dados da Área de Estudo e Mercado")
-st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
+st.subheader("1. Dados da Área de Estudo e Mercado")
+st.markdown("<p style='font-size:13.5px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
 
-with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
+with st.expander("Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS ORGANIZADA EXECUTIVAMENTE EM 3 COLUNAS
+# CAIXA DE INPUTS EQUILIBRADA VISUALMENTE
 with st.container(border=True):
     c1, c2, c3 = st.columns(3)
     
-    # COLUNA 1: LOCALIZAÇÃO E POPULAÇÃO GENERALISTA
+    # COLUNA 1: LOCALIZAÇÃO E DEMOGRAFIA BASE
     with c1:
-        st.markdown("**📍 Localização e Demografia**")
+        st.markdown("**Localização e Demografia**")
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
         estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
         cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
         regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], key="val_regic")
         populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
 
-    # COLUNA 2: PERCENTUAIS DE CLASSES E PÚBLICO ALVO CALCULADO (SEQUENCIAL)
+    # COLUNA 2: PERCENTUAIS DE CLASSES E PÚBLICO ALVO
     with c2:
-        st.markdown("**📌 Percentuais de Classes (Geofusion)**")
+        st.markdown("**Percentuais de Classes (Geofusion)**")
         classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
         classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais")
         classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_b1")
@@ -195,18 +219,17 @@ with st.container(border=True):
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
         
-        # CARD DE RESULTADO DO PÚBLICO ALVO
         st.markdown(f"""
             <div class="card-destaque">
-                <span style="color:#6C757D; font-size:12px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span><br>
-                <span style="font-size:24px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
-                <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população total.</small>
+                <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">Público Alvo Calculado (B1 + A+ + A++)</span><br>
+                <span style="font-size:22px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
+                <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população.</small>
             </div>
         """, unsafe_allow_html=True)
 
-    # COLUNA 3: DADOS DE MERCADO E CONCORRÊNCIA
+    # COLUNA 3: MERCADO E CONCORRÊNCIA
     with c3:
-        st.markdown("**🏢 Mercado e Vocação Local**")
+        st.markdown("**Mercado e Vocação Local**")
         tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], key="val_tipo_praca")
         renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
@@ -215,7 +238,7 @@ with st.container(border=True):
     st.write("")
     col_btn1, col_btn2 = st.columns([5, 1])
     with col_btn2:
-        st.button("🧹 Nova Simulação", on_click=limpar_campos, use_container_width=True)
+        st.button("Limpar Simulação", on_click=limpar_campos, use_container_width=True)
 
 # Validação dos campos obrigatórios
 dados_preenchidos = (
@@ -229,13 +252,11 @@ dados_preenchidos = (
 )
 
 if not dados_preenchidos:
-    st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
+    st.info("Aguardando dados. Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
     # LÓGICA MATEMÁTICA DE PRECIFICAÇÃO
     # ==========================================
-    
-    # 1º PONTO: INTERVALO DE TABELAS BASEADO NA RENDA MÉDIA
     if estado == "SP":
         if renda_media <= 8500.00:
             tab_min, tab_max = 1, 2
@@ -259,7 +280,7 @@ else:
         else:
             tab_min, tab_max = 5, 5
 
-    # 2º PONTO: DIRECIONAMENTO DENTRO DO INTERVALO
+    # DIRECIONAMENTO DENTRO DO INTERVALO
     if populacao < 40000:
         tabela_sugerida = tab_min
     else:
@@ -279,11 +300,10 @@ else:
     # ==========================================
     # PAINEL DE RESULTADOS E RECOMENDAÇÕES
     # ==========================================
-    st.markdown('<div class="faixa-resultados">📊 Análise de Dados e Recomendações</div>', unsafe_allow_html=True)
+    st.markdown('<div class="faixa-resultados">Análise de Dados e Recomendações</div>', unsafe_allow_html=True)
 
     with st.container(border=True):
         
-        # EXIBIÇÃO DA TABELA SUGERIDA PELOS DADOS
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
         
@@ -295,9 +315,7 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # ----------------------------------------------------
-        # CHECKBOX DE EXCEÇÃO TÉCNICA (SEM TÍTULO DESNECESSÁRIO)
-        # ----------------------------------------------------
+        # CHECKBOX DE EXCEÇÃO TÉCNICA (LAYOUT LIMPO)
         aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrevir tabela baseada no comportamento de mercado além dos dados)", key="chk_excecao")
 
         if aplicar_excecao:
@@ -312,58 +330,69 @@ else:
             with col_exc2:
                 justificativa_excecao = st.text_input(
                     "Justificativa da Exceção (Obrigatório):",
-                    placeholder="Ex: Concorrência local com forte posicionamento premium, alta percepção de valor na zona de influência...",
+                    placeholder="Ex: Concorrência local com forte posicionamento premium...",
                     key="val_justificativa_excecao"
                 )
 
             tabela_final = tabela_escolhida
             
-            # Caixa destacando a tabela escolhida por exceção
+            # Caixa da Tabela de Exceção Escolhida (Verde Translúcido Executivo)
             st.markdown(f"""
                 <div class="tabela-excecao-box">
-                    <p style="margin:0; font-size:11px; color:#B78103; font-weight:bold; text-transform:uppercase;">📌 Tabela Escolhida por Decisão Técnica (Exceção)</p>
+                    <p style="margin:0; font-size:11px; color:#166534; font-weight:bold; text-transform:uppercase;">Tabela Escolhida por Decisão Técnica (Exceção)</p>
                     <h2>Tabela {tabela_final}</h2>
                     <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> | TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
-                    {f'<p style="margin:6px 0 0 0; font-size:12px; color:#5D4037;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
+                    {f'<p style="margin:6px 0 0 0; font-size:12px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                 </div>
             """, unsafe_allow_html=True)
         else:
             tabela_final = tabela_sugerida
 
-        # Cálculo de preço e mercado baseado na TABELA FINAL
         preco_ref = precos[tabela_final]
         tkm_ref = tkms[tabela_final]
 
+        # BANNER DE ALERTA FINO E EXECUTIVO (SEM EMOJI)
         if tempo_proxima <= 15 and tempo_proxima > 0:
-            st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
+            st.markdown('<div class="alerta-fino">Proteção de Rede: Existe unidade próxima em raio inferior a 15 minutos. Verificar compatibilidade de tabelas.</div>', unsafe_allow_html=True)
 
         st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis calculado:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
         st.markdown("---")
         
-        # Diagnóstico com base na Tabela Final definida
+        # Diagnóstico de Mercado
         dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
         if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
         elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
         else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
-        st.markdown("##### 🔍 Relatório de Viabilidade de Mercado")
+        st.markdown("##### Relatório de Viabilidade de Mercado")
         cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
         with cv1: 
-            st.info(f"**Diretriz:** {diag}\n\n**Status:** {status}")
+            st.markdown(f"""
+                <div class="box-relatorio">
+                    <span style="color:#6C757D; font-size:12px; font-weight:700;">DIRETRIZ E STATUS</span><br>
+                    <span style="font-size:13.5px; color:#022D8A;"><b>Diretriz:</b> {diag}</span><br>
+                    <span style="font-size:13.5px; color:#022D8A;"><b>Status:</b> {status}</span>
+                </div>
+            """, unsafe_allow_html=True)
         with cv2: 
-            st.warning(f"**Recomendação:** {rec}")
+            st.markdown(f"""
+                <div class="box-relatorio" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
+                    <span style="color:#975A16; font-size:12px; font-weight:700;">RECOMENDAÇÃO</span><br>
+                    <span style="font-size:13.5px; color:#2D3748;">{rec}</span>
+                </div>
+            """, unsafe_allow_html=True)
         with cv3:
             st.markdown(f"""
-                <div style="background-color: #F8F9FA; padding: 12px; border-radius: 6px; border: 1px solid #E0E0E0; height: 100%;">
-                    <span style="color:#6C757D; font-size:13px; font-weight:500;">Diferença Mercado x Fast</span><br>
-                    <span style="font-size:20px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
+                <div class="box-relatorio">
+                    <span style="color:#6C757D; font-size:12px; font-weight:700;">DIFERENÇA MERCADO X FAST</span><br>
+                    <span style="font-size:22px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
                 </div>
             """, unsafe_allow_html=True)
 
     st.write("")
     with st.container(border=True):
-        st.markdown("##### 📈 Viabilidade de Rentabilidade do Business Plan (BP)")
+        st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
         cbp1, cb2 = st.columns(2)
         with cbp1:
             st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
@@ -380,13 +409,13 @@ else:
                     "Margem Líquida acima de R$ 20.000,00"
                 ]
             )
-            st.caption("⚠️ *Nota: Em caso de inviabilidade é necessário revisar a decisão no Comitê.*")
+            st.caption("Nota: Em caso de inviabilidade é necessário revisar a decisão no Comitê de Expansão.")
 
     # ==========================================
     # CÁLCULO DE SIMILARIDADE REAL MULTI-CLASSES
     # ==========================================
     st.write("")
-    st.markdown("##### 🏢 Unidades da Rede com Perfil Similar")
+    st.markdown("##### Unidades da Rede com Perfil Similar")
     
     df_existentes = [
         {"Unidade": "FT AGUAS CLARAS - DF", "Cidade": "Brasília", "IsSP": False, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Tabela Praticada": "Tabela 4", "A++": 0.23, "A+": 0.27, "B1": 0.21},
@@ -495,4 +524,4 @@ else:
     else:
         st.info("Nenhuma unidade cadastrada na base de dados.")
 
-    st.markdown("""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;">💡 <b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
+    st.markdown("""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;"><b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
