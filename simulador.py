@@ -103,13 +103,14 @@ st.markdown(
             margin-bottom: 12px;
         }
 
-        /* Padronização de altura dos relatórios de viabilidade */
+        /* AJUSTE FINO DO QUADRANTE: Impede vazamento e desalinhamento */
         .box-relatorio {
             background-color: #F8F9FA;
             border-radius: 6px;
             border: 1px solid #E2E8F0;
-            padding: 12px;
-            height: 100%;
+            padding: 14px;
+            min-height: 95px;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -303,94 +304,93 @@ else:
     # ==========================================
     st.markdown('<div class="faixa-resultados">Análise de Dados e Recomendações</div>', unsafe_allow_html=True)
 
-    with st.container(border=True):
+    preco_sugerido = precos[tabela_sugerida]
+    tkm_sugerido = tkms[tabela_sugerida]
+
+    st.markdown(f"""
+        <div class="tabela-sugerida-box">
+            <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Perfil Econômico)</p>
+            <h2>Tabela {tabela_sugerida}</h2>
+            <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> | TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # CHECKBOX DE EXCEÇÃO TÉCNICA
+    aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrevir tabela baseada no comportamento de mercado além dos dados)", key="chk_excecao")
+
+    justificativa_excecao = ""
+    if aplicar_excecao:
+        col_exc1, col_exc2 = st.columns([1, 2])
+        with col_exc1:
+            tabela_escolhida = st.selectbox(
+                "Selecione a Tabela Definitiva:",
+                [1, 2, 3, 4, 5],
+                index=tabela_sugerida - 1,
+                key="val_tabela_excecao"
+            )
+        with col_exc2:
+            justificativa_excecao = st.text_input(
+                "Justificativa da Exceção (Obrigatório):",
+                placeholder="Ex: Concorrência local com forte posicionamento premium...",
+                key="val_justificativa_excecao"
+            )
+
+        tabela_final = tabela_escolhida
         
-        preco_sugerido = precos[tabela_sugerida]
-        tkm_sugerido = tkms[tabela_sugerida]
-        
+        # Caixa da Tabela de Exceção Escolhida (Verde Translúcido Executivo)
         st.markdown(f"""
-            <div class="tabela-sugerida-box">
-                <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Dados)</p>
-                <h2>Tabela {tabela_sugerida}</h2>
-                <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> | TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
+            <div class="tabela-excecao-box">
+                <p style="margin:0; font-size:11px; color:#166534; font-weight:bold; text-transform:uppercase;">Tabela Escolhida por Decisão Técnica (Exceção)</p>
+                <h2>Tabela {tabela_final}</h2>
+                <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> | TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
+                {f'<p style="margin:6px 0 0 0; font-size:12px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
             </div>
         """, unsafe_allow_html=True)
+    else:
+        tabela_final = tabela_sugerida
 
-        # CHECKBOX DE EXCEÇÃO TÉCNICA (SEM TÍTULO REPETIDO)
-        aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrevir tabela baseada no comportamento de mercado além dos dados)", key="chk_excecao")
+    preco_ref = precos[tabela_final]
+    tkm_ref = tkms[tabela_final]
 
-        justificativa_excecao = ""
-        if aplicar_excecao:
-            col_exc1, col_exc2 = st.columns([1, 2])
-            with col_exc1:
-                tabela_escolhida = st.selectbox(
-                    "Selecione a Tabela Definitiva:",
-                    [1, 2, 3, 4, 5],
-                    index=tabela_sugerida - 1,
-                    key="val_tabela_excecao"
-                )
-            with col_exc2:
-                justificativa_excecao = st.text_input(
-                    "Justificativa da Exceção (Obrigatório):",
-                    placeholder="Ex: Concorrência local com forte posicionamento premium...",
-                    key="val_justificativa_excecao"
-                )
+    # BANNER DE ALERTA FINO E EXECUTIVO
+    if tempo_proxima <= 15 and tempo_proxima > 0:
+        st.markdown('<div class="alerta-fino">Proteção de Rede: Existe unidade próxima em raio inferior a 15 minutos. Verificar compatibilidade de tabelas.</div>', unsafe_allow_html=True)
 
-            tabela_final = tabela_escolhida
-            
-            # Caixa da Tabela de Exceção Escolhida (Verde Translúcido Executivo)
-            st.markdown(f"""
-                <div class="tabela-excecao-box">
-                    <p style="margin:0; font-size:11px; color:#166534; font-weight:bold; text-transform:uppercase;">Tabela Escolhida por Decisão Técnica (Exceção)</p>
-                    <h2>Tabela {tabela_final}</h2>
-                    <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> | TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
-                    {f'<p style="margin:6px 0 0 0; font-size:12px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            tabela_final = tabela_sugerida
+    st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis calculado:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
+    
+    # Diagnóstico de Mercado
+    dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
-        preco_ref = precos[tabela_final]
-        tkm_ref = tkms[tabela_final]
+    if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
+    elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
+    else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
-        # BANNER DE ALERTA FINO E EXECUTIVO (SEM EMOJI)
-        if tempo_proxima <= 15 and tempo_proxima > 0:
-            st.markdown('<div class="alerta-fino">Proteção de Rede: Existe unidade próxima em raio inferior a 15 minutos. Verificar compatibilidade de tabelas.</div>', unsafe_allow_html=True)
-
-        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis calculado:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
-        st.markdown("---")
-        
-        # Diagnóstico de Mercado
-        dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
-
-        if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-        elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-        else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
-
-        st.markdown("##### Relatório de Viabilidade de Mercado")
-        cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
-        with cv1: 
-            st.markdown(f"""
-                <div class="box-relatorio">
-                    <span style="color:#6C757D; font-size:12px; font-weight:700;">DIRETRIZ E STATUS</span><br>
-                    <span style="font-size:13.5px; color:#022D8A;"><b>Diretriz:</b> {diag}</span><br>
-                    <span style="font-size:13.5px; color:#022D8A;"><b>Status:</b> {status}</span>
-                </div>
-            """, unsafe_allow_html=True)
-        with cv2: 
-            st.markdown(f"""
-                <div class="box-relatorio" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
-                    <span style="color:#975A16; font-size:12px; font-weight:700;">RECOMENDAÇÃO</span><br>
-                    <span style="font-size:13.5px; color:#2D3748;">{rec}</span>
-                </div>
-            """, unsafe_allow_html=True)
-        with cv3:
-            st.markdown(f"""
-                <div class="box-relatorio">
-                    <span style="color:#6C757D; font-size:12px; font-weight:700;">DIFERENÇA MERCADO X FAST</span><br>
-                    <span style="font-size:22px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
-                </div>
-            """, unsafe_allow_html=True)
+    # BLOCO DE RELATÓRIO DE VIABILIDADE SEM BORDA CONFLITANTE
+    st.write("")
+    st.markdown("##### Relatório de Viabilidade de Mercado")
+    cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
+    with cv1: 
+        st.markdown(f"""
+            <div class="box-relatorio">
+                <span style="color:#6C757D; font-size:11px; font-weight:700;">DIRETRIZ E STATUS</span><br>
+                <span style="font-size:13px; color:#022D8A;"><b>Diretriz:</b> {diag}</span><br>
+                <span style="font-size:13px; color:#022D8A;"><b>Status:</b> {status}</span>
+            </div>
+        """, unsafe_allow_html=True)
+    with cv2: 
+        st.markdown(f"""
+            <div class="box-relatorio" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
+                <span style="color:#975A16; font-size:11px; font-weight:700;">RECOMENDAÇÃO</span><br>
+                <span style="font-size:13px; color:#2D3748;">{rec}</span>
+            </div>
+        """, unsafe_allow_html=True)
+    with cv3:
+        st.markdown(f"""
+            <div class="box-relatorio">
+                <span style="color:#6C757D; font-size:11px; font-weight:700;">DIFERENÇA MERCADO X FAST</span><br>
+                <span style="font-size:22px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'};">{dif_mercado*100:+.1f}%</span>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.write("")
     with st.container(border=True):
@@ -487,6 +487,7 @@ else:
     ]
     
     df_base = pd.DataFrame(df_existentes)
+    linhas_similares_html = ""
     
     if not df_base.empty:
         alvo_sp = (estado == "SP")
@@ -499,7 +500,6 @@ else:
             a1_ref = classe_a_mais if classe_a_mais > 0 else 1
             b1_ref = classe_b1 if classe_b1 > 0 else 1
             
-            # Cálculo da distância vetorial expandido
             df_filtrado['Distancia'] = np.sqrt(
                 ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
                 ((df_filtrado['População'] - populacao) / p_ref)**2 +
@@ -508,12 +508,10 @@ else:
                 ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
             )
             
-            # Conversão matemática de distância para percentual de similaridade
             df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
                 lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
             )
             
-            # Ranking Top 3
             df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
             
             st.dataframe(
@@ -521,6 +519,11 @@ else:
                 use_container_width=True, 
                 hide_index=True
             )
+
+            # Preparação de HTML para o relatório
+            for _, r in df_ranking.iterrows():
+                linhas_similares_html += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
+
         else:
             st.info("Nenhuma unidade encontrada nessa região para comparação.")
     else:
@@ -536,6 +539,14 @@ else:
         
         modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
         
+        info_tabela_economica = ""
+        if aplicar_excecao:
+            info_tabela_economica = f"""
+            <p style="margin:4px 0 0 0; font-size:12px; color:#E2E8F0;">
+                Tabela Sugerida pelo Perfil Econômico (Algoritmo): <b>Tabela {tabela_sugerida}</b> (Ref: R$ {preco_sugerido},00)
+            </p>
+            """
+
         html_relatorio = f"""
         <div id="print-area" style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -563,6 +574,7 @@ else:
                 <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                 <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
                 <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
+                {info_tabela_economica}
             </div>
 
             <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
@@ -571,11 +583,25 @@ else:
                 <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
             </div>
 
+            <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:14px;">Unidades da Rede com Perfil Similar:</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color:#F8F9FA; text-align:left;">
+                        <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
+                        <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
+                        <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {linhas_similares_html}
+                </tbody>
+            </table>
+
             <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">
                 🖨️ Imprimir / Salvar PDF
             </button>
         </div>
         """
-        st.components.v1.html(html_relatorio, height=420, scrolling=True)
+        st.components.v1.html(html_relatorio, height=520, scrolling=True)
 
     st.markdown("""<div style="background-color:#FFF8E1; border-left:5px solid #FFB300; padding:15px; border-radius:4px; font-size:13px; color:#5D4037; margin-top:30px;"><b>Governança:</b> O simulador é um direcionador estratégico. Decisões finais cabem ao Comitê de Expansão.</div>""", unsafe_allow_html=True)
