@@ -108,11 +108,6 @@ st.markdown(
             flex-direction: column;
             justify-content: center;
         }
-
-        /* Estilização para o Módulo 2 (Sinais) */
-        .sinal-positivo { background-color: #DCFCE7; color: #15803D; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-align: center; }
-        .sinal-atencao { background-color: #FEF9C3; color: #A16207; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-align: center; }
-        .sinal-critico { background-color: #FEE2E2; color: #B91C1C; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-align: center; }
     </style>
     """,
     unsafe_allow_html=True
@@ -153,24 +148,33 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
-# SIDEBAR - SELEÇÃO DE MÓDULO DO DASHBOARD
+# LISTA DE UNIDADES OFICIAS
 # ==========================================
-with st.sidebar:
-    st.markdown("<h3 style='color:#FFFFFF; font-weight:800;'>🎾 Fast Tennis</h3>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.markdown("**Navegação da Plataforma**")
-    
-    modulo_selecionado = st.radio(
-        "Selecione a Ferramenta:",
-        ["🎾 1. Simulador de Precificação Inicial", "🔄 2. Reavaliação de Unidades Ativas"],
-        key="modulo_navegacao"
-    )
-    
-    st.markdown("---")
-    st.markdown(f"<small style='color:#6C757D;'>Usuário: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
-    if st.button("Logout", use_container_width=True):
-        st.session_state["autenticado"] = False
-        st.rerun()
+UNIDADES_REDE = [
+    "Selecione...", "Fast Tennis Aguas Claras - Brasilia", "Fast Tennis Alphaville - São Paulo", "Fast Tennis Alto da Boa Vista - São Paulo",
+    "Fast Tennis Alto de Pinheiros - São Paulo", "Fast Tennis Alto do Ipiranga - São Paulo", "Fast Tennis Anhanguera - Jundiaí",
+    "Fast Tennis Bebedouro - Bebedouro", "Fast Tennis Belvedere - Belo Horizonte", "Fast Tennis Boa Viagem - Recife",
+    "Fast Tennis Botafogo - Campinas", "Fast Tennis Brooklin - São Paulo", "Fast Tennis Buritis I - Belo Horizonte",
+    "Fast Tennis Buritis II - Belo Horizonte", "Fast Tennis Calafate - Belo Horizonte", "Fast Tennis Campo Belo - São Paulo",
+    "Fast Tennis Cantareira - São Paulo", "Fast Tennis Capim Macio - Natal", "Fast Tennis Castelo - Belo Horizonte",
+    "Fast Tennis Centro São Bernardo - São Bernardo do Campo", "Fast Tennis Chácara Inglesa - São Paulo", "Fast Tennis Chácara Santo Antônio - São Paulo",
+    "Fast Tennis Cidade Nova - Cidade Nova", "Fast Tennis Contagem - Contagem", "Fast Tennis Estoril - Belo Horizonte",
+    "Fast Tennis Estrela Sul - Juiz de Fora", "Fast Tennis Eusébio - Eusébio", "Fast Tennis General Lecor - São Paulo",
+    "Fast Tennis Guararapes - Fortaleza", "Fast Tennis Indaiatuaba - São Paulo", "Fast Tennis Interlagos - São Paulo",
+    "Fast Tennis Jardim - São Paulo", "Fast Tennis Jardim Portal da Colina - Sorocaba", "Fast Tennis Jardim Social - Curitiba",
+    "Fast Tennis Lapa - São Paulo", "Fast Tennis Moema - São Paulo", "Fast Tennis Monte Pascal - São Paulo",
+    "Fast Tennis Mooca - São Paulo", "Fast Tennis Morada da Colina - Uberlândia", "Fast Tennis Morumbi - São Paulo",
+    "Fast Tennis Nova Aliança Sul - Ribeirão Preto", "Fast Tennis Orla da Pampulha - Belo Horizonte", "Fast Tennis Pampulha - Belo Horizonte",
+    "Fast Tennis Parque Piqueri - São Paulo", "Fast Tennis Ponte JK - Brasília", "Fast Tennis Praia do Canto - Vitória",
+    "Fast Tennis Praia Grande - Praia Grande", "Fast Tennis Radial Leste - São Paulo", "Fast Tennis Recreio - Rio de Janeiro",
+    "Fast Tennis Rio Claro - São Paulo", "Fast Tennis Salgado Filho - Curitiba", "Fast Tennis Salto - São Paulo",
+    "Fast Tennis Santa Lúcia - Belo Horizonte", "Fast Tennis Santana - São Paulo", "Fast Tennis Santa Rosa - Niterói",
+    "Fast Tennis Santo Amaro", "Fast Tennis São Bento - Belo Horizonte", "Fast Tennis São Caetano - São Caetano do Sul",
+    "Fast Tennis Saúde - São Paulo", "Fast Tennis Saul Macedo - Belo Horizonte", "Fast Tennis Savassi - Belo Horizonte",
+    "Fast Tennis Sete Lagoas - Sete Lagoas", "Fast Tennis Setor Bueno - Goiânia", "Fast Tennis Taquaral - Campinas",
+    "Fast Tennis Tirol - Natal", "Fast Tennis Três Poderes - São Paulo", "Fast Tennis Verbo Divino - São Paulo",
+    "Fast Tennis Vila Olímpia - São Paulo", "Fast Tennis Vila Sônia", "Fast Tennis Vilhena - Rondônia", "Fast Tennis Ypiranga - São Paulo"
+]
 
 # TABELAS DE REFERÊNCIA OFICIAIS FAST TENNIS
 TABELAS_OFICIAIS = {
@@ -181,10 +185,30 @@ TABELAS_OFICIAIS = {
     5: {"tkm": 690, "plus": 710}
 }
 
+# ==========================================
+# SIDEBAR - SELEÇÃO DE MÓDULO DO DASHBOARD
+# ==========================================
+with st.sidebar:
+    st.markdown("<h3 style='color:#FFFFFF; font-weight:800;'>Fast Tennis</h3>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("<p style='color:#FFFFFF; font-weight:700;'>Navegação da Plataforma</p>", unsafe_allow_html=True)
+    
+    modulo_selecionado = st.radio(
+        "Selecione a Ferramenta:",
+        ["1. Simulador de Precificação Inicial", "2. Reavaliação de Unidades Ativas"],
+        key="modulo_navegacao"
+    )
+    
+    st.markdown("---")
+    st.markdown(f"<small style='color:#FFFFFF;'>Usuário: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
+    if st.button("Logout", use_container_width=True):
+        st.session_state["autenticado"] = False
+        st.rerun()
+
 # ==============================================================================
-# MÓDULO 1: SIMULADOR DE PRECIFICAÇÃO INICIAL (INVIOLÁVEL E PROTEGIDO)
+# MÓDULO 1: SIMULADOR DE PRECIFICAÇÃO INICIAL
 # ==============================================================================
-if modulo_selecionado == "🎾 1. Simulador de Precificação Inicial":
+if modulo_selecionado == "1. Simulador de Precificação Inicial":
     
     def limpar_campos_m1():
         st.session_state["val_estado"] = "Selecione..."
@@ -233,7 +257,7 @@ if modulo_selecionado == "🎾 1. Simulador de Precificação Inicial":
             
             st.markdown(f"""
                 <div class="card-destaque">
-                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span><br>
+                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">Público Alvo Calculado (B1 + A+ + A++)</span><br>
                     <span style="font-size:22px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
                     <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população.</small>
                 </div>
@@ -330,7 +354,7 @@ if modulo_selecionado == "🎾 1. Simulador de Precificação Inicial":
         if tempo_proxima <= 15 and tempo_proxima > 0:
             st.markdown('<div class="alerta-fino">Proteção de Rede: Existe unidade próxima em raio inferior a 15 minutos. Verificar compatibilidade de tabelas.</div>', unsafe_allow_html=True)
 
-        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis calculated:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
+        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis calculado:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
         
         dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
 
@@ -377,24 +401,108 @@ if modulo_selecionado == "🎾 1. Simulador de Precificação Inicial":
                     key="val_viabilidade_bp"
                 )
 
+        # RELATÓRIO OFICIAL EM IMPRESSÃO PDF
+        st.write("")
+        st.markdown("---")
+        with st.expander("📄 Relatório Oficial de Simulação (Para E-mail, PDF e Comitê)", expanded=False):
+            st.info("Você pode copiar o código HTML ou clicar no botão verde para gerar e imprimir o PDF oficial da simulação.")
+            
+            modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
+            
+            info_tabela_economica = ""
+            if aplicar_excecao:
+                info_tabela_economica = f"""
+                <p style="margin:4px 0 0 0; font-size:12px; color:#E2E8F0;">
+                    Tabela Sugerida pelo Perfil Econômico (Algoritmo): <b>Tabela {tabela_sugerida}</b> (Ref: R$ {preco_sugerido},00)
+                </p>
+                """
+
+            html_relatorio = f"""
+            <div id="print-area" style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="color:#022D8A; margin:0;">Fast Tennis - Relatório de Precificação Estratégica</h2>
+                    <span style="font-size:12px; color:#6C757D;">Comitê de Expansão</span>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
+                
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                    <tr style="background-color:#F8F9FA;">
+                        <td style="padding:8px; border:1px solid #ddd;"><b>Praça / Cidade:</b> {cidade} - {estado}</td>
+                        <td style="padding:8px; border:1px solid #ddd;"><b>População:</b> {populacao:,} hab.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média:</b> R$ {renda_media:,.2f}</td>
+                        <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
+                    </tr>
+                    <tr style="background-color:#F8F9FA;">
+                        <td style="padding:8px; border:1px solid #ddd;"><b>REGIC / Perfil:</b> {regic} / {tipo_praca}</td>
+                        <td style="padding:8px; border:1px solid #ddd;"><b>Preço Média Concorrentes:</b> R$ {media_mercado:,.2f}</td>
+                    </tr>
+                </table>
+
+                <div style="background-color:#022D8A; color:#ffffff; padding:15px; border-radius:6px; margin-bottom:20px;">
+                    <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                    <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                    <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
+                    {info_tabela_economica}
+                </div>
+
+                <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
+                    <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
+                    <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Variação vs Concorrência: {dif_mercado*100:+.1f}%)</p>
+                    <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
+                    <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
+                </div>
+
+                <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">
+                    Imprimir / Salvar PDF
+                </button>
+            </div>
+            """
+            st.components.v1.html(html_relatorio, height=560, scrolling=True)
+
 # ==============================================================================
-# MÓDULO 2: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (NOVO MÓDULO)
+# MÓDULO 2: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (CAMPOS LIMPOS E BASE DE UNIDADES)
 # ==============================================================================
 else:
-    st.title("🔄 Reavaliação Estratégica de Precificação de Unidades Ativas")
+    st.title("Reavaliação Estratégica de Precificação de Unidades Ativas")
     st.markdown("Diagnóstico contínuo e orientação de decisão baseada nos indicadores operacionais e de mercado.")
     st.markdown("---")
+
+    def limpar_campos_m2():
+        st.session_state["m2_nome_u"] = "Selecione..."
+        st.session_state["m2_tab_ativa"] = "Selecione..."
+        st.session_state["m2_tkm_real"] = 0.0
+        st.session_state["m2_ll"] = 0.0
+        st.session_state["m2_fat"] = 0.0
+        st.session_state["m2_mix"] = "Selecione..."
+        st.session_state["m2_objecoes"] = 0.0
+        st.session_state["m2_conv_u"] = 0.0
+        st.session_state["m2_lead_u"] = 0.0
+        st.session_state["m2_churn_u"] = 0.0
+        st.session_state["m2_cres_base"] = "Selecione..."
+        st.session_state["m2_vendedor"] = "Selecione..."
+        st.session_state["m2_conc_p"] = 0.0
+        st.session_state["m2_renda_u"] = 0.0
+        st.session_state["m2_pop_u"] = 0
+        st.session_state["m2_alvo_u"] = 0.0
+        st.session_state["m2_med_conv"] = 0.0
+        st.session_state["m2_med_lead"] = 0.0
+        st.session_state["m2_med_churn"] = 0.0
+
+    if "m2_nome_u" not in st.session_state:
+        limpar_campos_m2()
 
     # 1. MÉDIAS GLOBAIS DA REDE
     st.subheader("1. Parâmetros Médios da Rede Fast Tennis")
     with st.container(border=True):
         mr1, mr2, mr3 = st.columns(3)
         with mr1:
-            media_rede_conversao = st.number_input("% Conversão Médio Rede:", value=15.0, step=0.5, key="m2_med_conv")
+            media_rede_conversao = st.number_input("% Conversão Médio Rede:", min_value=0.0, step=0.5, key="m2_med_conv")
         with mr2:
-            media_rede_lead_conect = st.number_input("% Lead Conectado Médio Rede:", value=65.0, step=0.5, key="m2_med_lead")
+            media_rede_lead_conect = st.number_input("% Lead Conectado Médio Rede:", min_value=0.0, step=0.5, key="m2_med_lead")
         with mr3:
-            media_rede_churn = st.number_input("% Churn Médio Rede:", value=4.5, step=0.1, key="m2_med_churn")
+            media_rede_churn = st.number_input("% Churn Médio Rede:", min_value=0.0, step=0.1, key="m2_med_churn")
 
     st.write("")
     # 2. DADOS DA UNIDADE AVALIADA
@@ -404,163 +512,182 @@ else:
         
         with u1:
             st.markdown("**Indicadores Financeiros & Comerciais**")
-            nome_unidade = st.text_input("Nome da Unidade:", value="FT Águas Claras - DF", key="m2_nome_u")
-            tabela_ativa = st.selectbox("Tabela Praticada Atualmente:", [1, 2, 3, 4, 5], index=2, key="m2_tab_ativa")
+            nome_unidade = st.selectbox("Unidade:", UNIDADES_REDE, key="m2_nome_u")
+            tabela_ativa = st.selectbox("Tabela Praticada Atualmente:", ["Selecione...", 1, 2, 3, 4, 5], key="m2_tab_ativa")
             
-            # AUTOMATIZAÇÃO DO TKM E PREÇO PLUS
-            tkm_esperado_rede = TABELAS_OFICIAIS[tabela_ativa]["tkm"]
-            preco_plus_esperado = TABELAS_OFICIAIS[tabela_ativa]["plus"]
-            
-            st.caption(f"ℹ️ TKM Esperado: **R$ {tkm_esperado_rede},00** | Plano Plus 1x: **R$ {preco_plus_esperado},00**")
-            
-            tkm_real_unidade = st.number_input("TKM Real Praticado (R$):", value=float(tkm_esperado_rede), step=5.0, key="m2_tkm_real")
-            atingimento_ll = st.number_input("% Atingimento Meta Lucro Líquido (LL):", value=85.0, step=1.0, key="m2_ll")
-            atingimento_fat = st.number_input("% Atingimento Meta Faturamento:", value=88.0, step=1.0, key="m2_fat")
+            if tabela_ativa != "Selecione...":
+                tkm_esperado_rede = TABELAS_OFICIAIS[tabela_ativa]["tkm"]
+                preco_plus_esperado = TABELAS_OFICIAIS[tabela_ativa]["plus"]
+                st.caption(f"TKM Esperado: **R$ {tkm_esperado_rede},00** | Plano Plus 1x: **R$ {preco_plus_esperado},00**")
+            else:
+                tkm_esperado_rede = 0
+                preco_plus_esperado = 0
+
+            tkm_real_unidade = st.number_input("TKM Real Praticado (R$):", min_value=0.0, step=5.0, key="m2_tkm_real")
+            atingimento_ll = st.number_input("% Atingimento Meta Lucro Líquido (LL):", min_value=0.0, step=1.0, key="m2_ll")
+            atingimento_fat = st.number_input("% Atingimento Meta Faturamento:", min_value=0.0, step=1.0, key="m2_fat")
 
         with u2:
             st.markdown("**Comportamento de Vendas e Base**")
-            mix_produtos = st.selectbox("Mix de Produtos:", ["Consumo Plus saudável ou acima do esperado", "Smart acima do Plus em até 8% e 15%", "Smart acima do Plus em mais de 15%"], key="m2_mix")
-            objecoes_preco = st.number_input("% Objeções por Preço:", value=12.0, step=1.0, key="m2_objecoes")
-            conversao_unidade = st.number_input("% Conversão da Unidade:", value=14.0, step=0.5, key="m2_conv_u")
-            lead_conect_unidade = st.number_input("% Lead Conectado da Unidade:", value=62.0, step=0.5, key="m2_lead_u")
-            churn_unidade = st.number_input("% Churn da Unidade:", value=5.0, step=0.1, key="m2_churn_u")
+            mix_produtos = st.selectbox("Mix de Produtos:", ["Selecione...", "Consumo Plus saudável ou acima do esperado", "Smart acima do Plus em até 8% e 15%", "Smart acima do Plus em mais de 15%"], key="m2_mix")
+            objecoes_preco = st.number_input("% Objeções por Preço:", min_value=0.0, step=1.0, key="m2_objecoes")
+            conversao_unidade = st.number_input("% Conversão da Unidade:", min_value=0.0, step=0.5, key="m2_conv_u")
+            lead_conect_unidade = st.number_input("% Lead Conectado da Unidade:", min_value=0.0, step=0.5, key="m2_lead_u")
+            churn_unidade = st.number_input("% Churn da Unidade:", min_value=0.0, step=0.1, key="m2_churn_u")
 
         with c_merc:
             st.markdown("**Base, Equipe e Mercado Local**")
-            crescimento_base = st.selectbox("Crescimento da Base:", ["Crescimento saudável e consistente", "Oscilação", "Crescimento estagnado"], key="m2_cres_base")
-            perfil_vendedor = st.selectbox("Perfil do Vendedor:", ["Vendedor de alta performance", "Necessidade de desenvolvimento", "Vendedor desalinhado"], key="m2_vendedor")
-            preco_concorrentes = st.number_input("Preço Médio Concorrentes (R$):", value=450.0, step=10.0, key="m2_conc_p")
-            renda_media_u = st.number_input("Renda Média Região (R$):", value=14000.0, step=500.0, key="m2_renda_u")
-            populacao_u = st.number_input("População Residente:", value=80000, step=1000, key="m2_pop_u")
-            pct_alvo_u = st.number_input("% Público Alvo (B1+A+ A++):", value=32.0, step=1.0, key="m2_alvo_u")
+            crescimento_base = st.selectbox("Crescimento da Base:", ["Selecione...", "Crescimento saudável e consistente", "Oscilação", "Crescimento estagnado"], key="m2_cres_base")
+            perfil_vendedor = st.selectbox("Perfil do Vendedor:", ["Selecione...", "Vendedor de alta performance", "Necessidade de desenvolvimento", "Vendedor desalinhado"], key="m2_vendedor")
+            preco_concorrentes = st.number_input("Preço Médio Concorrentes (R$):", min_value=0.0, step=10.0, key="m2_conc_p")
+            renda_media_u = st.number_input("Renda Média Região (R$):", min_value=0.0, step=500.0, key="m2_renda_u")
+            populacao_u = st.number_input("População Residente:", min_value=0, step=1000, key="m2_pop_u")
+            pct_alvo_u = st.number_input("% Público Alvo (B1+A+ A++):", min_value=0.0, step=1.0, key="m2_alvo_u")
 
-    # ==========================================
-    # 3. MOTOR DE AVALIAÇÃO E MATRIZ DE DIAGNÓSTICO
-    # ==========================================
-    st.write("")
-    st.markdown('<div class="faixa-resultados">Matriz de Orientação da Decisão</div>', unsafe_allow_html=True)
-    
-    matriz_sinais = []
+        st.write("")
+        col_btn_m2_1, col_btn_m2_2 = st.columns([5, 1])
+        with col_btn_m2_2:
+            st.button("Limpar Campos", on_click=limpar_campos_m2, use_container_width=True)
 
-    # 1. Lucro Líquido
-    if atingimento_ll >= 90.0: s_ll = "🟢 Positivo"
-    elif atingimento_ll >= 80.0: s_ll = "🟡 Atenção"
-    else: s_ll = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Lucro Líquido", "Dados Unidade": f"{atingimento_ll:.1f}% meta", "Sinal": s_ll})
+    # VALIDAÇÃO DOS DADOS DO MÓDULO 2
+    pronto_m2 = (
+        nome_unidade != "Selecione..." and
+        tabela_ativa != "Selecione..." and
+        mix_produtos != "Selecione..." and
+        crescimento_base != "Selecione..." and
+        perfil_vendedor != "Selecione..." and
+        media_rede_conversao > 0 and
+        media_rede_lead_conect > 0 and
+        media_rede_churn > 0
+    )
 
-    # 2. Faturamento
-    if atingimento_fat >= 90.0: s_fat = "🟢 Positivo"
-    elif atingimento_fat >= 80.0: s_fat = "🟡 Atenção"
-    else: s_fat = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Faturamento", "Dados Unidade": f"{atingimento_fat:.1f}% meta", "Sinal": s_fat})
+    if not pronto_m2:
+        st.info("Aguardando dados. Preencha as informações operacionais e de mercado acima para gerar o relatório estratégico.")
+    else:
+        # ==========================================
+        # 3. MOTOR DE AVALIAÇÃO E MATRIZ DE DIAGNÓSTICO
+        # ==========================================
+        st.write("")
+        st.markdown('<div class="faixa-resultados">Matriz de Orientação da Decisão</div>', unsafe_allow_html=True)
+        
+        matriz_sinais = []
 
-    # 3. Mix de Produtos
-    if "saudável" in mix_produtos: s_mix = "🟢 Positivo"
-    elif "8% e 15%" in mix_produtos: s_mix = "🟡 Atenção"
-    else: s_mix = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Mix de Produtos", "Dados Unidade": mix_produtos, "Sinal": s_mix})
+        # 1. Lucro Líquido
+        if atingimento_ll >= 90.0: s_ll = "Positivo"
+        elif atingimento_ll >= 80.0: s_ll = "Atenção"
+        else: s_ll = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Lucro Líquido", "Dados Unidade": f"{atingimento_ll:.1f}% meta", "Sinal": s_ll})
 
-    # 4. Objeções por Preço
-    if objecoes_preco <= 10.0: s_obj = "🟢 Positivo"
-    elif objecoes_preco <= 25.0: s_obj = "🟡 Atenção"
-    else: s_obj = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Objeções por Preço", "Dados Unidade": f"{objecoes_preco:.1f}%", "Sinal": s_obj})
+        # 2. Faturamento
+        if atingimento_fat >= 90.0: s_fat = "Positivo"
+        elif atingimento_fat >= 80.0: s_fat = "Atenção"
+        else: s_fat = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Faturamento", "Dados Unidade": f"{atingimento_fat:.1f}% meta", "Sinal": s_fat})
 
-    # 5. Conversão
-    if conversao_unidade >= media_rede_conversao: s_conv = "🟢 Positivo"
-    elif conversao_unidade >= (media_rede_conversao * 0.90): s_conv = "🟡 Atenção"
-    else: s_conv = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Conversão", "Dados Unidade": f"{conversao_unidade:.1f}% (Rede: {media_rede_conversao:.1f}%)", "Sinal": s_conv})
+        # 3. Mix de Produtos
+        if "saudável" in mix_produtos: s_mix = "Positivo"
+        elif "8% e 15%" in mix_produtos: s_mix = "Atenção"
+        else: s_mix = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Mix de Produtos", "Dados Unidade": mix_produtos, "Sinal": s_mix})
 
-    # 6. % Lead Conectado
-    if lead_conect_unidade >= media_rede_lead_conect: s_lead = "🟢 Positivo"
-    elif lead_conect_unidade >= (media_rede_lead_conect * 0.90): s_lead = "🟡 Atenção"
-    else: s_lead = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "% Lead Conectado", "Dados Unidade": f"{lead_conect_unidade:.1f}% (Rede: {media_rede_lead_conect:.1f}%)", "Sinal": s_lead})
+        # 4. Objeções por Preço
+        if objecoes_preco <= 10.0: s_obj = "Positivo"
+        elif objecoes_preco <= 25.0: s_obj = "Atenção"
+        else: s_obj = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Objeções por Preço", "Dados Unidade": f"{objecoes_preco:.1f}%", "Sinal": s_obj})
 
-    # 7. TKM
-    if tkm_real_unidade >= tkm_esperado_rede: s_tkm = "🟢 Positivo"
-    elif tkm_real_unidade >= (tkm_esperado_rede * 0.90): s_tkm = "🟡 Atenção"
-    else: s_tkm = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "TKM Praticado", "Dados Unidade": f"R$ {tkm_real_unidade:.0f} (Esp: R$ {tkm_esperado_rede})", "Sinal": s_tkm})
+        # 5. Conversão
+        if conversao_unidade >= media_rede_conversao: s_conv = "Positivo"
+        elif conversao_unidade >= (media_rede_conversao * 0.90): s_conv = "Atenção"
+        else: s_conv = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Conversão", "Dados Unidade": f"{conversao_unidade:.1f}% (Rede: {media_rede_conversao:.1f}%)", "Sinal": s_conv})
 
-    # 8. Crescimento de Base
-    if "saudável" in crescimento_base: s_base = "🟢 Positivo"
-    elif "Oscilação" in crescimento_base: s_base = "🟡 Atenção"
-    else: s_base = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Crescimento de Base", "Dados Unidade": crescimento_base, "Sinal": s_base})
+        # 6. % Lead Conectado
+        if lead_conect_unidade >= media_rede_lead_conect: s_lead = "Positivo"
+        elif lead_conect_unidade >= (media_rede_lead_conect * 0.90): s_lead = "Atenção"
+        else: s_lead = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "% Lead Conectado", "Dados Unidade": f"{lead_conect_unidade:.1f}% (Rede: {media_rede_lead_conect:.1f}%)", "Sinal": s_lead})
 
-    # 9. % de Churn
-    if churn_unidade <= media_rede_churn: s_churn = "🟢 Positivo"
-    elif churn_unidade <= (media_rede_churn * 1.15): s_churn = "🟡 Atenção"
-    else: s_churn = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "% de Churn", "Dados Unidade": f"{churn_unidade:.1f}% (Rede: {media_rede_churn:.1f}%)", "Sinal": s_churn})
+        # 7. TKM
+        if tkm_real_unidade >= tkm_esperado_rede: s_tkm = "Positivo"
+        elif tkm_real_unidade >= (tkm_esperado_rede * 0.90): s_tkm = "Atenção"
+        else: s_tkm = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "TKM Praticado", "Dados Unidade": f"R$ {tkm_real_unidade:.0f} (Esp: R$ {tkm_esperado_rede})", "Sinal": s_tkm})
 
-    # 10. Perfil Vendedor
-    if "alta performance" in perfil_vendedor: s_vend = "🟢 Positivo"
-    elif "desenvolvimento" in perfil_vendedor: s_vend = "🟡 Atenção"
-    else: s_vend = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Dados Unidade": perfil_vendedor, "Sinal": s_vend})
+        # 8. Crescimento de Base
+        if "saudável" in crescimento_base: s_base = "Positivo"
+        elif "Oscilação" in crescimento_base: s_base = "Atenção"
+        else: s_base = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Crescimento de Base", "Dados Unidade": crescimento_base, "Sinal": s_base})
 
-    # 11. Pesquisa de Mercado
-    dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
-    if abs(dif_conc) <= 0.10: s_merc = "🟢 Positivo"
-    elif abs(dif_conc) <= 0.20: s_merc = "🟡 Atenção"
-    else: s_merc = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Pesquisa de Mercado", "Dados Unidade": f"Dif. {dif_conc*100:+.1f}% vs Mercado", "Sinal": s_merc})
+        # 9. % de Churn
+        if churn_unidade <= media_rede_churn: s_churn = "Positivo"
+        elif churn_unidade <= (media_rede_churn * 1.15): s_churn = "Atenção"
+        else: s_churn = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "% de Churn", "Dados Unidade": f"{churn_unidade:.1f}% (Rede: {media_rede_churn:.1f}%)", "Sinal": s_churn})
 
-    # 12. Potencial da Região
-    if renda_media_u >= 15000 and pct_alvo_u >= 35: s_pot = "🟢 Positivo"
-    elif renda_media_u >= 11000 and pct_alvo_u >= 25: s_pot = "🟡 Atenção"
-    else: s_pot = "🔴 Crítico"
-    matriz_sinais.append({"Critério Avaliado": "Potencial da Região", "Dados Unidade": f"R$ {renda_media_u:,.0f} | {pct_alvo_u:.1f}% Alvo", "Sinal": s_pot})
+        # 10. Perfil Vendedor
+        if "alta performance" in perfil_vendedor: s_vend = "Positivo"
+        elif "desenvolvimento" in perfil_vendedor: s_vend = "Atenção"
+        else: s_vend = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Dados Unidade": perfil_vendedor, "Sinal": s_vend})
 
-    # CONTAGEM DE SINAIS
-    df_sinais = pd.DataFrame(matriz_sinais)
-    qtd_positivos = sum(1 for x in matriz_sinais if "🟢" in x["Sinal"])
-    qtd_atencao = sum(1 for x in matriz_sinais if "🟡" in x["Sinal"])
-    qtd_criticos = sum(1 for x in matriz_sinais if "🔴" in x["Sinal"])
-    total_indicadores = len(matriz_sinais)
-    pct_positivos = (qtd_positivos / total_indicadores) * 100
+        # 11. Pesquisa de Mercado
+        dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
+        if abs(dif_conc) <= 0.10: s_merc = "Positivo"
+        elif abs(dif_conc) <= 0.20: s_merc = "Atenção"
+        else: s_merc = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Pesquisa de Mercado", "Dados Unidade": f"Dif. {dif_conc*100:+.1f}% vs Mercado", "Sinal": s_merc})
 
-    # EXIBIÇÃO DA MATRIZ EM COLUNAS
-    col_mat1, col_mat2 = st.columns([2, 1])
-    with col_mat1:
+        # 12. Potencial da Região
+        if renda_media_u >= 15000 and pct_alvo_u >= 35: s_pot = "Positivo"
+        elif renda_media_u >= 11000 and pct_alvo_u >= 25: s_pot = "Atenção"
+        else: s_pot = "Crítico"
+        matriz_sinais.append({"Critério Avaliado": "Potencial da Região", "Dados Unidade": f"R$ {renda_media_u:,.0f} | {pct_alvo_u:.1f}% Alvo", "Sinal": s_pot})
+
+        # CONTAGEM DE SINAIS
+        df_sinais = pd.DataFrame(matriz_sinais)
+        qtd_positivos = sum(1 for x in matriz_sinais if x["Sinal"] == "Positivo")
+        qtd_atencao = sum(1 for x in matriz_sinais if x["Sinal"] == "Atenção")
+        qtd_criticos = sum(1 for x in matriz_sinais if x["Sinal"] == "Crítico")
+        total_indicadores = len(matriz_sinais)
+        pct_positivos = (qtd_positivos / total_indicadores) * 100
+
+        # MATRIZ EXECUTIVA UNIFICADA
         st.dataframe(df_sinais, use_container_width=True, hide_index=True)
 
-    with col_mat2:
+        # RESUMO EXECUTIVO LOGO ABAIXO DA MATRIZ
         st.markdown(f"""
-            <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:18px; border-radius:8px;">
-                <h4 style="margin:0 0 10px 0; color:#022D8A;">Resumo de Sinais</h4>
-                <p style="margin:4px 0; font-size:14px;">🟢 Positivos: <b>{qtd_positivos} ({pct_positivos:.1f}%)</b></p>
-                <p style="margin:4px 0; font-size:14px;">🟡 Atenção: <b>{qtd_atencao}</b></p>
-                <p style="margin:4px 0; font-size:14px;">🔴 Críticos: <b>{qtd_criticos}</b></p>
+            <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:12px 20px; border-radius:8px; margin-top:10px; display:flex; justify-content:space-around;">
+                <span style="font-size:14px;">Positivos: <b style="color:#15803D;">{qtd_positivos} ({pct_positivos:.1f}%)</b></span>
+                <span style="font-size:14px;">Atenção: <b style="color:#A16207;">{qtd_atencao}</b></span>
+                <span style="font-size:14px;">Críticos: <b style="color:#B91C1C;">{qtd_criticos}</b></span>
             </div>
         """, unsafe_allow_html=True)
 
-    # LÓGICA DO POP DE DECISÃO CORPORATIVO
-    st.write("")
-    st.subheader("3. Diretriz do POP de Decisão")
+        # RELATÓRIO ESTRATÉGICO CORPORATIVO
+        st.write("")
+        st.subheader("3. Relatório Estratégico de Posicionamento")
 
-    indicio_desalinhamento = (s_obj == "🔴 Crítico" and s_conv == "🔴 Crítico" and "mais de 15%" in mix_produtos)
+        indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
-    if pct_positivos >= 70.0:
-        rec_pop = "<b>Tendência de Aumento ou Manutenção Premium</b>: Unidade saudável com forte tração. Tabela adequada ou com oportunidade de elevação em Comitê."
-        cor_pop = "#166534"
-        bg_pop = "#F0FDF4"
-    elif qtd_criticos >= 3:
-        rec_pop = "<b>Reavaliar Posicionamento / Redução de Tabela</b>: Alta concentração de indicadores críticos. Avaliar reposicionamento ou promoção controlada."
-        cor_pop = "#991B1B"
-        bg_pop = "#FEF2F2"
-    else:
-        rec_pop = "<b>Ajuste Operacional (Sem alteração de preço imediata)</b>: Equilíbrio entre fatores. Corrigir operação e equipe comercial antes de alterar tabela."
-        cor_pop = "#975A16"
-        bg_pop = "#FFFDF5"
+        if pct_positivos >= 70.0:
+            rec_pop = "<b>Tendência de Aumento ou Manutenção Premium</b>: Unidade altamente saudável. Tabela aderente ao perfil do público com oportunidade de elevação em Comitê de Expansão."
+            cor_pop = "#166534"
+            bg_pop = "#F0FDF4"
+        elif qtd_criticos >= 3:
+            rec_pop = "<b>Reavaliação de Posicionamento / Redução de Tabela</b>: Concentração de indicadores críticos. Recomendada análise de reposicionamento e estratégias promocionais controladas."
+            cor_pop = "#991B1B"
+            bg_pop = "#FEF2F2"
+        else:
+            rec_pop = "<b>Ajuste Operacional Sem Alteração Imidiatada de Preço</b>: Cenário intermediário. Foco na correção dos processos comerciais e equipe antes de alterar a tabela."
+            cor_pop = "#975A16"
+            bg_pop = "#FFFDF5"
 
-    st.markdown(f"""
-        <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:18px; border-radius:8px; margin-bottom:15px;">
-            <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Recomendação do POP</p>
-            <p style="margin:6px 0 0 0; font-size:15px; color:#2D3748;">{rec_pop}</p>
-            {f'<p style="margin:8px 0 0 0; font-size:13px; color:#B91C1C;">⚠️ <b>ALERTA CRÍTICO:</b> Forte indício de desalinhamento de tabela (Sensibilidade a preço + Baixa conversão + Smart elevado).</p>' if indicio_desalinhamento else ''}
-        </div>
-    """, unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:18px; border-radius:8px; margin-bottom:15px;">
+                <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Diretriz Estratégica</p>
+                <p style="margin:6px 0 0 0; font-size:15px; color:#2D3748;">{rec_pop}</p>
+                {f'<p style="margin:8px 0 0 0; font-size:13px; color:#B91C1C;"><b>Alerta Técnico:</b> Identificado indício de desalinhamento de tabela (Alta sensibilidade a preço + Baixa conversão + Concentração no plano Smart).</p>' if indicio_desalinhamento else ''}
+            </div>
+        """, unsafe_allow_html=True)
