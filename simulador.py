@@ -81,6 +81,15 @@ st.markdown(
             font-size: 28px;
             font-weight: 800;
         }
+
+        /* Card Interno de Métricas e Destaques */
+        .card-destaque {
+            background-color: #F8F9FA;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -155,7 +164,7 @@ with col_header2:
 st.markdown("---")
 
 # ==========================================
-# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO
+# SEÇÃO 1: DADOS DA ÁREA DE ESTUDO E MERCADO (LAYOUT REORGANIZADO)
 # ==========================================
 st.subheader("📊 1. Dados da Área de Estudo e Mercado")
 st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os dados imputados abaixo devem ser retirados da área de estudo delimitada no Geofusion de acordo com as diretrizes de praça e concorrência local.</p>", unsafe_allow_html=True)
@@ -163,32 +172,42 @@ st.markdown("<p style='font-size:14px; color:#5A6578; margin-bottom:15px;'>Os da
 with st.expander("📌 Diretrizes Geofusion (Clique para ver)"):
     st.markdown("Instruções de raio de 2km, PEA Dia e vocação de praça conforme manual de expansão.")
 
-# CAIXA DE INPUTS (CIDADE LIVRE)
+# CAIXA DE INPUTS ORGANIZADA EXECUTIVAMENTE EM 3 COLUNAS
 with st.container(border=True):
-    c1, c2, col_in3 = st.columns(3)
+    c1, c2, c3 = st.columns(3)
+    
+    # COLUNA 1: LOCALIZAÇÃO E POPULAÇÃO GENERALISTA
     with c1:
+        st.markdown("**📍 Localização e Demografia**")
         lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
-        
         estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
         cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
+        regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], key="val_regic")
         populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
-        
+
+    # COLUNA 2: PERCENTUAIS DE CLASSES E PÚBLICO ALVO CALCULADO (SEQUENCIAL)
+    with c2:
         st.markdown("**📌 Percentuais de Classes (Geofusion)**")
         classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
         classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais")
         classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_b1")
         
-    with c2:
-        regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], key="val_regic")
-        tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], key="val_tipo_praca")
-        
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
         
-        st.metric(label="🎯 Público Alvo Calculado (B1 + A+ + A++):", value=f"{calculo_alvo:,} hab.")
-        st.caption(f"Soma das classes: {soma_percentuais*100:.1f}% da população total.")
+        # CARD DE RESULTADO DO PÚBLICO ALVO
+        st.markdown(f"""
+            <div class="card-destaque">
+                <span style="color:#6C757D; font-size:12px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span><br>
+                <span style="font-size:24px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
+                <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população total.</small>
+            </div>
+        """, unsafe_allow_html=True)
 
-    with col_in3:
+    # COLUNA 3: DADOS DE MERCADO E CONCORRÊNCIA
+    with c3:
+        st.markdown("**🏢 Mercado e Vocação Local**")
+        tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], key="val_tipo_praca")
         renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
         tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
         media_mercado = st.number_input("Preço Médio dos Concorrentes (Plano Plus 1x / Grupo):", min_value=0.0, step=10.0, key="val_media_mercado")
@@ -277,9 +296,8 @@ else:
         """, unsafe_allow_html=True)
 
         # ----------------------------------------------------
-        # 🟡 NOVO RECURSO: BOTÃO / CHECKBOX DE EXCEÇÃO TÉCNICA
+        # CHECKBOX DE EXCEÇÃO TÉCNICA (SEM TÍTULO DESNECESSÁRIO)
         # ----------------------------------------------------
-        st.markdown("##### ⚠️ Ajuste de Exceção / Percepção de Mercado")
         aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrevir tabela baseada no comportamento de mercado além dos dados)", key="chk_excecao")
 
         if aplicar_excecao:
@@ -312,7 +330,7 @@ else:
         else:
             tabela_final = tabela_sugerida
 
-        # Cálculo de preço e mercado baseado na TABELA FINAL (Seja sugerida ou de exceção)
+        # Cálculo de preço e mercado baseado na TABELA FINAL
         preco_ref = precos[tabela_final]
         tkm_ref = tkms[tabela_final]
 
