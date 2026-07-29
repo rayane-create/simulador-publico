@@ -65,6 +65,22 @@ st.markdown(
             font-size: 28px;
             font-weight: 800;
         }
+
+        /* Caixa de Exceção Selecionada */
+        .tabela-excecao-box {
+            background-color: #FFF8E1;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 6px solid #FFB300;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .tabela-excecao-box h2 {
+            margin: 4px 0;
+            color: #B78103 !important;
+            font-size: 28px;
+            font-weight: 800;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -197,7 +213,7 @@ if not dados_preenchidos:
     st.info("💡 **Aguardando dados...** Por favor, preencha as informações da Área de Estudo acima para gerar a análise.")
 else:
     # ==========================================
-    # LÓGICA MATEMÁTICA DE PRECIFICAÇÃO (REGRAS ATUALIZADAS)
+    # LÓGICA MATEMÁTICA DE PRECIFICAÇÃO
     # ==========================================
     
     # 1º PONTO: INTERVALO DE TABELAS BASEADO NA RENDA MÉDIA
@@ -224,54 +240,95 @@ else:
         else:
             tab_min, tab_max = 5, 5
 
-    # 2º PONTO: DIRECIONAMENTO DENTRO DO INTERVALO (SUPERIOR OU INFERIOR)
+    # 2º PONTO: DIRECIONAMENTO DENTRO DO INTERVALO
     if populacao < 40000:
         tabela_sugerida = tab_min
     else:
-        # População >= 40.000 habitantes -> Análise de público-alvo
         if calculo_alvo >= 25000:
             tabela_sugerida = tab_max
         else:
-            # Avaliação da representatividade % do público-alvo
-            if soma_percentuais >= 0.40:  # 40% ou mais
+            if soma_percentuais >= 0.40:
                 tabela_sugerida = tab_max
-            elif soma_percentuais >= 0.30:  # Entre 30% e 39.9%
-                # Faixa intermediária (calcula a média arredondada se houver amplitude, ex: Tab 2 e 3)
+            elif soma_percentuais >= 0.30:
                 tabela_sugerida = int(np.round((tab_min + tab_max) / 2))
-            else:  # Menos de 30%
+            else:
                 tabela_sugerida = tab_min
 
     precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
     tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
-    preco_ref = precos[tabela_sugerida]
-    tkm_ref = tkms[tabela_sugerida]
     
-    dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
-
-    if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-    elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-    else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
-
     # ==========================================
     # PAINEL DE RESULTADOS E RECOMENDAÇÕES
     # ==========================================
     st.markdown('<div class="faixa-resultados">📊 Análise de Dados e Recomendações</div>', unsafe_allow_html=True)
 
     with st.container(border=True):
+        
+        # EXIBIÇÃO DA TABELA SUGERIDA PELOS DADOS
+        preco_sugerido = precos[tabela_sugerida]
+        tkm_sugerido = tkms[tabela_sugerida]
+        
         st.markdown(f"""
             <div class="tabela-sugerida-box">
-                <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Inicial Sugerida</p>
+                <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Dados)</p>
                 <h2>Tabela {tabela_sugerida}</h2>
-                <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> | TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
             </div>
         """, unsafe_allow_html=True)
+
+        # ----------------------------------------------------
+        # 🟡 NOVO RECURSO: BOTÃO / CHECKBOX DE EXCEÇÃO TÉCNICA
+        # ----------------------------------------------------
+        st.markdown("##### ⚠️ Ajuste de Exceção / Percepção de Mercado")
+        aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrevir tabela baseada no comportamento de mercado além dos dados)", key="chk_excecao")
+
+        if aplicar_excecao:
+            col_exc1, col_exc2 = st.columns([1, 2])
+            with col_exc1:
+                tabela_escolhida = st.selectbox(
+                    "Selecione a Tabela Definitiva:",
+                    [1, 2, 3, 4, 5],
+                    index=tabela_sugerida - 1,
+                    key="val_tabela_excecao"
+                )
+            with col_exc2:
+                justificativa_excecao = st.text_input(
+                    "Justificativa da Exceção (Obrigatório):",
+                    placeholder="Ex: Concorrência local com forte posicionamento premium, alta percepção de valor na zona de influência...",
+                    key="val_justificativa_excecao"
+                )
+
+            tabela_final = tabela_escolhida
+            
+            # Caixa destacando a tabela escolhida por exceção
+            st.markdown(f"""
+                <div class="tabela-excecao-box">
+                    <p style="margin:0; font-size:11px; color:#B78103; font-weight:bold; text-transform:uppercase;">📌 Tabela Escolhida por Decisão Técnica (Exceção)</p>
+                    <h2>Tabela {tabela_final}</h2>
+                    <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> | TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
+                    {f'<p style="margin:6px 0 0 0; font-size:12px; color:#5D4037;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            tabela_final = tabela_sugerida
+
+        # Cálculo de preço e mercado baseado na TABELA FINAL (Seja sugerida ou de exceção)
+        preco_ref = precos[tabela_final]
+        tkm_ref = tkms[tabela_final]
 
         if tempo_proxima <= 15 and tempo_proxima > 0:
             st.error("🚨 **Proteção de Rede:** Existe unidade próxima. Verificar compatibilidade de tabelas.")
 
-        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
+        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas possíveis calculado:</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
         st.markdown("---")
         
+        # Diagnóstico com base na Tabela Final definida
+        dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
+
+        if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
+        elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
+        else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
+
         st.markdown("##### 🔍 Relatório de Viabilidade de Mercado")
         cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
         with cv1: 
