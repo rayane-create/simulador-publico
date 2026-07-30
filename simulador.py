@@ -35,7 +35,7 @@ st.markdown(
             color: #FFFFFF !important;
         }
 
-        /* Estilização dos Selectbox da Sidebar */
+        /* Selectbox da Sidebar */
         section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
             background-color: #FFFFFF !important;
             border-radius: 8px !important;
@@ -61,7 +61,7 @@ st.markdown(
             color: #FFFFFF !important;
         }
         
-        /* Faixas e Cards de Destaque */
+        /* Faixas e Destaques */
         .faixa-resultados {
             background-color: #022D8A;
             color: #FFFFFF;
@@ -72,35 +72,36 @@ st.markdown(
             border-left: 6px solid #0DF205;
         }
 
-        /* CAIXA DA TABELA SUGERIDA COM LATERAL VERDINHA (#0DF205) EM DESTAQUE */
+        /* TABELA SUGERIDA - DESTAQUE MÁXIMO DA TELA */
         .tabela-sugerida-box {
             background-color: #F8F9FA;
-            padding: 18px;
-            border-radius: 8px;
-            border-left: 8px solid #0DF205;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            padding: 22px;
+            border-radius: 10px;
+            border-left: 10px solid #0DF205;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
         .tabela-sugerida-box h2 {
-            margin: 4px 0;
+            margin: 6px 0;
             color: #022D8A !important;
-            font-size: 26px;
-            font-weight: 800;
+            font-size: 32px !important;
+            font-weight: 800 !important;
         }
 
         .tabela-excecao-box {
             background-color: #F0FDF4;
-            padding: 18px;
-            border-radius: 8px;
-            border-left: 8px solid #0DF205;
-            margin-bottom: 15px;
+            padding: 22px;
+            border-radius: 10px;
+            border-left: 10px solid #0DF205;
+            margin-bottom: 20px;
             border: 1px solid #DCFCE7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
         .tabela-excecao-box h2 {
-            margin: 4px 0;
+            margin: 6px 0;
             color: #166534 !important;
-            font-size: 26px;
-            font-weight: 800;
+            font-size: 32px !important;
+            font-weight: 800 !important;
         }
 
         .card-destaque {
@@ -130,16 +131,20 @@ st.markdown(
             margin-bottom: 12px;
         }
 
+        /* AJUSTE 4: BLOCO DE VIABILIDADE COMPACTO/MENOR */
         .box-relatorio-equilibrado {
             background-color: #F8F9FA;
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid #E2E8F0;
-            padding: 14px 18px;
-            height: 110px !important;
+            padding: 8px 12px;
+            height: 85px !important;
             box-sizing: border-box !important;
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+        .box-relatorio-equilibrado span {
+            line-height: 1.2;
         }
     </style>
     """,
@@ -357,7 +362,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
             
-            # PREÇO MÉDIO PRIMEIRO, CHECKBOX ABAIXO
             media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
             sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
 
@@ -459,27 +463,26 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         with cv1: 
             st.markdown(f"""
                 <div class="box-relatorio-equilibrado">
-                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
-                    <span style="font-size:13px; color:#022D8A; margin-top:4px;"><b>Diretriz:</b> {diag}</span>
-                    <span style="font-size:13px; color:#022D8A; margin-top:2px;"><b>Status:</b> {status}</span>
+                    <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
+                    <span style="font-size:12px; color:#022D8A; margin-top:2px;"><b>Diretriz:</b> {diag}</span>
+                    <span style="font-size:12px; color:#022D8A; margin-top:1px;"><b>Status:</b> {status}</span>
                 </div>
             """, unsafe_allow_html=True)
         with cv2: 
             st.markdown(f"""
-                <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
-                    <span style="color:#975A16; font-size:11px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
-                    <span style="font-size:13px; color:#2D3748; margin-top:4px; line-height:1.3;">{rec}</span>
+                <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 3px solid #D69E2E;">
+                    <span style="color:#975A16; font-size:10px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
+                    <span style="font-size:11.5px; color:#2D3748; margin-top:2px; line-height:1.2;">{rec}</span>
                 </div>
             """, unsafe_allow_html=True)
         with cv3:
             st.markdown(f"""
                 <div class="box-relatorio-equilibrado">
-                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                    <span style="font-size:22px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
+                    <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
+                    <span style="font-size:18px; font-weight:800; color:#022D8A; margin-top:1px;">{txt_dif}</span>
                 </div>
             """, unsafe_allow_html=True)
 
-        # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP
         st.write("")
         with st.container(border=True):
             st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -532,7 +535,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO EMPILHADO NATIVO DO STREAMLIT (INFALÍVEL NO RENDER)
+                # AJUSTE 1: GRÁFICO MAIS EXECUTIVO E FINO
                 st.write("")
                 st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
                 
@@ -542,7 +545,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     "Classe B1": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
                 }, index=["Ponto Simulado"] + df_ranking["Unidade"].tolist())
 
-                st.bar_chart(chart_data, color=["#022D8A", "#053CD8", "#0DF205"], height=320)
+                st.bar_chart(chart_data, color=["#022D8A", "#053CD8", "#0DF205"], height=280)
 
         # RELATÓRIO PDF COMPLETO
         st.write("")
@@ -601,7 +604,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=620, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM SIMILARIDADE, GRÁFICO E PDF)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM ENDEREÇO E QUADRAS)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -610,6 +613,8 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
 
     def limpar_campos_m1_pre():
         st.session_state["val_pre_unidade"] = "Selecione..."
+        st.session_state["val_pre_endereco"] = ""
+        st.session_state["val_pre_quadras"] = 1
         st.session_state["val_pre_tempo_proxima"] = 0
         st.session_state["val_pre_sem_concorrente"] = False
         st.session_state["val_pre_media_mercado"] = 0.0
@@ -618,8 +623,16 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     if "val_pre_unidade" not in st.session_state:
         limpar_campos_m1_pre()
 
-    st.subheader("1. Seleção da Unidade Pré-Mapeada")
-    nome_u_pre = st.selectbox("Selecione a Unidade Mapeada:", LISTA_NOMES_UNIDADES, key="val_pre_unidade")
+    st.subheader("1. Seleção da Unidade Pré-Mapeada e Estrutura")
+    col_u1, col_u2 = st.columns([2, 1])
+    with col_u1:
+        nome_u_pre = st.selectbox("Selecione a Unidade Mapeada:", LISTA_NOMES_UNIDADES, key="val_pre_unidade")
+    with col_u2:
+        # AJUSTE 2: INFORMAÇÃO DO NÚMERO DE QUADRAS
+        num_quadras_pre = st.number_input("Número de Quadras:", min_value=1, step=1, key="val_pre_quadras")
+
+    # AJUSTE 2: ENDEREÇO DA UNIDADE
+    endereco_pre = st.text_input("Endereço Completo da Unidade:", placeholder="Ex: Av. Paulista, 1000 - Bela Vista", key="val_pre_endereco")
 
     if nome_u_pre != "Selecione...":
         dados_u_pre = df_base_unidades[df_base_unidades["Unidade"] == nome_u_pre].iloc[0]
@@ -644,8 +657,9 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u_pre['Unidade']} ({cidade} - {estado})</h3>
-                    <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:12px;">Status: {status_u}</span>
+                    <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:12px;">Status: {status_u} | Quadras: {num_quadras_pre}</span>
                 </div>
+                {f'<p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>📍 Endereço:</b> {endereco_pre}</p>' if endereco_pre else ''}
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Área:</b> {populacao:,} hab.</div>
                     <div><b>Renda Média:</b> R$ {renda_media:,.2f}</div>
@@ -756,27 +770,26 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             with cv1: 
                 st.markdown(f"""
                     <div class="box-relatorio-equilibrado">
-                        <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
-                        <span style="font-size:13px; color:#022D8A; margin-top:4px;"><b>Diretriz:</b> {diag}</span>
-                        <span style="font-size:13px; color:#022D8A; margin-top:2px;"><b>Status:</b> {status}</span>
+                        <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
+                        <span style="font-size:12px; color:#022D8A; margin-top:2px;"><b>Diretriz:</b> {diag}</span>
+                        <span style="font-size:12px; color:#022D8A; margin-top:1px;"><b>Status:</b> {status}</span>
                     </div>
                 """, unsafe_allow_html=True)
             with cv2: 
                 st.markdown(f"""
-                    <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 4px solid #D69E2E;">
-                        <span style="color:#975A16; font-size:11px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
-                        <span style="font-size:13px; color:#2D3748; margin-top:4px; line-height:1.3;">{rec}</span>
+                    <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 3px solid #D69E2E;">
+                        <span style="color:#975A16; font-size:10px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
+                        <span style="font-size:11.5px; color:#2D3748; margin-top:2px; line-height:1.2;">{rec}</span>
                     </div>
                 """, unsafe_allow_html=True)
             with cv3:
                 st.markdown(f"""
                     <div class="box-relatorio-equilibrado">
-                        <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                        <span style="font-size:22px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
+                        <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
+                        <span style="font-size:18px; font-weight:800; color:#022D8A; margin-top:1px;">{txt_dif}</span>
                     </div>
                 """, unsafe_allow_html=True)
 
-            # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP NO MÓDULO 2
             st.write("")
             with st.container(border=True):
                 st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -829,7 +842,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO EMPILHADO NATIVO DO STREAMLIT (INFALÍVEL NO RENDER)
+                    # GRÁFICO EMPILHADO EXECUTIVO
                     st.write("")
                     st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
                     
@@ -839,7 +852,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         "Classe B1": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
                     }, index=[dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist())
 
-                    st.bar_chart(chart_data_pre, color=["#022D8A", "#053CD8", "#0DF205"], height=320)
+                    st.bar_chart(chart_data_pre, color=["#022D8A", "#053CD8", "#0DF205"], height=280)
 
             # RELATÓRIO PDF
             st.write("")
@@ -856,11 +869,11 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     
                     <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
                         <tr style="background-color:#F8F9FA;">
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Unidade:</b> {dados_u_pre['Unidade']}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Unidade:</b> {dados_u_pre['Unidade']} (Quadras: {num_quadras_pre})</td>
                             <td style="padding:8px; border:1px solid #ddd;"><b>População:</b> {populacao:,} hab.</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média:</b> R$ {renda_media:,.2f}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço:</b> {endereco_pre if endereco_pre else 'Não informado'}</td>
                             <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo:</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
                         </tr>
                     </table>
@@ -898,7 +911,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.components.v1.html(html_relatorio, height=620, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (COM QUADRAS)
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -907,6 +920,7 @@ else:
 
     def limpar_campos_m2():
         st.session_state["m2_nome_u"] = "Selecione..."
+        st.session_state["m2_num_quadras"] = 1
         for key in ["m2_mix", "m2_cres_base", "m2_vendedor"]:
             st.session_state[key] = "Selecione..."
         for key in ["m2_tkm_real", "m2_ll", "m2_fat", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p"]:
@@ -931,9 +945,14 @@ else:
 
     st.write("")
     
-    # SELEÇÃO DA UNIDADE
+    # SELEÇÃO DA UNIDADE E ESTRUTURA
     st.subheader("2. Seleção de Unidade & Diagnóstico Operacional")
-    nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_NOMES_UNIDADES, key="m2_nome_u")
+    col_re1, col_re2 = st.columns([2, 1])
+    with col_re1:
+        nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_NOMES_UNIDADES, key="m2_nome_u")
+    with col_re2:
+        # AJUSTE 3: NÚMERO DE QUADRAS NA REAVALIAÇÃO
+        num_quadras_re = st.number_input("Número de Quadras:", min_value=1, step=1, key="m2_num_quadras")
 
     if nome_unidade_sel != "Selecione...":
         dados_u = df_base_unidades[df_base_unidades["Unidade"] == nome_unidade_sel].iloc[0]
@@ -954,7 +973,7 @@ else:
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u['Unidade']} ({dados_u['Cidade']})</h3>
-                    <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u}</span>
+                    <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u} | Quadras: {num_quadras_re}</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Residente:</b> {populacao_u:,} hab.</div>
@@ -1132,7 +1151,7 @@ else:
                     </div>
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
-                    <h4 style="margin:0 0 10px 0; color:#022D8A;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']})</h4>
+                    <h4 style="margin:0 0 10px 0; color:#022D8A;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']}) - Quadras: {num_quadras_re}</h4>
                     <p style="margin:0 0 15px 0; font-size:13px;">Tabela Praticada: <b>Tabela {tab_praticada_u}</b> | População: <b>{populacao_u:,} hab.</b> | Público Alvo: <b>{num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</b></p>
                     
                     <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
