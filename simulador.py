@@ -2,13 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Tratamento seguro contra falta da biblioteca Plotly no servidor
-try:
-    import plotly.graph_objects as go
-    PLOTLY_INSTALADO = True
-except ImportError:
-    PLOTLY_INSTALADO = False
-
 # Configuração da página corporativa da Fast Tennis
 st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica de Precificação", layout="wide")
 
@@ -143,6 +136,49 @@ st.markdown(
             flex-direction: column;
             justify-content: center;
         }
+
+        /* GRÁFICO PERSONALIZADO EXECUTIVO (ALINHADO E SEM DEPENDÊNCIA) */
+        .grafico-executivo-container {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .barra-coluna-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .barra-empilhada-box {
+            width: 52px;
+            height: 180px;
+            background-color: #F1F5F9;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            flex-direction: column-reverse;
+            overflow: hidden;
+        }
+        .rotulo-unidade-horizontal {
+            font-size: 12px;
+            font-weight: 700;
+            color: #022D8A;
+            margin-top: 10px;
+            text-align: center;
+            white-space: normal;
+            word-break: break-word;
+            max-width: 110px;
+        }
+        .tag-similaridade {
+            background-color: #022D8A;
+            color: #0DF205;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -183,7 +219,7 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
-# BANCO DE DADOS ATUALIZADO DE UNIDADES
+# BANCO DE DADOS REVISADO LINHA A LINHA
 # ==========================================
 df_existentes = [
     {"Status": "Operando", "Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "Trecho 3 Q 5 - Sul, Brasília - DF, 71936-500", "Quadras": 3, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.29},
@@ -412,7 +448,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
 
-        # PROTAGONISMO TOTAL À TABELA DEFINIDA
         st.write("")
         st.markdown(f"""
             <div class="tabela-sugerida-box">
@@ -501,7 +536,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     key="val_viabilidade_bp"
                 )
 
-        # CÁLCULO DE UNIDADES SIMILARES
+        # CÁLCULO DE UNIDADES SIMILARES E GRÁFICO PERSONALIZADO EXECUTIVO
         st.write("")
         st.markdown("##### Unidades da Rede com Perfil Similar")
         
@@ -541,30 +576,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO NATIVO VIA PLOTLY (100% GARANTIDO E SEM VAZAMENTO)
-                st.write("")
-                st.markdown("**Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade**")
-                
-                names_grafico = ["Ponto Simulado (Alvo)"] + [f"{limpar_nome_unidade(u)} ({s})" for u, s in zip(df_ranking["Unidade"], df_ranking["% Similaridade"])]
-                b1_vals = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
-                ap_vals = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
-                app_vals = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-
-                fig = go.Figure()
-                fig.add_trace(go.Bar(name='Classe B1 (Base)', x=names_grafico, y=b1_vals, marker_color='#053CD8', width=0.35))
-                fig.add_trace(go.Bar(name='Classe A+ (Elevada)', x=names_grafico, y=ap_vals, marker_color='#0DF205', width=0.35))
-                fig.add_trace(go.Bar(name='Classe A++ (Mais Elevada)', x=names_grafico, y=app_vals, marker_color='#15803D', width=0.35))
-
-                fig.update_layout(
-                    barmode='stack',
-                    height=320,
-                    margin=dict(l=20, r=20, t=30, b=20),
-                    paper_bgcolor='#FFFFFF',
-                    plot_bgcolor='#F8F9FA',
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-                )
-                st.plotly_chart(fig, use_container_width=True)
-
+                # GRÁFICO PURAMENTE NATIVO EM CSS/HTML DA TELA (SEM BIBLIOTECAS)
                 colunas_grafico = [
                     {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                 ]
@@ -577,18 +589,14 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                         "sim": r_u["% Similaridade"]
                     })
 
+                barras_html_tela = ""
                 for item in colunas_grafico:
-                    barras_html_pdf += f"""
-                    <div style="flex:1; text-align:center;">
-                        <span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span>
-                        <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
-                            <div style="height:{item['b1']*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div>
-                            <div style="height:{item['ap']*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div>
-                            <div style="height:{item['app']*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div>
-                        </div>
-                        <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
-                    </div>
-                    """
+                    v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
+                    barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{v_b1 * 1.8}px; background-color:#053CD8;" title="B1: {v_b1:.1f}%"></div><div style="height:{v_ap * 1.8}px; background-color:#0DF205;" title="A+: {v_ap:.1f}%"></div><div style="height:{v_app * 1.8}px; background-color:#15803D;" title="A++: {v_app:.1f}%"></div></div><span class="rotulo-unidade-horizontal">{item['nome']}</span></div>"""
+                    
+                    barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{v_b1*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{v_ap*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{v_app*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+
+                st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p><div style="display:flex; justify-content:space-around; align-items:flex-end;">{barras_html_tela}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:20px;"><span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
         # CAMPO DE CONSIDERAÇÕES FINAIS DO COMITÊ
         st.write("")
@@ -813,7 +821,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             preco_ref = precos[tabela_final]
             tkm_ref = tkms[tabela_final]
 
-            # ALERTA DISCRETO E EXECUTIVO
             if not sem_unidade_proxima and tempo_proxima <= 15 and tempo_proxima > 0:
                 st.markdown('<div class="alerta-fino-executivo">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
 
@@ -908,30 +915,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO PLOTLY MÓDULO 2
-                    st.write("")
-                    st.markdown("**Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade**")
-                    
-                    names_grafico_pre = [f"{limpar_nome_unidade(dados_u_pre['Unidade'])} (Alvo)"] + [f"{limpar_nome_unidade(u)} ({s})" for u, s in zip(df_ranking["Unidade"], df_ranking["% Similaridade"])]
-                    b1_vals_pre = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
-                    ap_vals_pre = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
-                    app_vals_pre = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-
-                    fig_pre = go.Figure()
-                    fig_pre.add_trace(go.Bar(name='Classe B1 (Base)', x=names_grafico_pre, y=b1_vals_pre, marker_color='#053CD8', width=0.35))
-                    fig_pre.add_trace(go.Bar(name='Classe A+ (Elevada)', x=names_grafico_pre, y=ap_vals_pre, marker_color='#0DF205', width=0.35))
-                    fig_pre.add_trace(go.Bar(name='Classe A++ (Mais Elevada)', x=names_grafico_pre, y=app_vals_pre, marker_color='#15803D', width=0.35))
-
-                    fig_pre.update_layout(
-                        barmode='stack',
-                        height=320,
-                        margin=dict(l=20, r=20, t=30, b=20),
-                        paper_bgcolor='#FFFFFF',
-                        plot_bgcolor='#F8F9FA',
-                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-                    )
-                    st.plotly_chart(fig_pre, use_container_width=True)
-
+                    # GRÁFICO PURAMENTE NATIVO EM CSS/HTML DA TELA
                     colunas_grafico_pre = [
                         {"nome": limpar_nome_unidade(dados_u_pre['Unidade']), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                     ]
@@ -944,20 +928,16 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                             "sim": r_u["% Similaridade"]
                         })
 
+                    barras_html_tela_pre = ""
                     for item in colunas_grafico_pre:
-                        barras_html_pdf_pre += f"""
-                        <div style="flex:1; text-align:center;">
-                            <span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span>
-                            <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
-                                <div style="height:{item['b1']*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div>
-                                <div style="height:{item['ap']*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div>
-                                <div style="height:{item['app']*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div>
-                            </div>
-                            <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
-                        </div>
-                        """
+                        v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
+                        barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{v_b1 * 1.8}px; background-color:#053CD8;" title="B1: {v_b1:.1f}%"></div><div style="height:{v_ap * 1.8}px; background-color:#0DF205;" title="A+: {v_ap:.1f}%"></div><div style="height:{v_app * 1.8}px; background-color:#15803D;" title="A++: {v_app:.1f}%"></div></div><span class="rotulo-unidade-horizontal">{item['nome']}</span></div>"""
+                        
+                        barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{v_b1*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{v_ap*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{v_app*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
 
-            # CAMPO DE CONSIDERAÇÕES FINAIS (COMPACTO)
+                    st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p><div style="display:flex; justify-content:space-around; align-items:flex-end;">{barras_html_tela_pre}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:20px;"><span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
+
+            # CAMPO DE CONSIDERAÇÕES FINAIS
             st.write("")
             st.markdown("##### Considerações Finais do Comitê")
             consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", height=80, key="val_m2_consideracoes")
@@ -1325,5 +1305,3 @@ else:
                 </div>
                 """
                 st.components.v1.html(html_pdf_m3, height=680, scrolling=True)
-    else:
-        st.info("Aguardando a seleção da unidade para carregar os dados demográficos do banco e iniciar a avaliação.")
