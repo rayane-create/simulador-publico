@@ -134,65 +134,6 @@ st.markdown(
             flex-direction: column;
             justify-content: center;
         }
-
-        /* ESTRUTURA DO GRÁFICO TOTALMENTE ALINHADA PELA BASE */
-        .grafico-executivo-container {
-            background-color: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 10px;
-            padding: 25px 20px 15px 20px;
-            margin-top: 15px;
-        }
-        .linha-grafico-flex {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            padding-bottom: 0px;
-            border-bottom: 2px solid #CBD5E0; /* Linha de horizonte perfeita */
-        }
-        .barra-coluna-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-            justify-content: flex-end;
-        }
-        .barra-empilhada-box {
-            width: 52px;
-            height: 180px;
-            background-color: transparent;
-            display: flex;
-            flex-direction: column-reverse;
-            overflow: hidden;
-            border-radius: 4px 4px 0 0;
-        }
-        .rotulos-container-fixed {
-            display: flex;
-            justify-content: space-around;
-            padding-top: 10px;
-        }
-        .rotulo-unidade-box {
-            flex: 1;
-            text-align: center;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #022D8A;
-            line-height: 1.3;
-            min-height: 42px; /* Garante que 1 ou 2 linhas não desalinhem nada */
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 0 4px;
-        }
-        .tag-similaridade {
-            background-color: #022D8A;
-            color: #0DF205;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
     </style>
     """,
     unsafe_allow_html=True
@@ -590,7 +531,20 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # ESTRUTURA REFORÇADA E 100% ALINHADA PELA BASE
+                # GRÁFICO NATIVO DO STREAMLIT BARRAS AGRUPADAS (100% GARANTIDO, SEM DESALINHAMENTO)
+                st.write("")
+                st.markdown("**Perfil da Renda e Distribuição de Classes (%) por Praça**")
+                
+                nomes_praças = ["Ponto Simulado (Alvo)"] + [f"{limpar_nome_unidade(u)} ({s})" for u, s in zip(df_ranking["Unidade"], df_ranking["% Similaridade"])]
+                
+                chart_df = pd.DataFrame({
+                    "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
+                    "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
+                    "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
+                }, index=nomes_praças)
+
+                st.bar_chart(chart_df, color=["#053CD8", "#0DF205", "#15803D"], height=320)
+
                 colunas_grafico = [
                     {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                 ]
@@ -603,24 +557,8 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                         "sim": r_u["% Similaridade"]
                     })
 
-                maior_soma = max([(i["b1"] + i["ap"] + i["app"]) for i in colunas_grafico] + [1.0])
-                fator_escala = 170.0 / maior_soma
-
-                barras_html_tela = ""
-                rotulos_html_tela = ""
-
                 for item in colunas_grafico:
-                    v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
-                    h_b1 = max(4, int(v_b1 * fator_escala))
-                    h_ap = max(4, int(v_ap * fator_escala))
-                    h_app = max(4, int(v_app * fator_escala))
-
-                    barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div><div style="height:{h_ap}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div><div style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div></div></div>"""
-                    rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
-                    
-                    barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_b1*0.8}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.8}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.8}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
-
-                st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p><div class="linha-grafico-flex">{barras_html_tela}</div><div class="rotulos-container-fixed">{rotulos_html_tela}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
+                    barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{item['b1']*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['ap']*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['app']*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
 
         # CAMPO DE CONSIDERAÇÕES FINAIS DO COMITÊ
         st.write("")
@@ -939,7 +877,20 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO PURAMENTE NATIVO EM CSS/HTML DA TELA
+                    # GRÁFICO NATIVO DO STREAMLIT BARRAS AGRUPADAS (100% GARANTIDO E ALINHADO)
+                    st.write("")
+                    st.markdown("**Perfil da Renda e Distribuição de Classes (%) por Praça**")
+                    
+                    nomes_praças_pre = [f"{limpar_nome_unidade(dados_u_pre['Unidade'])} (Alvo)"] + [f"{limpar_nome_unidade(u)} ({s})" for u, s in zip(df_ranking["Unidade"], df_ranking["% Similaridade"])]
+                    
+                    chart_df_pre = pd.DataFrame({
+                        "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
+                        "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
+                        "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
+                    }, index=nomes_praças_pre)
+
+                    st.bar_chart(chart_df_pre, color=["#053CD8", "#0DF205", "#15803D"], height=320)
+
                     colunas_grafico_pre = [
                         {"nome": limpar_nome_unidade(dados_u_pre['Unidade']), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                     ]
@@ -952,24 +903,8 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                             "sim": r_u["% Similaridade"]
                         })
 
-                    maior_soma_pre = max([(i["b1"] + i["ap"] + i["app"]) for i in colunas_grafico_pre] + [1.0])
-                    fator_escala_pre = 170.0 / maior_soma_pre
-
-                    barras_html_tela_pre = ""
-                    rotulos_html_tela_pre = ""
-
                     for item in colunas_grafico_pre:
-                        v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
-                        h_b1 = max(4, int(v_b1 * fator_escala_pre))
-                        h_ap = max(4, int(v_ap * fator_escala_pre))
-                        h_app = max(4, int(v_app * fator_escala_pre))
-
-                        barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{h_b1}px; background-color:#053CD8;" title="B1: {v_b1:.1f}%"></div><div style="height:{h_ap}px; background-color:#0DF205;" title="A+: {v_ap:.1f}%"></div><div style="height:{h_app}px; background-color:#15803D;" title="A++: {v_app:.1f}%"></div></div></div>"""
-                        rotulos_html_tela_pre += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
-                        
-                        barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_b1*0.8}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.8}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.8}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
-
-                    st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p><div class="linha-grafico-flex">{barras_html_tela_pre}</div><div class="rotulos-container-fixed">{rotulos_html_tela_pre}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
+                        barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{item['b1']*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['ap']*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['app']*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
 
             # CAMPO DE CONSIDERAÇÕES FINAIS
             st.write("")
