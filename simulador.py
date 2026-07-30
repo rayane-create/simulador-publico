@@ -1,7 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
+
+# Tratamento seguro contra falta da biblioteca Plotly no servidor
+try:
+    import plotly.graph_objects as go
+    PLOTLY_INSTALADO = True
+except ImportError:
+    PLOTLY_INSTALADO = False
 
 # Configuração da página corporativa da Fast Tennis
 st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica de Precificação", layout="wide")
@@ -177,7 +183,7 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
-# BANCO DE DADOS REVISADO LINHA A LINHA
+# BANCO DE DADOS ATUALIZADO DE UNIDADES
 # ==========================================
 df_existentes = [
     {"Status": "Operando", "Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "Trecho 3 Q 5 - Sul, Brasília - DF, 71936-500", "Quadras": 3, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.29},
@@ -406,6 +412,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
 
+        # PROTAGONISMO TOTAL À TABELA DEFINIDA
         st.write("")
         st.markdown(f"""
             <div class="tabela-sugerida-box">
@@ -806,6 +813,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             preco_ref = precos[tabela_final]
             tkm_ref = tkms[tabela_final]
 
+            # ALERTA DISCRETO E EXECUTIVO
             if not sem_unidade_proxima and tempo_proxima <= 15 and tempo_proxima > 0:
                 st.markdown('<div class="alerta-fino-executivo">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
 
@@ -949,7 +957,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </div>
                         """
 
-            # CAMPO DE CONSIDERAÇÕES FINAIS
+            # CAMPO DE CONSIDERAÇÕES FINAIS (COMPACTO)
             st.write("")
             st.markdown("##### Considerações Finais do Comitê")
             consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", height=80, key="val_m2_consideracoes")
