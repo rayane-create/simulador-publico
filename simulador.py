@@ -35,7 +35,7 @@ st.markdown(
             color: #FFFFFF !important;
         }
 
-        /* Estilização dos Selectbox da Sidebar (Fundo Branco e Cantos Arredondados) */
+        /* Estilização dos Selectbox da Sidebar */
         section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
             background-color: #FFFFFF !important;
             border-radius: 8px !important;
@@ -269,7 +269,7 @@ TABELAS_OFICIAIS = {
 }
 
 # ==========================================
-# SIDEBAR - MENU SELECCIONÁVEL DROPDOWN (GUIDELINE 2025)
+# SIDEBAR - MENU DROPDOWN NOMES LIMPOS
 # ==========================================
 with st.sidebar:
     st.markdown("""
@@ -283,9 +283,9 @@ with st.sidebar:
     modulo_selecionado = st.selectbox(
         "Selecione o Módulo:",
         [
-            "1. Simulador de Precificação Inicial (Pontos Não Definidos)",
-            "2. Simulador de Precificação (Pontos Pré-Definidos)",
-            "3. Reavaliação Estratégica (Unidades Ativas)"
+            "Simulador Precificação Inicial",
+            "Simulador Pontos Pré-Definidos",
+            "Reavaliação Estratégica"
         ],
         key="modulo_navegacao"
     )
@@ -294,9 +294,9 @@ with st.sidebar:
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
 
 # ==============================================================================
-# MÓDULO 1: SIMULADOR DE PRECIFICAÇÃO INICIAL (PONTOS NÃO DEFINIDOS)
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (PONTOS NÃO DEFINIDOS)
 # ==============================================================================
-if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não Definidos)":
+if modulo_selecionado == "Simulador Precificação Inicial":
     
     def limpar_campos_m1():
         st.session_state["val_estado"] = "Selecione..."
@@ -356,13 +356,9 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
             renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
             
-            # OPÇÃO DE SEM CONCORRENTE
+            # PREÇO MÉDIO PRIMEIRO, CHECKBOX ABAIXO
+            media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
             sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
-            if sem_concorrente:
-                media_mercado = 0.0
-                st.caption("Sem concorrência direta no raio do estudo.")
-            else:
-                media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
 
         st.write("")
         col_btn1, col_btn2 = st.columns([5, 1.2])
@@ -446,7 +442,6 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
 
         st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
         
-        # CÁLCULO DE DIFERENÇA DE MERCADO OU SEM CONCORRENTE
         if sem_concorrente or media_mercado == 0:
             diag, status, rec = "Mercado Exclusivo", "Sem Concorrência Direta", "Oportunidade de captura total da demanda sem pressão concorrencial direta."
             txt_dif = "Sem Concorrente Directo"
@@ -500,6 +495,7 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
         st.write("")
         st.markdown("##### Unidades da Rede com Perfil Similar")
         
+        linhas_similares_pdf = ""
         if not df_base_unidades.empty:
             alvo_sp = (estado == "SP")
             df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
@@ -531,7 +527,10 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
                     hide_index=True
                 )
 
-        # RELATÓRIO PDF
+                for _, r in df_ranking.iterrows():
+                    linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
+
+        # RELATÓRIO PDF COMPLETO
         st.write("")
         st.markdown("---")
         with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
@@ -561,15 +560,36 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
                     <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
                 </div>
 
+                <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
+                    <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
+                    <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
+                    <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
+                    <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
+                </div>
+
+                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:13px;">Unidades da Rede com Perfil Similar:</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color:#F8F9FA; text-align:left;">
+                            <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
+                            <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {linhas_similares_pdf}
+                    </tbody>
+                </table>
+
                 <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
             </div>
             """
-            st.components.v1.html(html_relatorio, height=520, scrolling=True)
+            st.components.v1.html(html_relatorio, height=620, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR DE PRECIFICAÇÃO (PONTOS PRÉ-DEFINIDOS)
+# MÓDULO 2: SIMULADOR PONTI PRÉ-DEFINIDOS (COM SIMILARIDADE E PDF)
 # ==============================================================================
-elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definidos)":
+elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
     st.markdown("Simulação e definição de tabela para unidades mapeadas ou em implantação com dados demográficos pré-cadastrados.")
     st.markdown("---")
@@ -628,12 +648,8 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
             with col_pre1:
                 tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_pre_tempo_proxima")
             with col_pre2:
+                media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_pre_media_mercado")
                 sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_pre_sem_concorrente")
-                if sem_concorrente:
-                    media_mercado = 0.0
-                    st.caption("Sem concorrência direta no raio do estudo.")
-                else:
-                    media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_pre_media_mercado")
 
             st.write("")
             col_btn_p1, col_btn_p2 = st.columns([5, 1.2])
@@ -746,13 +762,28 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
                     </div>
                 """, unsafe_allow_html=True)
 
-            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2
+            st.write("")
+            with st.container(border=True):
+                st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
+                cbp1, cb2 = st.columns(2)
+                with cbp1:
+                    st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
+                with cb2:
+                    viabilidade_bp = st.selectbox(
+                        "Status de rentabilidade projetada:", 
+                        ["Aguardando simulação...", "Viável (Alinhado às Diretrizes do BP)", "Inviável (Payback projetado superior a 60 meses)", "Margem Líquida abaixo de R$ 10.000,00", "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", "Margem Líquida acima de R$ 20.000,00"],
+                        key="val_pre_viabilidade_bp"
+                    )
+
+            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2 (EXCLUINDO A PRÓPRIA UNIDADE)
             st.write("")
             st.markdown("##### Unidades da Rede com Perfil Similar")
             
+            linhas_similares_pdf_pre = ""
             if not df_base_unidades.empty:
                 alvo_sp = (estado == "SP")
-                df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
+                # Exclui a própria unidade do cálculo
+                df_filtrado = df_base_unidades[(df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp) & (df_base_unidades['Unidade'] != nome_u_pre)].copy()
                 
                 if not df_filtrado.empty:
                     r_ref = renda_media if renda_media > 0 else 1
@@ -781,7 +812,10 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
                         hide_index=True
                     )
 
-            # RELATÓRIO PDF NO MÓDULO 2
+                    for _, r in df_ranking.iterrows():
+                        linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
+
+            # RELATÓRIO PDF
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
@@ -811,10 +845,31 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
                         <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
                     </div>
 
+                    <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
+                        <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
+                        <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
+                        <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
+                        <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
+                    </div>
+
+                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:13px;">Unidades da Rede com Perfil Similar:</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color:#F8F9FA; text-align:left;">
+                                <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
+                                <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
+                                <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {linhas_similares_pdf_pre}
+                        </tbody>
+                    </table>
+
                     <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
                 </div>
                 """
-                st.components.v1.html(html_relatorio, height=520, scrolling=True)
+                st.components.v1.html(html_relatorio, height=620, scrolling=True)
 
 # ==============================================================================
 # MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
