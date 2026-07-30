@@ -111,7 +111,7 @@ st.markdown(
             margin-bottom: 20px;
         }
 
-        /* ALERTA DISCRETO E EXECUTIVO (SUBSTITUIU A CAIXA VERMELHA BERRENTE) */
+        /* ALERTA DISCRETO E EXECUTIVO */
         .alerta-fino-executivo {
             background-color: #F8F9FA;
             color: #7F1D1D;
@@ -137,7 +137,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* GRÁFICO PERSONALIZADO EXECUTIVO (ALINHADO) */
+        /* GRÁFICO PERSONALIZADO EXECUTIVO */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -445,7 +445,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
 
-        # PROTAGONISMO TOTAL À TABELA DEFINIDA (LIMPO E SEM POLUIÇÃO)
+        # PROTAGONISMO TOTAL À TABELA DEFINIDA
         st.write("")
         st.markdown(f"""
             <div class="tabela-sugerida-box">
@@ -576,7 +576,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO EXECUTIVO PERSONALIZADO (HORIZONTAL SEM ROTAÇÃO + EIXO SIMILARIDADE)
                 colunas_grafico = [
                     {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                 ]
@@ -607,15 +606,15 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     <div style="flex:1; text-align:center;">
                         <span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span>
                         <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
-                            <div style="height:{v_b1*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;" title="B1: {v_b1:.1f}%"></div>
-                            <div style="height:{v_ap*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;" title="A+: {v_ap:.1f}%"></div>
-                            <div style="height:{v_app*1.3}px; width:22px; background:#15803D; border-radius:2px;" title="A++: {v_app:.1f}%"></div>
+                            <div style="height:{v_b1*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div>
+                            <div style="height:{v_ap*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div>
+                            <div style="height:{v_app*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div>
                         </div>
                         <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
                     </div>
                     """
 
-                html_grafico_container = f"""
+                st.markdown(f"""
                     <div class="grafico-executivo-container">
                         <p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p>
                         <div style="display:flex; justify-content:space-around; align-items:flex-end;">
@@ -627,8 +626,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                             <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
                         </div>
                     </div>
-                """
-                st.markdown(html_grafico_container, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
         # CAMPO DE CONSIDERAÇÕES FINAIS DO COMITÊ (COMPACTO)
         st.write("")
