@@ -1,7 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
+
+# Tenta importar o Plotly de forma segura para não quebrar o Render caso falte no requirements.txt
+try:
+    import plotly.graph_objects as go
+    PLOTLY_DISPONIVEL = True
+except ImportError:
+    PLOTLY_DISPONIVEL = False
 
 # Configuração da página corporativa da Fast Tennis
 st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica", layout="wide")
@@ -358,7 +364,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
             
-            # PREÇO MÉDIO PRIMEIRO, CHECKBOX ABAIXO
+            # PREÇO MÉDIO PRIMEIRO, CHECKBOX ABAIXO (CORREÇÃO 1)
             media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
             sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
 
@@ -480,6 +486,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 </div>
             """, unsafe_allow_html=True)
 
+        # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP (CORREÇÃO 2)
         st.write("")
         with st.container(border=True):
             st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -532,32 +539,31 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES
-                fig = go.Figure()
-                
-                # Categoria 1: Ponto Simulado Atual
-                nomes_grafico = ["Ponto Simulado"] + df_ranking["Unidade"].tolist()
-                a2_vals = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-                a1_vals = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
-                b1_vals = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+                # GRÁFICO EMPILHADO
+                if PLOTLY_DISPONIVEL:
+                    fig = go.Figure()
+                    nomes_grafico = ["Ponto Simulado"] + df_ranking["Unidade"].tolist()
+                    a2_vals = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
+                    a1_vals = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
+                    b1_vals = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
 
-                fig.add_trace(go.Bar(name='Classe A++', x=nomes_grafico, y=a2_vals, marker_color='#022D8A'))
-                fig.add_trace(go.Bar(name='Classe A+', x=nomes_grafico, y=a1_vals, marker_color='#053CD8'))
-                fig.add_trace(go.Bar(name='Classe B1', x=nomes_grafico, y=b1_vals, marker_color='#0DF205'))
+                    fig.add_trace(go.Bar(name='Classe A++', x=nomes_grafico, y=a2_vals, marker_color='#022D8A'))
+                    fig.add_trace(go.Bar(name='Classe A+', x=nomes_grafico, y=a1_vals, marker_color='#053CD8'))
+                    fig.add_trace(go.Bar(name='Classe B1', x=nomes_grafico, y=b1_vals, marker_color='#0DF205'))
 
-                fig.update_layout(
-                    barmode='stack',
-                    title='Perfil da Renda e Distribuição de Classes (%)',
-                    xaxis_title="Unidades de Comparação",
-                    yaxis_title="Percentual da População (%)",
-                    height=350,
-                    margin=dict(l=20, r=20, t=40, b=20),
-                    paper_bgcolor='#FFFFFF',
-                    plot_bgcolor='#F8F9FA'
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                    fig.update_layout(
+                        barmode='stack',
+                        title='Perfil da Renda e Distribuição de Classes (%)',
+                        xaxis_title="Unidades de Comparação",
+                        yaxis_title="Percentual da População (%)",
+                        height=350,
+                        margin=dict(l=20, r=20, t=40, b=20),
+                        paper_bgcolor='#FFFFFF',
+                        plot_bgcolor='#F8F9FA'
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
 
-        # RELATÓRIO PDF COMPLETO
+        # RELATÓRIO PDF COMPLETO (CORREÇÃO 6)
         st.write("")
         st.markdown("---")
         with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
@@ -614,7 +620,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=620, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM SIMILARIDADE E PDF)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM SIMILARIDADE, GRÁFICO E PDF)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -789,6 +795,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     </div>
                 """, unsafe_allow_html=True)
 
+            # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP NO MÓDULO 2 (CORREÇÃO 2)
             st.write("")
             with st.container(border=True):
                 st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -802,7 +809,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         key="val_pre_viabilidade_bp"
                     )
 
-            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2 (EXCLUINDO A PRÓPRIA UNIDADE)
+            # CÁLCULO DE UNIDADES SIMILARES (CORREÇÃO 4 - EXCLUI A PRÓPRIA UNIDADE)
             st.write("")
             st.markdown("##### Unidades da Rede com Perfil Similar")
             
@@ -842,29 +849,30 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
                     # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES (MÓDULO 2)
-                    fig_pre = go.Figure()
-                    nomes_grafico_pre = [dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist()
-                    a2_vals_pre = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-                    a1_vals_pre = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
-                    b1_vals_pre = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+                    if PLOTLY_DISPONIVEL:
+                        fig_pre = go.Figure()
+                        nomes_grafico_pre = [dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist()
+                        a2_vals_pre = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
+                        a1_vals_pre = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
+                        b1_vals_pre = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
 
-                    fig_pre.add_trace(go.Bar(name='Classe A++', x=nomes_grafico_pre, y=a2_vals_pre, marker_color='#022D8A'))
-                    fig_pre.add_trace(go.Bar(name='Classe A+', x=nomes_grafico_pre, y=a1_vals_pre, marker_color='#053CD8'))
-                    fig_pre.add_trace(go.Bar(name='Classe B1', x=nomes_grafico_pre, y=b1_vals_pre, marker_color='#0DF205'))
+                        fig_pre.add_trace(go.Bar(name='Classe A++', x=nomes_grafico_pre, y=a2_vals_pre, marker_color='#022D8A'))
+                        fig_pre.add_trace(go.Bar(name='Classe A+', x=nomes_grafico_pre, y=a1_vals_pre, marker_color='#053CD8'))
+                        fig_pre.add_trace(go.Bar(name='Classe B1', x=nomes_grafico_pre, y=b1_vals_pre, marker_color='#0DF205'))
 
-                    fig_pre.update_layout(
-                        barmode='stack',
-                        title='Perfil da Renda e Distribuição de Classes (%)',
-                        xaxis_title="Unidades de Comparação",
-                        yaxis_title="Percentual da População (%)",
-                        height=350,
-                        margin=dict(l=20, r=20, t=40, b=20),
-                        paper_bgcolor='#FFFFFF',
-                        plot_bgcolor='#F8F9FA'
-                    )
-                    st.plotly_chart(fig_pre, use_container_width=True)
+                        fig_pre.update_layout(
+                            barmode='stack',
+                            title='Perfil da Renda e Distribuição de Classes (%)',
+                            xaxis_title="Unidades de Comparação",
+                            yaxis_title="Percentual da População (%)",
+                            height=350,
+                            margin=dict(l=20, r=20, t=40, b=20),
+                            paper_bgcolor='#FFFFFF',
+                            plot_bgcolor='#F8F9FA'
+                        )
+                        st.plotly_chart(fig_pre, use_container_width=True)
 
-            # RELATÓRIO PDF
+            # RELATÓRIO PDF COMPLETO (CORREÇÃO 6)
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
@@ -1112,7 +1120,7 @@ else:
             indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho highly saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
