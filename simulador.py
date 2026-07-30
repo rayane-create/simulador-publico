@@ -111,15 +111,17 @@ st.markdown(
             margin-bottom: 20px;
         }
 
-        .alerta-fino {
-            background-color: #FEF2F2;
-            color: #991B1B;
-            border-left: 4px solid #EF4444;
-            padding: 10px 16px;
-            font-size: 13px;
+        /* ALERTA DISCRETO E EXECUTIVO (SUBSTITUIU A CAIXA VERMELHA BERRENTE) */
+        .alerta-fino-executivo {
+            background-color: #F8F9FA;
+            color: #7F1D1D;
+            border: 1px solid #FECACA;
+            border-left: 4px solid #991B1B;
+            padding: 8px 14px;
+            font-size: 12.5px;
             font-weight: 600;
             border-radius: 4px;
-            margin-bottom: 12px;
+            margin: 12px 0;
         }
 
         /* CARD DE VIABILIDADE DE MERCADO CLEAN */
@@ -135,7 +137,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* GRÁFICO PERSONALIZADO EXECUTIVO (NOMES NA HORIZONTAL) */
+        /* GRÁFICO PERSONALIZADO EXECUTIVO (ALINHADO) */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -217,7 +219,7 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
-# BANCO DE DADOS ATUALIZADO (QUADRAS CAMPESTRE CORRIGIDO PARA 2)
+# BANCO DE DADOS ATUALIZADO DE UNIDADES
 # ==========================================
 df_existentes = [
     {"Status": "Operando", "Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "Rua 36 Sul, Lote 05 - Águas Claras", "Quadras": 4, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.29},
@@ -443,13 +445,13 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
 
-        # PROTAGONISMO TOTAL À TABELA DEFINIDA (SEM POLUIÇÃO VISUAL DE FAIXAS AZUIS)
+        # PROTAGONISMO TOTAL À TABELA DEFINIDA (LIMPO E SEM POLUIÇÃO)
         st.write("")
         st.markdown(f"""
             <div class="tabela-sugerida-box">
                 <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                 <h2>Tabela {tabela_sugerida}</h2>
-                <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
+                <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -468,7 +470,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 <div class="tabela-excecao-box">
                     <p style="margin:0; font-size:12px; color:#166534; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO)</p>
                     <h2>Tabela {tabela_final}</h2>
-                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
+                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkms[tabela_final]},00</b></p>
                     {f'<p style="margin:8px 0 0 0; font-size:13px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                 </div>
             """, unsafe_allow_html=True)
@@ -478,8 +480,9 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         preco_ref = precos[tabela_final]
         tkm_ref = tkms[tabela_final]
 
+        # ALERTA DISCRETO E EXECUTIVO
         if tempo_proxima <= 15 and tempo_proxima > 0:
-            st.markdown('<div class="alerta-fino">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="alerta-fino-executivo">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
 
         st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
         
@@ -524,7 +527,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
             cbp1, cb2 = st.columns(2)
             with cbp1:
-                st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
+                st.metric(label="TKM para o BP:", value=f"R$ {tkm_ref},00")
             with cb2:
                 viabilidade_bp = st.selectbox(
                     "Status de rentabilidade projetada:", 
@@ -573,7 +576,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # CONSTRUÇÃO DO GRÁFICO EXECUTIVO PERSONALIZADO (HORIZONTAL SEM ROTAÇÃO E EIXO DE SIMILARIDADE)
+                # GRÁFICO EXECUTIVO PERSONALIZADO (HORIZONTAL SEM ROTAÇÃO + EIXO SIMILARIDADE)
                 colunas_grafico = [
                     {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                 ]
@@ -612,7 +615,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </div>
                     """
 
-                st.markdown(f"""
+                html_grafico_container = f"""
                     <div class="grafico-executivo-container">
                         <p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p>
                         <div style="display:flex; justify-content:space-around; align-items:flex-end;">
@@ -624,9 +627,10 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                             <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
                         </div>
                     </div>
-                """, unsafe_allow_html=True)
+                """
+                st.markdown(html_grafico_container, unsafe_allow_html=True)
 
-        # CAMPO DE CONSIDERAÇÕES FINAIS (SEM EMOJI, COMPACTO)
+        # CAMPO DE CONSIDERAÇÕES FINAIS DO COMITÊ (COMPACTO)
         st.write("")
         st.markdown("##### Considerações Finais do Comitê")
         consideracoes_m1 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto comercial, concorrência ou viabilidade...", height=80, key="val_m1_consideracoes")
@@ -661,7 +665,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
 
                 <div style="background-color:#F0FDF4; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #DCFCE7;">
                     <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
-                    <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                    <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
                     <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
                 </div>
 
@@ -818,7 +822,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 <div class="tabela-sugerida-box">
                     <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                     <h2>Tabela {tabela_sugerida}</h2>
-                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
+                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -837,7 +841,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     <div class="tabela-excecao-box">
                         <p style="margin:0; font-size:12px; color:#166534; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO)</p>
                         <h2>Tabela {tabela_final}</h2>
-                        <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
+                        <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkms[tabela_final]},00</b></p>
                         {f'<p style="margin:8px 0 0 0; font-size:13px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                     </div>
                 """, unsafe_allow_html=True)
@@ -847,8 +851,9 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             preco_ref = precos[tabela_final]
             tkm_ref = tkms[tabela_final]
 
+            # ALERTA DISCRETO E EXECUTIVO
             if tempo_proxima <= 15 and tempo_proxima > 0:
-                st.markdown('<div class="alerta-fino">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
+                st.markdown('<div class="alerta-fino-executivo">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
 
             st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
             
@@ -893,7 +898,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
                 cbp1, cb2 = st.columns(2)
                 with cbp1:
-                    st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
+                    st.metric(label="TKM para o BP:", value=f"R$ {tkm_ref},00")
                 with cb2:
                     viabilidade_bp = st.selectbox(
                         "Status de rentabilidade projetada:", 
@@ -942,7 +947,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO EXECUTIVO MÓDULO 2 (NOME NA HORIZONTAL + EIXO SIMILARIDADE)
+                    # GRÁFICO EXECUTIVO MÓDULO 2
                     colunas_grafico_pre = [
                         {"nome": limpar_nome_unidade(dados_u_pre['Unidade']), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                     ]
@@ -981,7 +986,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </div>
                         """
 
-                    st.markdown(f"""
+                    html_grafico_container_pre = f"""
                         <div class="grafico-executivo-container">
                             <p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p>
                             <div style="display:flex; justify-content:space-around; align-items:flex-end;">
@@ -993,7 +998,8 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                                 <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
                             </div>
                         </div>
-                    """, unsafe_allow_html=True)
+                    """
+                    st.markdown(html_grafico_container_pre, unsafe_allow_html=True)
 
             # CAMPO DE CONSIDERAÇÕES FINAIS (COMPACTO)
             st.write("")
@@ -1029,7 +1035,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
 
                     <div style="background-color:#F0FDF4; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #DCFCE7;">
                         <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
-                        <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                        <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
                         <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
                     </div>
 
@@ -1273,7 +1279,7 @@ else:
             indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho highly saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
@@ -1293,7 +1299,7 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-            # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 3)
+            # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 3 - COMPACTO)
             st.write("")
             st.markdown("##### Considerações Finais do Comitê")
             consideracoes_m3 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários operacionais ou justificativas técnicas...", height=80, key="val_m3_consideracoes")
