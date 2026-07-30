@@ -2,13 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Tenta importar o Plotly de forma segura para não quebrar o Render caso falte no requirements.txt
-try:
-    import plotly.graph_objects as go
-    PLOTLY_DISPONIVEL = True
-except ImportError:
-    PLOTLY_DISPONIVEL = False
-
 # Configuração da página corporativa da Fast Tennis
 st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica", layout="wide")
 
@@ -539,29 +532,17 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO EMPILHADO
-                if PLOTLY_DISPONIVEL:
-                    fig = go.Figure()
-                    nomes_grafico = ["Ponto Simulado"] + df_ranking["Unidade"].tolist()
-                    a2_vals = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-                    a1_vals = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
-                    b1_vals = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+                # GRÁFICO EMPILHADO NATIVO DO STREAMLIT (INFALÍVEL NO RENDER)
+                st.write("")
+                st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
+                
+                chart_data = pd.DataFrame({
+                    "Classe A++": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
+                    "Classe A+": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
+                    "Classe B1": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+                }, index=["Ponto Simulado"] + df_ranking["Unidade"].tolist())
 
-                    fig.add_trace(go.Bar(name='Classe A++', x=nomes_grafico, y=a2_vals, marker_color='#022D8A'))
-                    fig.add_trace(go.Bar(name='Classe A+', x=nomes_grafico, y=a1_vals, marker_color='#053CD8'))
-                    fig.add_trace(go.Bar(name='Classe B1', x=nomes_grafico, y=b1_vals, marker_color='#0DF205'))
-
-                    fig.update_layout(
-                        barmode='stack',
-                        title='Perfil da Renda e Distribuição de Classes (%)',
-                        xaxis_title="Unidades de Comparação",
-                        yaxis_title="Percentual da População (%)",
-                        height=350,
-                        margin=dict(l=20, r=20, t=40, b=20),
-                        paper_bgcolor='#FFFFFF',
-                        plot_bgcolor='#F8F9FA'
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
+                st.bar_chart(chart_data, color=["#022D8A", "#053CD8", "#0DF205"], height=320)
 
         # RELATÓRIO PDF COMPLETO
         st.write("")
@@ -809,7 +790,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         key="val_pre_viabilidade_bp"
                     )
 
-            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2
+            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2 (EXCLUINDO A PRÓPRIA UNIDADE)
             st.write("")
             st.markdown("##### Unidades da Rede com Perfil Similar")
             
@@ -848,29 +829,17 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES
-                    if PLOTLY_DISPONIVEL:
-                        fig_pre = go.Figure()
-                        nomes_grafico_pre = [dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist()
-                        a2_vals_pre = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-                        a1_vals_pre = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
-                        b1_vals_pre = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+                    # GRÁFICO EMPILHADO NATIVO DO STREAMLIT (INFALÍVEL NO RENDER)
+                    st.write("")
+                    st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
+                    
+                    chart_data_pre = pd.DataFrame({
+                        "Classe A++": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
+                        "Classe A+": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
+                        "Classe B1": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+                    }, index=[dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist())
 
-                        fig_pre.add_trace(go.Bar(name='Classe A++', x=nomes_grafico_pre, y=a2_vals_pre, marker_color='#022D8A'))
-                        fig_pre.add_trace(go.Bar(name='Classe A+', x=nomes_grafico_pre, y=a1_vals_pre, marker_color='#053CD8'))
-                        fig_pre.add_trace(go.Bar(name='Classe B1', x=nomes_grafico_pre, y=b1_vals_pre, marker_color='#0DF205'))
-
-                        fig_pre.update_layout(
-                            barmode='stack',
-                            title='Perfil da Renda e Distribuição de Classes (%)',
-                            xaxis_title="Unidades de Comparação",
-                            yaxis_title="Percentual da População (%)",
-                            height=350,
-                            margin=dict(l=20, r=20, t=40, b=20),
-                            paper_bgcolor='#FFFFFF',
-                            plot_bgcolor='#F8F9FA'
-                        )
-                        st.plotly_chart(fig_pre, use_container_width=True)
+                    st.bar_chart(chart_data_pre, color=["#022D8A", "#053CD8", "#0DF205"], height=320)
 
             # RELATÓRIO PDF
             st.write("")
