@@ -599,7 +599,7 @@ else:
             if val == "Atenção": return 'background-color: #FEF9C3; color: #A16207; font-weight: bold;'
             if val == "Crítico": return 'background-color: #FEE2E2; color: #B91C1C; font-weight: bold;'
             return ''
-        st.dataframe(df_sinais.style.applymap(estilizar_sinais, subset=['Sinal']), use_container_width=True, hide_index=True)
+        st.dataframe(df_sinais.style.map(estilizar_sinais, subset=['Sinal']), use_container_width=True, hide_index=True)
 
         st.markdown(f"""
             <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:12px 20px; border-radius:4px; margin-top:8px; display:flex; justify-content:space-around;">
