@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 # Configuração da página corporativa da Fast Tennis
-st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica", layout="wide")
+st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica de Precificação", layout="wide")
 
 # ==========================================
 # APLICAÇÃO DA IDENTIDADE VISUAL FAST TENNIS (GUIDELINE 2025)
@@ -60,47 +60,38 @@ st.markdown(
             background-color: #053CD8 !important;
             color: #FFFFFF !important;
         }
-        
-        /* Faixas e Destaques */
-        .faixa-resultados {
-            background-color: #022D8A;
-            color: #FFFFFF;
-            padding: 14px 20px;
-            margin: 25px -4rem 15px -4rem; 
-            font-size: 18px; 
-            font-weight: 800;
-            border-left: 6px solid #0DF205;
-        }
 
-        /* TABELA SUGERIDA - DESTAQUE MÁXIMO DA TELA */
+        /* TABELA SUGERIDA - PROTAGONISTA ABSOLUTO DA TELA */
         .tabela-sugerida-box {
-            background-color: #F8F9FA;
-            padding: 22px;
-            border-radius: 10px;
-            border-left: 10px solid #0DF205;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            background-color: #F0FDF4;
+            padding: 25px 30px;
+            border-radius: 12px;
+            border-left: 12px solid #0DF205;
+            margin: 20px 0;
+            border: 1px solid #DCFCE7;
+            box-shadow: 0 4px 15px rgba(13, 242, 5, 0.12);
         }
         .tabela-sugerida-box h2 {
-            margin: 6px 0;
+            margin: 8px 0;
             color: #022D8A !important;
-            font-size: 32px !important;
+            font-size: 38px !important;
             font-weight: 800 !important;
+            letter-spacing: -0.5px;
         }
 
         .tabela-excecao-box {
             background-color: #F0FDF4;
-            padding: 22px;
-            border-radius: 10px;
-            border-left: 10px solid #0DF205;
-            margin-bottom: 20px;
+            padding: 25px 30px;
+            border-radius: 12px;
+            border-left: 12px solid #0DF205;
+            margin: 20px 0;
             border: 1px solid #DCFCE7;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 15px rgba(13, 242, 5, 0.12);
         }
         .tabela-excecao-box h2 {
-            margin: 6px 0;
+            margin: 8px 0;
             color: #166534 !important;
-            font-size: 32px !important;
+            font-size: 38px !important;
             font-weight: 800 !important;
         }
 
@@ -124,27 +115,67 @@ st.markdown(
             background-color: #FEF2F2;
             color: #991B1B;
             border-left: 4px solid #EF4444;
-            padding: 8px 14px;
+            padding: 10px 16px;
             font-size: 13px;
             font-weight: 600;
             border-radius: 4px;
             margin-bottom: 12px;
         }
 
-        /* CORREÇÃO DO RELATÓRIO DE VIABILIDADE: AMPLO E EXECUTIVO */
+        /* CARD DE VIABILIDADE DE MERCADO CLEAN */
         .box-relatorio-equilibrado {
             background-color: #F8F9FA;
             border-radius: 8px;
             border: 1px solid #E2E8F0;
-            padding: 14px 18px;
-            min-height: 95px !important;
+            padding: 12px 16px;
+            min-height: 90px !important;
             box-sizing: border-box !important;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
-        .box-relatorio-equilibrado span {
-            line-height: 1.4;
+
+        /* GRÁFICO PERSONALIZADO EXECUTIVO (NOMES NA HORIZONTAL) */
+        .grafico-executivo-container {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .barra-coluna-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .barra-empilhada-box {
+            width: 48px;
+            height: 180px;
+            background-color: #F1F5F9;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            flex-direction: column-reverse;
+            overflow: hidden;
+        }
+        .rotulo-unidade-horizontal {
+            font-size: 12px;
+            font-weight: 700;
+            color: #022D8A;
+            margin-top: 10px;
+            text-align: center;
+            white-space: normal;
+            word-break: break-word;
+            max-width: 110px;
+        }
+        .tag-similaridade {
+            background-color: #022D8A;
+            color: #0DF205;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 6px;
         }
     </style>
     """,
@@ -186,7 +217,7 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
-# BANCO DE DADOS ATUALIZADO (COM ENDEREÇOS E QUADRAS)
+# BANCO DE DADOS ATUALIZADO (QUADRAS CAMPESTRE CORRIGIDO PARA 2)
 # ==========================================
 df_existentes = [
     {"Status": "Operando", "Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "Rua 36 Sul, Lote 05 - Águas Claras", "Quadras": 4, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.29},
@@ -202,7 +233,7 @@ df_existentes = [
     {"Status": "Operando", "Unidade": "Fast Tennis Brooklin - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Bandeira Paulista, 700 - Brooklin", "Quadras": 5, "Renda Média": 29400, "População": 162400, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.30, "A+": 0.27, "B1": 0.15},
     {"Status": "Operando", "Unidade": "Fast Tennis Buritis I - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Av. Professor Mário Werneck, 1400 - Buritis", "Quadras": 3, "Renda Média": 16700, "População": 80900, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.10, "A+": 0.24, "B1": 0.24},
     {"Status": "Operando", "Unidade": "Fast Tennis Calafate - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Platina, 800 - Calafate", "Quadras": 3, "Renda Média": 13100, "População": 121200, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.05, "A+": 0.20, "B1": 0.23},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Campestre - São Paulo", "Cidade": "Santo André", "Estado": "SP", "Endereço": "Alameda Campestre, 350 - Bairro Campestre", "Quadras": 4, "Renda Média": 10583, "População": 128586, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.05, "A+": 0.09, "B1": 0.17},
+    {"Status": "Em Implantação", "Unidade": "Fast Tennis Campestre - São Paulo", "Cidade": "Santo André", "Estado": "SP", "Endereço": "Alameda Campestre, 350 - Bairro Campestre", "Quadras": 2, "Renda Média": 10583, "População": 128586, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.05, "A+": 0.09, "B1": 0.17},
     {"Status": "Operando", "Unidade": "Fast Tennis Campo Belo - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua de Arealva, 120 - Campo Belo", "Quadras": 4, "Renda Média": 27328, "População": 117500, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.27, "A+": 0.25, "B1": 0.16},
     {"Status": "Operando", "Unidade": "Fast Tennis Cantareira - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Nova Cantareira, 2100 - Tucuruvi", "Quadras": 3, "Renda Média": 11500, "População": 95500, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.06, "A+": 0.12, "B1": 0.14},
     {"Status": "Operando", "Unidade": "Fast Tennis Capim Macio - Natal", "Cidade": "Natal", "Estado": "RN", "Endereço": "Rua Dr. Hernani Hugo Gomes, 100 - Capim Macio", "Quadras": 3, "Renda Média": 14700, "População": 64400, "REGIC": "Capital Regional A", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.04, "A+": 0.28, "B1": 0.22},
@@ -275,7 +306,7 @@ TABELAS_OFICIAIS = {
 }
 
 def limpar_nome_unidade(nome):
-    """Remove o prefixo 'Fast Tennis ' para exibição limpa no gráfico."""
+    """Remove o prefixo 'Fast Tennis ' para exibição limpa nos gráficos."""
     return str(nome).replace("Fast Tennis ", "").strip()
 
 # ==========================================
@@ -408,17 +439,17 @@ if modulo_selecionado == "Simulador Precificação Inicial":
 
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
-        
-        st.markdown('<div class="faixa-resultados">Análise Estratégica e Recomendações</div>', unsafe_allow_html=True)
 
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
 
+        # PROTAGONISMO TOTAL À TABELA DEFINIDA (SEM POLUIÇÃO VISUAL DE FAIXAS AZUIS)
+        st.write("")
         st.markdown(f"""
             <div class="tabela-sugerida-box">
-                <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Perfil Econômico)</p>
+                <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                 <h2>Tabela {tabela_sugerida}</h2>
-                <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> | TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
+                <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -435,10 +466,10 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             tabela_final = tabela_escolhida
             st.markdown(f"""
                 <div class="tabela-excecao-box">
-                    <p style="margin:0; font-size:11px; color:#166534; font-weight:bold; text-transform:uppercase;">Tabela Escolhida por Decisão Técnica</p>
+                    <p style="margin:0; font-size:12px; color:#166534; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO)</p>
                     <h2>Tabela {tabela_final}</h2>
-                    <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> | TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
-                    {f'<p style="margin:6px 0 0 0; font-size:12px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
+                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
+                    {f'<p style="margin:8px 0 0 0; font-size:13px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                 </div>
             """, unsafe_allow_html=True)
         else:
@@ -501,12 +532,13 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     key="val_viabilidade_bp"
                 )
 
-        # CÁLCULO DE UNIDADES SIMILARES
+        # CÁLCULO DE UNIDADES SIMILARES E GRÁFICO PERSONALIZADO EXECUTIVO
         st.write("")
         st.markdown("##### Unidades da Rede com Perfil Similar")
         
         linhas_similares_pdf = ""
         barras_html_pdf = ""
+        barras_html_tela = ""
         if not df_base_unidades.empty:
             alvo_sp = (estado == "SP")
             df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
@@ -541,41 +573,63 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # REFINAMENTO VISUAL DO GRÁFICO (EIXO LIMPO + CORES DE RENDA)
-                st.write("")
-                st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
-                
-                indices_limpos = ["Ponto Simulado"] + [limpar_nome_unidade(u) for u in df_ranking["Unidade"].tolist()]
-                
-                chart_data = pd.DataFrame({
-                    "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
-                    "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
-                    "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-                }, index=indices_limpos)
+                # CONSTRUÇÃO DO GRÁFICO EXECUTIVO PERSONALIZADO (HORIZONTAL SEM ROTAÇÃO E EIXO DE SIMILARIDADE)
+                colunas_grafico = [
+                    {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
+                ]
+                for _, r_u in df_ranking.iterrows():
+                    colunas_grafico.append({
+                        "nome": limpar_nome_unidade(r_u["Unidade"]),
+                        "b1": float(r_u["B1"]) * 100,
+                        "ap": float(r_u["A+"]) * 100,
+                        "app": float(r_u["A++"]) * 100,
+                        "sim": r_u["% Similaridade"]
+                    })
 
-                # B1 (Azul #053CD8), A+ (Verde #0DF205), A++ (Verde Escuro #15803D)
-                st.bar_chart(chart_data, color=["#053CD8", "#0DF205", "#15803D"], height=280)
-
-                # CONSTRUÇÃO DO GRÁFICO PARA O PDF
-                for idx_nome in chart_data.index:
-                    v_b1 = chart_data.loc[idx_nome, "Classe B1 (Base)"]
-                    v_ap = chart_data.loc[idx_nome, "Classe A+ (Elevada)"]
-                    v_app = chart_data.loc[idx_nome, "Classe A++ (Mais Elevada)"]
+                for item in colunas_grafico:
+                    v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
+                    barras_html_tela += f"""
+                    <div class="barra-coluna-wrapper">
+                        <span class="tag-similaridade">{item['sim']}</span>
+                        <div class="barra-empilhada-box">
+                            <div style="height:{v_b1 * 2}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div>
+                            <div style="height:{v_ap * 2}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div>
+                            <div style="height:{v_app * 2}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div>
+                        </div>
+                        <span class="rotulo-unidade-horizontal">{item['nome']}</span>
+                    </div>
+                    """
+                    
                     barras_html_pdf += f"""
                     <div style="flex:1; text-align:center;">
+                        <span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span>
                         <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
-                            <div style="height:{v_b1*1.2}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;" title="B1: {v_b1:.1f}%"></div>
-                            <div style="height:{v_ap*1.2}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;" title="A+: {v_ap:.1f}%"></div>
-                            <div style="height:{v_app*1.2}px; width:22px; background:#15803D; border-radius:2px;" title="A++: {v_app:.1f}%"></div>
+                            <div style="height:{v_b1*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;" title="B1: {v_b1:.1f}%"></div>
+                            <div style="height:{v_ap*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;" title="A+: {v_ap:.1f}%"></div>
+                            <div style="height:{v_app*1.3}px; width:22px; background:#15803D; border-radius:2px;" title="A++: {v_app:.1f}%"></div>
                         </div>
-                        <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:4px;">{idx_nome}</span>
+                        <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
                     </div>
                     """
 
-        # CAMPO DE CONSIDERAÇÕES FINAIS (NOVO REQUISITO)
+                st.markdown(f"""
+                    <div class="grafico-executivo-container">
+                        <p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p>
+                        <div style="display:flex; justify-content:space-around; align-items:flex-end;">
+                            {barras_html_tela}
+                        </div>
+                        <div style="text-align:center; font-size:11px; color:#6C757D; margin-top:20px;">
+                            <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; 
+                            <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; 
+                            <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+        # CAMPO DE CONSIDERAÇÕES FINAIS (SEM EMOJI, COMPACTO)
         st.write("")
-        st.markdown("##### ✍️ Considerações Finais do Analista / Comitê")
-        consideracoes_m1 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto comercial, concorrência ou viabilidade...", key="val_m1_consideracoes")
+        st.markdown("##### Considerações Finais do Comitê")
+        consideracoes_m1 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto comercial, concorrência ou viabilidade...", height=80, key="val_m1_consideracoes")
 
         # RELATÓRIO PDF EXECUTIVO COMPLETO
         st.write("")
@@ -588,9 +642,9 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
                     <div>
                         <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
-                        <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Expansão</small>
+                        <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
                     </div>
-                    <span style="font-size:12px; color:#E2E8F0;">Módulo: Precificação Inicial</span>
+                    <span style="font-size:12px; color:#E2E8F0;">Precificação Inicial</span>
                 </div>
                 <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                 
@@ -605,7 +659,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </tr>
                 </table>
 
-                <div style="background-color:#F8F9FA; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #E2E8F0;">
+                <div style="background-color:#F0FDF4; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #DCFCE7;">
                     <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                     <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
                     <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
@@ -632,14 +686,14 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </tbody>
                 </table>
 
-                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%):</h4>
-                <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:20px;">
+                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
+                <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:12px;">
                     {barras_html_pdf}
                 </div>
-                <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
-                    <span style="color:#053CD8;">■ Classe B1</span> &nbsp;&nbsp; 
-                    <span style="color:#0DF205;">■ Classe A+</span> &nbsp;&nbsp; 
-                    <span style="color:#15803D;">■ Classe A++</span>
+                <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:20px;">
+                    <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
+                    <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
+                    <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
                 </div>
 
                 {f'''
@@ -696,7 +750,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO E PROTEGIDO
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
         html_card_unidade = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -755,17 +809,16 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
 
             precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
             tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
-            
-            st.markdown('<div class="faixa-resultados">Análise Estratégica e Recomendações</div>', unsafe_allow_html=True)
 
             preco_sugerido = precos[tabela_sugerida]
             tkm_sugerido = tkms[tabela_sugerida]
 
+            st.write("")
             st.markdown(f"""
                 <div class="tabela-sugerida-box">
-                    <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Perfil Econômico)</p>
+                    <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                     <h2>Tabela {tabela_sugerida}</h2>
-                    <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> | TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
+                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkm_sugerido},00</b></p>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -782,10 +835,10 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 tabela_final = tabela_escolhida
                 st.markdown(f"""
                     <div class="tabela-excecao-box">
-                        <p style="margin:0; font-size:11px; color:#166534; font-weight:bold; text-transform:uppercase;">Tabela Escolhida por Decisão Técnica</p>
+                        <p style="margin:0; font-size:12px; color:#166534; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO)</p>
                         <h2>Tabela {tabela_final}</h2>
-                        <p style="margin:0; font-size:14px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> | TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
-                        {f'<p style="margin:6px 0 0 0; font-size:12px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
+                        <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM Técnico: <b>R$ {tkms[tabela_final]},00</b></p>
+                        {f'<p style="margin:8px 0 0 0; font-size:13px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                     </div>
                 """, unsafe_allow_html=True)
             else:
@@ -854,6 +907,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             
             linhas_similares_pdf_pre = ""
             barras_html_pdf_pre = ""
+            barras_html_tela_pre = ""
             if not df_base_unidades.empty:
                 alvo_sp = (estado == "SP")
                 df_filtrado = df_base_unidades[(df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp) & (df_base_unidades['Unidade'] != nome_u_pre)].copy()
@@ -888,40 +942,63 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # REFINAMENTO VISUAL DO GRÁFICO (MÓDULO 2)
-                    st.write("")
-                    st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
-                    
-                    indices_limpos_pre = [limpar_nome_unidade(dados_u_pre['Unidade'])] + [limpar_nome_unidade(u) for u in df_ranking["Unidade"].tolist()]
+                    # GRÁFICO EXECUTIVO MÓDULO 2 (NOME NA HORIZONTAL + EIXO SIMILARIDADE)
+                    colunas_grafico_pre = [
+                        {"nome": limpar_nome_unidade(dados_u_pre['Unidade']), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
+                    ]
+                    for _, r_u in df_ranking.iterrows():
+                        colunas_grafico_pre.append({
+                            "nome": limpar_nome_unidade(r_u["Unidade"]),
+                            "b1": float(r_u["B1"]) * 100,
+                            "ap": float(r_u["A+"]) * 100,
+                            "app": float(r_u["A++"]) * 100,
+                            "sim": r_u["% Similaridade"]
+                        })
 
-                    chart_data_pre = pd.DataFrame({
-                        "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
-                        "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
-                        "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
-                    }, index=indices_limpos_pre)
-
-                    st.bar_chart(chart_data_pre, color=["#053CD8", "#0DF205", "#15803D"], height=280)
-
-                    # CONSTRUÇÃO DO GRÁFICO PARA O PDF PRE
-                    for idx_nome in chart_data_pre.index:
-                        v_b1 = chart_data_pre.loc[idx_nome, "Classe B1 (Base)"]
-                        v_ap = chart_data_pre.loc[idx_nome, "Classe A+ (Elevada)"]
-                        v_app = chart_data_pre.loc[idx_nome, "Classe A++ (Mais Elevada)"]
+                    for item in colunas_grafico_pre:
+                        v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
+                        barras_html_tela_pre += f"""
+                        <div class="barra-coluna-wrapper">
+                            <span class="tag-similaridade">{item['sim']}</span>
+                            <div class="barra-empilhada-box">
+                                <div style="height:{v_b1 * 2}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div>
+                                <div style="height:{v_ap * 2}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div>
+                                <div style="height:{v_app * 2}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div>
+                            </div>
+                            <span class="rotulo-unidade-horizontal">{item['nome']}</span>
+                        </div>
+                        """
+                        
                         barras_html_pdf_pre += f"""
                         <div style="flex:1; text-align:center;">
+                            <span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span>
                             <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
-                                <div style="height:{v_b1*1.2}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div>
-                                <div style="height:{v_ap*1.2}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div>
-                                <div style="height:{v_app*1.2}px; width:22px; background:#15803D; border-radius:2px;"></div>
+                                <div style="height:{v_b1*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div>
+                                <div style="height:{v_ap*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div>
+                                <div style="height:{v_app*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div>
                             </div>
-                            <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:4px;">{idx_nome}</span>
+                            <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
                         </div>
                         """
 
-            # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 2)
+                    st.markdown(f"""
+                        <div class="grafico-executivo-container">
+                            <p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição de Classes (%) com Nível de Similaridade</p>
+                            <div style="display:flex; justify-content:space-around; align-items:flex-end;">
+                                {barras_html_tela_pre}
+                            </div>
+                            <div style="text-align:center; font-size:11px; color:#6C757D; margin-top:20px;">
+                                <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; 
+                                <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; 
+                                <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+            # CAMPO DE CONSIDERAÇÕES FINAIS (COMPACTO)
             st.write("")
-            st.markdown("##### ✍️ Considerações Finais do Analista / Comitê")
-            consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", key="val_m2_consideracoes")
+            st.markdown("##### Considerações Finais do Comitê")
+            consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", height=80, key="val_m2_consideracoes")
 
             # RELATÓRIO PDF EXECUTIVO COMPLETO
             st.write("")
@@ -933,7 +1010,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
                         <div>
                             <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
-                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Expansão</small>
+                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
                         </div>
                         <span style="font-size:12px; color:#E2E8F0;">Pontos Pré-Definidos</span>
                     </div>
@@ -945,12 +1022,12 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                             <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço:</b> {endereco_pre}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço Cadastrado:</b> {endereco_pre}</td>
                             <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo:</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
                         </tr>
                     </table>
 
-                    <div style="background-color:#F8F9FA; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #E2E8F0;">
+                    <div style="background-color:#F0FDF4; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #DCFCE7;">
                         <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                         <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
                         <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
@@ -977,14 +1054,14 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </tbody>
                     </table>
 
-                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%):</h4>
-                    <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:20px;">
+                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
+                    <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:12px;">
                         {barras_html_pdf_pre}
                     </div>
-                    <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
-                        <span style="color:#053CD8;">■ Classe B1</span> &nbsp;&nbsp; 
-                        <span style="color:#0DF205;">■ Classe A+</span> &nbsp;&nbsp; 
-                        <span style="color:#15803D;">■ Classe A++</span>
+                    <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:20px;">
+                        <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
+                        <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
+                        <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
                     </div>
 
                     {f'''
@@ -1196,7 +1273,7 @@ else:
             indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho highly saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
@@ -1218,8 +1295,8 @@ else:
 
             # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 3)
             st.write("")
-            st.markdown("##### ✍️ Considerações Finais do Analista / Comitê")
-            consideracoes_m3 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários operacionais ou justificativas técnicas...", key="val_m3_consideracoes")
+            st.markdown("##### Considerações Finais do Comitê")
+            consideracoes_m3 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários operacionais ou justificativas técnicas...", height=80, key="val_m3_consideracoes")
 
             # RELATÓRIO PDF EXECUTIVO PARA O MÓDULO 3
             st.write("")
@@ -1241,7 +1318,7 @@ else:
                     <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
                         <div>
                             <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Reavaliação Estratégica</h2>
-                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Diretoria Executiva</small>
+                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
                         </div>
                         <span style="font-size:12px; color:#E2E8F0;">Unidade Ativa</span>
                     </div>
