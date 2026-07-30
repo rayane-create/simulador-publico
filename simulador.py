@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 
 # Configuração da página corporativa da Fast Tennis
 st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica", layout="wide")
@@ -23,7 +24,7 @@ st.markdown(
             font-weight: 800 !important;
         }
 
-        /* ESTILIZAÇÃO DA SIDEBAR CONFORME MODELO/PRINT */
+        /* ESTILIZAÇÃO DA SIDEBAR */
         section[data-testid="stSidebar"] {
             background-color: #022D8A !important;
         }
@@ -72,13 +73,14 @@ st.markdown(
             border-left: 6px solid #0DF205;
         }
 
+        /* CAIXA DA TABELA SUGERIDA COM LATERAL VERDINHA (#0DF205) EM DESTAQUE */
         .tabela-sugerida-box {
             background-color: #F8F9FA;
             padding: 18px;
             border-radius: 8px;
-            border-left: 6px solid #022D8A;
+            border-left: 8px solid #0DF205;
             margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         .tabela-sugerida-box h2 {
             margin: 4px 0;
@@ -91,7 +93,7 @@ st.markdown(
             background-color: #F0FDF4;
             padding: 18px;
             border-radius: 8px;
-            border-left: 6px solid #0DF205;
+            border-left: 8px solid #0DF205;
             margin-bottom: 15px;
             border: 1px solid #DCFCE7;
         }
@@ -491,7 +493,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     key="val_viabilidade_bp"
                 )
 
-        # CÁLCULO DE UNIDADES SIMILARES
+        # CÁLCULO DE UNIDADES SIMILARES E GRÁFICO EMPILHADO
         st.write("")
         st.markdown("##### Unidades da Rede com Perfil Similar")
         
@@ -529,6 +531,31 @@ if modulo_selecionado == "Simulador Precificação Inicial":
 
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
+
+                # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES
+                fig = go.Figure()
+                
+                # Categoria 1: Ponto Simulado Atual
+                nomes_grafico = ["Ponto Simulado"] + df_ranking["Unidade"].tolist()
+                a2_vals = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
+                a1_vals = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
+                b1_vals = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+
+                fig.add_trace(go.Bar(name='Classe A++', x=nomes_grafico, y=a2_vals, marker_color='#022D8A'))
+                fig.add_trace(go.Bar(name='Classe A+', x=nomes_grafico, y=a1_vals, marker_color='#053CD8'))
+                fig.add_trace(go.Bar(name='Classe B1', x=nomes_grafico, y=b1_vals, marker_color='#0DF205'))
+
+                fig.update_layout(
+                    barmode='stack',
+                    title='Perfil da Renda e Distribuição de Classes (%)',
+                    xaxis_title="Unidades de Comparação",
+                    yaxis_title="Percentual da População (%)",
+                    height=350,
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    paper_bgcolor='#FFFFFF',
+                    plot_bgcolor='#F8F9FA'
+                )
+                st.plotly_chart(fig, use_container_width=True)
 
         # RELATÓRIO PDF COMPLETO
         st.write("")
@@ -587,7 +614,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=620, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTI PRÉ-DEFINIDOS (COM SIMILARIDADE E PDF)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM SIMILARIDADE E PDF)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -782,7 +809,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             linhas_similares_pdf_pre = ""
             if not df_base_unidades.empty:
                 alvo_sp = (estado == "SP")
-                # Exclui a própria unidade do cálculo
                 df_filtrado = df_base_unidades[(df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp) & (df_base_unidades['Unidade'] != nome_u_pre)].copy()
                 
                 if not df_filtrado.empty:
@@ -814,6 +840,29 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
 
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
+
+                    # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES (MÓDULO 2)
+                    fig_pre = go.Figure()
+                    nomes_grafico_pre = [dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist()
+                    a2_vals_pre = [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
+                    a1_vals_pre = [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist()
+                    b1_vals_pre = [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
+
+                    fig_pre.add_trace(go.Bar(name='Classe A++', x=nomes_grafico_pre, y=a2_vals_pre, marker_color='#022D8A'))
+                    fig_pre.add_trace(go.Bar(name='Classe A+', x=nomes_grafico_pre, y=a1_vals_pre, marker_color='#053CD8'))
+                    fig_pre.add_trace(go.Bar(name='Classe B1', x=nomes_grafico_pre, y=b1_vals_pre, marker_color='#0DF205'))
+
+                    fig_pre.update_layout(
+                        barmode='stack',
+                        title='Perfil da Renda e Distribuição de Classes (%)',
+                        xaxis_title="Unidades de Comparação",
+                        yaxis_title="Percentual da População (%)",
+                        height=350,
+                        margin=dict(l=20, r=20, t=40, b=20),
+                        paper_bgcolor='#FFFFFF',
+                        plot_bgcolor='#F8F9FA'
+                    )
+                    st.plotly_chart(fig_pre, use_container_width=True)
 
             # RELATÓRIO PDF
             st.write("")
@@ -1063,7 +1112,7 @@ else:
             indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho highly saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
