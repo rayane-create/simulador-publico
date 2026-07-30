@@ -22,6 +22,30 @@ st.markdown(
             color: #022D8A !important;
             font-weight: 800 !important;
         }
+
+        /* ESTILIZAÇÃO DA SIDEBAR CONFORME MODELO/PRINT */
+        section[data-testid="stSidebar"] {
+            background-color: #022D8A !important;
+        }
+        section[data-testid="stSidebar"] label, 
+        section[data-testid="stSidebar"] p, 
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3 {
+            color: #FFFFFF !important;
+        }
+
+        /* Estilização dos Selectbox da Sidebar (Fundo Branco e Cantos Arredondados) */
+        section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+            background-color: #FFFFFF !important;
+            border-radius: 8px !important;
+            border: 1px solid #CBD5E0 !important;
+            color: #022D8A !important;
+            font-weight: 700 !important;
+        }
+        section[data-testid="stSidebar"] div[data-baseweb="select"] * {
+            color: #022D8A !important;
+        }
         
         /* Botões Padrão Green FT */
         div.stButton > button {
@@ -245,29 +269,29 @@ TABELAS_OFICIAIS = {
 }
 
 # ==========================================
-# SIDEBAR - SELEÇÃO DE MÓDULO DO DASHBOARD
+# SIDEBAR - MENU SELECCIONÁVEL DROPDOWN (GUIDELINE 2025)
 # ==========================================
 with st.sidebar:
-    st.markdown("<h3 style='color:#FFFFFF; font-weight:800;'>Fast Tennis</h3>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.markdown("<p style='color:#FFFFFF; font-weight:700; font-size:14px;'>Navegação da Plataforma</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style="text-align:center; padding: 10px 0 20px 0;">
+            <a href="#" style="background-color:#0DF205; color:#022D8A; padding:10px 24px; border-radius:20px; font-weight:800; text-decoration:none; display:inline-block;">Sair do Sistema</a>
+        </div>
+    """, unsafe_allow_html=True)
     
-    modulo_selecionado = st.radio(
-        "Selecione o Módulo Operacional:",
+    st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
+    
+    modulo_selecionado = st.selectbox(
+        "Selecione o Módulo:",
         [
             "1. Simulador de Precificação Inicial (Pontos Não Definidos)",
             "2. Simulador de Precificação (Pontos Pré-Definidos)",
             "3. Reavaliação Estratégica (Unidades Ativas)"
         ],
-        key="modulo_navegacao",
-        label_visibility="collapsed"
+        key="modulo_navegacao"
     )
     
     st.markdown("---")
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
-    if st.button("Sair do Sistema", use_container_width=True):
-        st.session_state["autenticado"] = False
-        st.rerun()
 
 # ==============================================================================
 # MÓDULO 1: SIMULADOR DE PRECIFICAÇÃO INICIAL (PONTOS NÃO DEFINIDOS)
@@ -285,6 +309,7 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
         st.session_state["val_tipo_praca"] = "Selecione..."
         st.session_state["val_renda_media"] = 0.0
         st.session_state["val_tempo_proxima"] = 0
+        st.session_state["val_sem_concorrente"] = False
         st.session_state["val_media_mercado"] = 0.0
         st.session_state["val_viabilidade_bp"] = "Aguardando simulação..."
 
@@ -319,7 +344,7 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
             
             st.markdown(f"""
                 <div class="card-destaque">
-                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">Público Alvo Calculado (B1 + A+ + A++)</span><br>
+                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span><br>
                     <span style="font-size:22px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
                     <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população.</small>
                 </div>
@@ -330,7 +355,14 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
             tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], key="val_tipo_praca")
             renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
-            media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
+            
+            # OPÇÃO DE SEM CONCORRENTE
+            sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
+            if sem_concorrente:
+                media_mercado = 0.0
+                st.caption("Sem concorrência direta no raio do estudo.")
+            else:
+                media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
 
         st.write("")
         col_btn1, col_btn2 = st.columns([5, 1.2])
@@ -339,13 +371,13 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
 
     dados_preenchidos = (
         estado != "Selecione..." and regic != "Selecione..." and tipo_praca != "Selecione..." and 
-        cidade.strip() != "" and renda_media > 0 and media_mercado > 0
+        cidade.strip() != "" and renda_media > 0 and (sem_concorrente or media_mercado > 0)
     )
 
     if not dados_preenchidos:
         st.info("Aguardando dados. Por favor, preencha as informações para gerar o diagnóstico.")
     else:
-        # Lógica de Tabelas
+        # Lógica das tabelas
         if estado == "SP":
             if renda_media <= 8500.00: tab_min, tab_max = 1, 2
             elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -414,11 +446,16 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
 
         st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
         
-        dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
-
-        if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-        elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-        else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
+        # CÁLCULO DE DIFERENÇA DE MERCADO OU SEM CONCORRENTE
+        if sem_concorrente or media_mercado == 0:
+            diag, status, rec = "Mercado Exclusivo", "Sem Concorrência Direta", "Oportunidade de captura total da demanda sem pressão concorrencial direta."
+            txt_dif = "Sem Concorrente Directo"
+        else:
+            dif_mercado = (preco_ref - media_mercado) / media_mercado
+            txt_dif = f"{dif_mercado*100:+.1f}%"
+            if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
+            elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
+            else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
         st.write("")
         st.markdown("##### Relatório de Viabilidade de Mercado")
@@ -442,7 +479,7 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
             st.markdown(f"""
                 <div class="box-relatorio-equilibrado">
                     <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                    <span style="font-size:24px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'}; margin-top:2px;">{dif_mercado*100:+.1f}%</span>
+                    <span style="font-size:22px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -459,13 +496,46 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
                     key="val_viabilidade_bp"
                 )
 
-        # RELATÓRIO OFICIAL EM IMPRESSÃO PDF
+        # CÁLCULO DE UNIDADES SIMILARES
+        st.write("")
+        st.markdown("##### Unidades da Rede com Perfil Similar")
+        
+        if not df_base_unidades.empty:
+            alvo_sp = (estado == "SP")
+            df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
+            
+            if not df_filtrado.empty:
+                r_ref = renda_media if renda_media > 0 else 1
+                p_ref = populacao if populacao > 0 else 1
+                a2_ref = classe_a_mais_mais if classe_a_mais_mais > 0 else 1
+                a1_ref = classe_a_mais if classe_a_mais > 0 else 1
+                b1_ref = classe_b1 if classe_b1 > 0 else 1
+                
+                df_filtrado['Distancia'] = np.sqrt(
+                    ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
+                    ((df_filtrado['População'] - populacao) / p_ref)**2 +
+                    ((df_filtrado['A++'] - classe_a_mais_mais) / a2_ref)**2 +
+                    ((df_filtrado['A+'] - classe_a_mais) / a1_ref)**2 +
+                    ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
+                )
+                
+                df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
+                    lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
+                )
+                
+                df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
+                
+                st.dataframe(
+                    df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada", "% Similaridade"]], 
+                    use_container_width=True, 
+                    hide_index=True
+                )
+
+        # RELATÓRIO PDF
         st.write("")
         st.markdown("---")
         with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
             modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
-            info_tabela_economica = f'<p style="margin:4px 0 0 0; font-size:12px; color:#E2E8F0;">Tabela Sugerida Inicial: <b>Tabela {tabela_sugerida}</b> (Ref: R$ {preco_sugerido},00)</p>' if aplicar_excecao else ""
-
             html_relatorio = f"""
             <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -483,25 +553,14 @@ if modulo_selecionado == "1. Simulador de Precificação Inicial (Pontos Não De
                         <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média:</b> R$ {renda_media:,.2f}</td>
                         <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
                     </tr>
-                    <tr style="background-color:#F8F9FA;">
-                        <td style="padding:8px; border:1px solid #ddd;"><b>REGIC / Perfil:</b> {regic} / {tipo_praca}</td>
-                        <td style="padding:8px; border:1px solid #ddd;"><b>Preço Média Concorrentes:</b> R$ {media_mercado:,.2f}</td>
-                    </tr>
                 </table>
 
                 <div style="background-color:#022D8A; color:#ffffff; padding:15px; border-radius:6px; margin-bottom:20px;">
                     <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                     <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
                     <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
-                    {info_tabela_economica}
                 </div>
 
-                <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
-                    <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
-                    <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Variação vs Concorrência: {dif_mercado*100:+.1f}%)</p>
-                    <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
-                    <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
-                </div>
                 <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
             </div>
             """
@@ -518,6 +577,7 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
     def limpar_campos_m1_pre():
         st.session_state["val_pre_unidade"] = "Selecione..."
         st.session_state["val_pre_tempo_proxima"] = 0
+        st.session_state["val_pre_sem_concorrente"] = False
         st.session_state["val_pre_media_mercado"] = 0.0
         st.session_state["val_pre_viabilidade_bp"] = "Aguardando simulação..."
 
@@ -537,7 +597,6 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
         regic = dados_u_pre["REGIC"]
         tipo_praca = dados_u_pre["Perfil Praça"]
         status_u = dados_u_pre["Status"]
-        tab_praticada = dados_u_pre["Tabela Praticada"]
 
         classe_a_mais_mais = float(dados_u_pre["A++"])
         classe_a_mais = float(dados_u_pre["A+"])
@@ -556,7 +615,7 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Área:</b> {populacao:,} hab.</div>
                     <div><b>Renda Média:</b> R$ {renda_media:,.2f}</div>
-                    <div><b>Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</div>
+                    <div><b>🎯 Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</div>
                     <div><b>REGIC:</b> {regic}</div>
                     <div><b>Perfil Praça:</b> {tipo_praca}</div>
                 </div>
@@ -569,14 +628,19 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
             with col_pre1:
                 tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_pre_tempo_proxima")
             with col_pre2:
-                media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_pre_media_mercado")
+                sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_pre_sem_concorrente")
+                if sem_concorrente:
+                    media_mercado = 0.0
+                    st.caption("Sem concorrência direta no raio do estudo.")
+                else:
+                    media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_pre_media_mercado")
 
             st.write("")
             col_btn_p1, col_btn_p2 = st.columns([5, 1.2])
             with col_btn_p2:
                 st.button("Limpar Avaliação", on_click=limpar_campos_m1_pre, use_container_width=True)
 
-        if media_mercado > 0:
+        if sem_concorrente or media_mercado > 0:
             # Lógica das tabelas
             if estado == "SP":
                 if renda_media <= 8500.00: tab_min, tab_max = 1, 2
@@ -646,11 +710,15 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
 
             st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
             
-            dif_mercado = (preco_ref - media_mercado) / media_mercado if media_mercado > 0 else 0
-
-            if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-            elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-            else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
+            if sem_concorrente or media_mercado == 0:
+                diag, status, rec = "Mercado Exclusivo", "Sem Concorrência Direta", "Oportunidade de captura total da demanda sem pressão concorrencial direta."
+                txt_dif = "Sem Concorrente Directo"
+            else:
+                dif_mercado = (preco_ref - media_mercado) / media_mercado
+                txt_dif = f"{dif_mercado*100:+.1f}%"
+                if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
+                elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
+                else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
 
             st.write("")
             st.markdown("##### Relatório de Viabilidade de Mercado")
@@ -674,24 +742,79 @@ elif modulo_selecionado == "2. Simulador de Precificação (Pontos Pré-Definido
                 st.markdown(f"""
                     <div class="box-relatorio-equilibrado">
                         <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                        <span style="font-size:24px; font-weight:800; color:{'#D32F2F' if dif_mercado > 0.20 else '#2E7D32'}; margin-top:2px;">{dif_mercado*100:+.1f}%</span>
+                        <span style="font-size:22px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
                     </div>
                 """, unsafe_allow_html=True)
 
+            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2
             st.write("")
-            with st.container(border=True):
-                st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
-                cbp1, cb2 = st.columns(2)
-                with cbp1:
-                    st.metric(label="TKM Técnico para o BP:", value=f"R$ {tkm_ref},00")
-                with cb2:
-                    viabilidade_bp = st.selectbox(
-                        "Status de rentabilidade projetada:", 
-                        ["Aguardando simulação...", "Viável (Alinhado às Diretrizes do BP)", "Inviável (Payback projetado superior a 60 meses)", "Margem Líquida abaixo de R$ 10.000,00", "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", "Margem Líquida acima de R$ 20.000,00"],
-                        key="val_pre_viabilidade_bp"
+            st.markdown("##### Unidades da Rede com Perfil Similar")
+            
+            if not df_base_unidades.empty:
+                alvo_sp = (estado == "SP")
+                df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
+                
+                if not df_filtrado.empty:
+                    r_ref = renda_media if renda_media > 0 else 1
+                    p_ref = populacao if populacao > 0 else 1
+                    a2_ref = classe_a_mais_mais if classe_a_mais_mais > 0 else 1
+                    a1_ref = classe_a_mais if classe_a_mais > 0 else 1
+                    b1_ref = classe_b1 if classe_b1 > 0 else 1
+                    
+                    df_filtrado['Distancia'] = np.sqrt(
+                        ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
+                        ((df_filtrado['População'] - populacao) / p_ref)**2 +
+                        ((df_filtrado['A++'] - classe_a_mais_mais) / a2_ref)**2 +
+                        ((df_filtrado['A+'] - classe_a_mais) / a1_ref)**2 +
+                        ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
                     )
-        else:
-            st.info("Informe o preço médio dos concorrentes na área para calcular a viabilidade de mercado.")
+                    
+                    df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
+                        lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
+                    )
+                    
+                    df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
+                    
+                    st.dataframe(
+                        df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada", "% Similaridade"]], 
+                        use_container_width=True, 
+                        hide_index=True
+                    )
+
+            # RELATÓRIO PDF NO MÓDULO 2
+            st.write("")
+            st.markdown("---")
+            with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
+                modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
+                html_relatorio = f"""
+                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 style="color:#022D8A; margin:0;">Relatório de Precificação Estratégica</h2>
+                        <span style="font-size:12px; color:#6C757D;">Fast Tennis - Comitê de Expansão</span>
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
+                    
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                        <tr style="background-color:#F8F9FA;">
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Unidade:</b> {dados_u_pre['Unidade']}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>População:</b> {populacao:,} hab.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média:</b> R$ {renda_media:,.2f}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo:</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
+                        </tr>
+                    </table>
+
+                    <div style="background-color:#022D8A; color:#ffffff; padding:15px; border-radius:6px; margin-bottom:20px;">
+                        <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                        <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                        <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
+                    </div>
+
+                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
+                </div>
+                """
+                st.components.v1.html(html_relatorio, height=520, scrolling=True)
 
 # ==============================================================================
 # MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
@@ -754,7 +877,7 @@ else:
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Residente:</b> {populacao_u:,} hab.</div>
-                    <div><b>Público Alvo (B1+A+ A++):</b> {num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</div>
+                    <div><b>🎯 Público Alvo (B1+A+ A++):</b> {num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</div>
                     <div><b>Renda Média:</b> R$ {renda_u:,.2f}</div>
                     <div><b>TKM Esperado:</b> R$ {tkm_esperado_rede},00 | <b>Plano Plus 1x:</b> R$ {preco_plus_esperado},00</div>
                 </div>
