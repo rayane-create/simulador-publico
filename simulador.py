@@ -131,20 +131,20 @@ st.markdown(
             margin-bottom: 12px;
         }
 
-        /* BLOCO DE VIABILIDADE COMPACTO */
+        /* CORREÇÃO DO RELATÓRIO DE VIABILIDADE: AMPLO E EXECUTIVO */
         .box-relatorio-equilibrado {
             background-color: #F8F9FA;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #E2E8F0;
-            padding: 8px 12px;
-            height: 85px !important;
+            padding: 14px 18px;
+            min-height: 95px !important;
             box-sizing: border-box !important;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         .box-relatorio-equilibrado span {
-            line-height: 1.2;
+            line-height: 1.4;
         }
     </style>
     """,
@@ -274,6 +274,10 @@ TABELAS_OFICIAIS = {
     5: {"tkm": 690, "plus": 710}
 }
 
+def limpar_nome_unidade(nome):
+    """Remove o prefixo 'Fast Tennis ' para exibição limpa no gráfico."""
+    return str(nome).replace("Fast Tennis ", "").strip()
+
 # ==========================================
 # SIDEBAR - MENU DROPDOWN NOMES LIMPOS
 # ==========================================
@@ -318,6 +322,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         st.session_state["val_sem_concorrente"] = False
         st.session_state["val_media_mercado"] = 0.0
         st.session_state["val_viabilidade_bp"] = "Aguardando simulação..."
+        st.session_state["val_m1_consideracoes"] = ""
 
     if "val_estado" not in st.session_state:
         limpar_campos_m1()
@@ -464,7 +469,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.markdown(f"""
                 <div class="box-relatorio-equilibrado">
                     <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
-                    <span style="font-size:12px; color:#022D8A; margin-top:2px;"><b>Diretriz:</b> {diag}</span>
+                    <span style="font-size:12px; color:#022D8A; margin-top:3px;"><b>Diretriz:</b> {diag}</span>
                     <span style="font-size:12px; color:#022D8A; margin-top:1px;"><b>Status:</b> {status}</span>
                 </div>
             """, unsafe_allow_html=True)
@@ -472,14 +477,14 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.markdown(f"""
                 <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 3px solid #D69E2E;">
                     <span style="color:#975A16; font-size:10px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
-                    <span style="font-size:11.5px; color:#2D3748; margin-top:2px; line-height:1.2;">{rec}</span>
+                    <span style="font-size:12px; color:#2D3748; margin-top:3px; line-height:1.3;">{rec}</span>
                 </div>
             """, unsafe_allow_html=True)
         with cv3:
             st.markdown(f"""
                 <div class="box-relatorio-equilibrado">
                     <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                    <span style="font-size:18px; font-weight:800; color:#022D8A; margin-top:1px;">{txt_dif}</span>
+                    <span style="font-size:20px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -496,11 +501,12 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     key="val_viabilidade_bp"
                 )
 
-        # CÁLCULO DE UNIDADES SIMILARES E GRÁFICO EMPILHADO
+        # CÁLCULO DE UNIDADES SIMILARES
         st.write("")
         st.markdown("##### Unidades da Rede com Perfil Similar")
         
         linhas_similares_pdf = ""
+        barras_html_pdf = ""
         if not df_base_unidades.empty:
             alvo_sp = (estado == "SP")
             df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
@@ -535,59 +541,87 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO EMPILHADO EXECUTIVO
+                # REFINAMENTO VISUAL DO GRÁFICO (EIXO LIMPO + CORES DE RENDA)
                 st.write("")
                 st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
                 
+                indices_limpos = ["Ponto Simulado"] + [limpar_nome_unidade(u) for u in df_ranking["Unidade"].tolist()]
+                
                 chart_data = pd.DataFrame({
-                    "Classe A++": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
-                    "Classe A+": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
-                    "Classe B1": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
-                }, index=["Ponto Simulado"] + df_ranking["Unidade"].tolist())
+                    "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
+                    "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
+                    "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
+                }, index=indices_limpos)
 
-                st.bar_chart(chart_data, color=["#022D8A", "#053CD8", "#0DF205"], height=280)
+                # B1 (Azul #053CD8), A+ (Verde #0DF205), A++ (Verde Escuro #15803D)
+                st.bar_chart(chart_data, color=["#053CD8", "#0DF205", "#15803D"], height=280)
 
-        # RELATÓRIO PDF COMPLETO
+                # CONSTRUÇÃO DO GRÁFICO PARA O PDF
+                for idx_nome in chart_data.index:
+                    v_b1 = chart_data.loc[idx_nome, "Classe B1 (Base)"]
+                    v_ap = chart_data.loc[idx_nome, "Classe A+ (Elevada)"]
+                    v_app = chart_data.loc[idx_nome, "Classe A++ (Mais Elevada)"]
+                    barras_html_pdf += f"""
+                    <div style="flex:1; text-align:center;">
+                        <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
+                            <div style="height:{v_b1*1.2}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;" title="B1: {v_b1:.1f}%"></div>
+                            <div style="height:{v_ap*1.2}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;" title="A+: {v_ap:.1f}%"></div>
+                            <div style="height:{v_app*1.2}px; width:22px; background:#15803D; border-radius:2px;" title="A++: {v_app:.1f}%"></div>
+                        </div>
+                        <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:4px;">{idx_nome}</span>
+                    </div>
+                    """
+
+        # CAMPO DE CONSIDERAÇÕES FINAIS (NOVO REQUISITO)
+        st.write("")
+        st.markdown("##### ✍️ Considerações Finais do Analista / Comitê")
+        consideracoes_m1 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto comercial, concorrência ou viabilidade...", key="val_m1_consideracoes")
+
+        # RELATÓRIO PDF EXECUTIVO COMPLETO
         st.write("")
         st.markdown("---")
-        with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
+        with st.expander("📄 Exportar Relatório Executivo Oficial (PDF)", expanded=False):
             modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
+            
             html_relatorio = f"""
-            <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="color:#022D8A; margin:0;">Relatório de Precificação Estratégica</h2>
-                    <span style="font-size:12px; color:#6C757D;">Fast Tennis - Comitê de Expansão</span>
+            <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 1px solid #CBD5E0; border-radius: 8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
+                    <div>
+                        <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
+                        <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Expansão</small>
+                    </div>
+                    <span style="font-size:12px; color:#E2E8F0;">Módulo: Precificação Inicial</span>
                 </div>
                 <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                 
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
                     <tr style="background-color:#F8F9FA;">
                         <td style="padding:8px; border:1px solid #ddd;"><b>Praça / Cidade:</b> {cidade} - {estado}</td>
-                        <td style="padding:8px; border:1px solid #ddd;"><b>População:</b> {populacao:,} hab.</td>
+                        <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
                     </tr>
                     <tr>
-                        <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média:</b> R$ {renda_media:,.2f}</td>
+                        <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média Região:</b> R$ {renda_media:,.2f}</td>
                         <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
                     </tr>
                 </table>
 
-                <div style="background-color:#022D8A; color:#ffffff; padding:15px; border-radius:6px; margin-bottom:20px;">
-                    <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
-                    <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
-                    <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
+                <div style="background-color:#F8F9FA; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #E2E8F0;">
+                    <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                    <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                    <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
                 </div>
 
-                <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
-                    <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
-                    <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
-                    <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
-                    <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
+                <div style="font-size:12px; line-height:1.5; margin-bottom:20px; background-color:#FFFFFF; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
+                    <p style="margin:0 0 4px 0;"><b>Diretriz Regional:</b> {diag}</p>
+                    <p style="margin:0 0 4px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
+                    <p style="margin:0 0 4px 0;"><b>Recomendação:</b> {rec}</p>
+                    <p style="margin:0 0 0 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
                 </div>
 
-                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:13px;">Unidades da Rede com Perfil Similar:</h4>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
                     <thead>
-                        <tr style="background-color:#F8F9FA; text-align:left;">
+                        <tr style="background-color:#F8F9FA; text-align:left; color:#022D8A;">
                             <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
                             <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
                             <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
@@ -598,10 +632,27 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </tbody>
                 </table>
 
-                <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
+                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%):</h4>
+                <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:20px;">
+                    {barras_html_pdf}
+                </div>
+                <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
+                    <span style="color:#053CD8;">■ Classe B1</span> &nbsp;&nbsp; 
+                    <span style="color:#0DF205;">■ Classe A+</span> &nbsp;&nbsp; 
+                    <span style="color:#15803D;">■ Classe A++</span>
+                </div>
+
+                {f'''
+                <div style="background-color:#FFFDF5; border-left:4px solid #D69E2E; padding:12px; border-radius:4px; margin-bottom:20px;">
+                    <h4 style="margin:0 0 4px 0; color:#975A16; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
+                    <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m1}</p>
+                </div>
+                ''' if consideracoes_m1 else ''}
+
+                <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
             </div>
             """
-            st.components.v1.html(html_relatorio, height=620, scrolling=True)
+            st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
 # MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (PUXANDO ENDEREÇO AUTOMÁTICO)
@@ -617,6 +668,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         st.session_state["val_pre_sem_concorrente"] = False
         st.session_state["val_pre_media_mercado"] = 0.0
         st.session_state["val_pre_viabilidade_bp"] = "Aguardando simulação..."
+        st.session_state["val_m2_consideracoes"] = ""
 
     if "val_pre_unidade" not in st.session_state:
         limpar_campos_m1_pre()
@@ -644,7 +696,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO E PROTEGIDO (CORREÇÃO DO ERRO HTML)
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO E PROTEGIDO
         html_card_unidade = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -764,7 +816,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.markdown(f"""
                     <div class="box-relatorio-equilibrado">
                         <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
-                        <span style="font-size:12px; color:#022D8A; margin-top:2px;"><b>Diretriz:</b> {diag}</span>
+                        <span style="font-size:12px; color:#022D8A; margin-top:3px;"><b>Diretriz:</b> {diag}</span>
                         <span style="font-size:12px; color:#022D8A; margin-top:1px;"><b>Status:</b> {status}</span>
                     </div>
                 """, unsafe_allow_html=True)
@@ -772,14 +824,14 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.markdown(f"""
                     <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 3px solid #D69E2E;">
                         <span style="color:#975A16; font-size:10px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
-                        <span style="font-size:11.5px; color:#2D3748; margin-top:2px; line-height:1.2;">{rec}</span>
+                        <span style="font-size:12px; color:#2D3748; margin-top:3px; line-height:1.3;">{rec}</span>
                     </div>
                 """, unsafe_allow_html=True)
             with cv3:
                 st.markdown(f"""
                     <div class="box-relatorio-equilibrado">
                         <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                        <span style="font-size:18px; font-weight:800; color:#022D8A; margin-top:1px;">{txt_dif}</span>
+                        <span style="font-size:20px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -801,6 +853,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             st.markdown("##### Unidades da Rede com Perfil Similar")
             
             linhas_similares_pdf_pre = ""
+            barras_html_pdf_pre = ""
             if not df_base_unidades.empty:
                 alvo_sp = (estado == "SP")
                 df_filtrado = df_base_unidades[(df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp) & (df_base_unidades['Unidade'] != nome_u_pre)].copy()
@@ -835,35 +888,61 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO EMPILHADO EXECUTIVO
+                    # REFINAMENTO VISUAL DO GRÁFICO (MÓDULO 2)
                     st.write("")
                     st.markdown("**Perfil da Renda e Distribuição de Classes (%)**")
                     
+                    indices_limpos_pre = [limpar_nome_unidade(dados_u_pre['Unidade'])] + [limpar_nome_unidade(u) for u in df_ranking["Unidade"].tolist()]
+
                     chart_data_pre = pd.DataFrame({
-                        "Classe A++": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
-                        "Classe A+": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
-                        "Classe B1": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist()
-                    }, index=[dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist())
+                        "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
+                        "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
+                        "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist()
+                    }, index=indices_limpos_pre)
 
-                    st.bar_chart(chart_data_pre, color=["#022D8A", "#053CD8", "#0DF205"], height=280)
+                    st.bar_chart(chart_data_pre, color=["#053CD8", "#0DF205", "#15803D"], height=280)
 
-            # RELATÓRIO PDF
+                    # CONSTRUÇÃO DO GRÁFICO PARA O PDF PRE
+                    for idx_nome in chart_data_pre.index:
+                        v_b1 = chart_data_pre.loc[idx_nome, "Classe B1 (Base)"]
+                        v_ap = chart_data_pre.loc[idx_nome, "Classe A+ (Elevada)"]
+                        v_app = chart_data_pre.loc[idx_nome, "Classe A++ (Mais Elevada)"]
+                        barras_html_pdf_pre += f"""
+                        <div style="flex:1; text-align:center;">
+                            <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;">
+                                <div style="height:{v_b1*1.2}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div>
+                                <div style="height:{v_ap*1.2}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div>
+                                <div style="height:{v_app*1.2}px; width:22px; background:#15803D; border-radius:2px;"></div>
+                            </div>
+                            <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:4px;">{idx_nome}</span>
+                        </div>
+                        """
+
+            # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 2)
+            st.write("")
+            st.markdown("##### ✍️ Considerações Finais do Analista / Comitê")
+            consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", key="val_m2_consideracoes")
+
+            # RELATÓRIO PDF EXECUTIVO COMPLETO
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
                 modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
                 html_relatorio = f"""
-                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="color:#022D8A; margin:0;">Relatório de Precificação Estratégica</h2>
-                        <span style="font-size:12px; color:#6C757D;">Fast Tennis - Comitê de Expansão</span>
+                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 1px solid #CBD5E0; border-radius: 8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
+                        <div>
+                            <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
+                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Expansão</small>
+                        </div>
+                        <span style="font-size:12px; color:#E2E8F0;">Pontos Pré-Definidos</span>
                     </div>
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
                         <tr style="background-color:#F8F9FA;">
                             <td style="padding:8px; border:1px solid #ddd;"><b>Unidade:</b> {dados_u_pre['Unidade']} (Quadras: {num_quadras_pre})</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>População:</b> {populacao:,} hab.</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
                         </tr>
                         <tr>
                             <td style="padding:8px; border:1px solid #ddd;"><b>Endereço:</b> {endereco_pre}</td>
@@ -871,23 +950,23 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </tr>
                     </table>
 
-                    <div style="background-color:#022D8A; color:#ffffff; padding:15px; border-radius:6px; margin-bottom:20px;">
-                        <h3 style="margin:0; color:#0DF205;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
-                        <p style="margin:5px 0 0 0; font-size:14px;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
-                        <p style="margin:5px 0 0 0; font-size:12px; color:#E2E8F0;">Modo de Definição: <b>{modo_definicao}</b></p>
+                    <div style="background-color:#F8F9FA; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #E2E8F0;">
+                        <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                        <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM Técnico: <b>R$ {tkm_ref},00</b></p>
+                        <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
                     </div>
 
-                    <div style="font-size:13px; line-height:1.5; margin-bottom:20px;">
-                        <p style="margin:0 0 5px 0;"><b>Diretriz Regional:</b> {diag}</p>
-                        <p style="margin:0 0 5px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
-                        <p style="margin:0 0 5px 0;"><b>Recomendação:</b> {rec}</p>
-                        <p style="margin:0 0 5px 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
+                    <div style="font-size:12px; line-height:1.5; margin-bottom:20px; background-color:#FFFFFF; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
+                        <p style="margin:0 0 4px 0;"><b>Diretriz Regional:</b> {diag}</p>
+                        <p style="margin:0 0 4px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
+                        <p style="margin:0 0 4px 0;"><b>Recomendação:</b> {rec}</p>
+                        <p style="margin:0 0 0 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
                     </div>
 
-                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:13px;">Unidades da Rede com Perfil Similar:</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
                         <thead>
-                            <tr style="background-color:#F8F9FA; text-align:left;">
+                            <tr style="background-color:#F8F9FA; text-align:left; color:#022D8A;">
                                 <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
                                 <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
@@ -898,10 +977,27 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </tbody>
                     </table>
 
-                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
+                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%):</h4>
+                    <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:20px;">
+                        {barras_html_pdf_pre}
+                    </div>
+                    <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
+                        <span style="color:#053CD8;">■ Classe B1</span> &nbsp;&nbsp; 
+                        <span style="color:#0DF205;">■ Classe A+</span> &nbsp;&nbsp; 
+                        <span style="color:#15803D;">■ Classe A++</span>
+                    </div>
+
+                    {f'''
+                    <div style="background-color:#FFFDF5; border-left:4px solid #D69E2E; padding:12px; border-radius:4px; margin-bottom:20px;">
+                        <h4 style="margin:0 0 4px 0; color:#975A16; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
+                        <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m2}</p>
+                    </div>
+                    ''' if consideracoes_m2 else ''}
+
+                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
                 </div>
                 """
-                st.components.v1.html(html_relatorio, height=620, scrolling=True)
+                st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
 # MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
@@ -913,6 +1009,7 @@ else:
 
     def limpar_campos_m2():
         st.session_state["m2_nome_u"] = "Selecione..."
+        st.session_state["val_m3_consideracoes"] = ""
         for key in ["m2_mix", "m2_cres_base", "m2_vendedor"]:
             st.session_state[key] = "Selecione..."
         for key in ["m2_tkm_real", "m2_ll", "m2_fat", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p"]:
@@ -957,7 +1054,7 @@ else:
         tkm_esperado_rede = TABELAS_OFICIAIS[tab_praticada_u]["tkm"]
         preco_plus_esperado = TABELAS_OFICIAIS[tab_praticada_u]["plus"]
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO E PROTEGIDO
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
         html_card_reav = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1082,7 +1179,7 @@ else:
                 if val == "Crítico": return 'background-color: #FEE2E2; color: #B91C1C; font-weight: bold;'
                 return ''
                 
-            st.dataframe(df_sinais.style.map(estilitar_sinais, subset=['Sinal']), use_container_width=True, hide_index=True)
+            st.dataframe(df_sinais.style.map(estilizar_sinais, subset=['Sinal']), use_container_width=True, hide_index=True)
 
             st.markdown(f"""
                 <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:12px 20px; border-radius:4px; margin-top:8px; display:flex; justify-content:space-around;">
@@ -1119,7 +1216,12 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-            # RELATÓRIO PDF PARA O MÓDULO 3
+            # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 3)
+            st.write("")
+            st.markdown("##### ✍️ Considerações Finais do Analista / Comitê")
+            consideracoes_m3 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários operacionais ou justificativas técnicas...", key="val_m3_consideracoes")
+
+            # RELATÓRIO PDF EXECUTIVO PARA O MÓDULO 3
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório de Reavaliação (PDF)", expanded=False):
@@ -1134,20 +1236,23 @@ else:
                         <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo}; color:{cor_texto}; font-weight:bold; text-align:center;">{x['Sinal']}</td>
                     </tr>"""
 
-                html_pdf_m2 = f"""
-                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 2px solid #022D8A; border-radius: 8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="color:#022D8A; margin:0;">Relatório de Reavaliação Estratégica</h2>
-                        <span style="font-size:12px; color:#6C757D;">Fast Tennis - Diretoria Executiva</span>
+                html_pdf_m3 = f"""
+                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 1px solid #CBD5E0; border-radius: 8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
+                        <div>
+                            <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Reavaliação Estratégica</h2>
+                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Diretoria Executiva</small>
+                        </div>
+                        <span style="font-size:12px; color:#E2E8F0;">Unidade Ativa</span>
                     </div>
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
                     <h4 style="margin:0 0 5px 0; color:#022D8A;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']})</h4>
-                    <p style="margin:0 0 15px 0; font-size:13px;">Endereço: <b>{endereco_re}</b> | Quadras: <b>{num_quadras_re}</b> | Tabela: <b>Tabela {tab_praticada_u}</b></p>
+                    <p style="margin:0 0 15px 0; font-size:12px; color:#2D3748;">Endereço: <b>{endereco_re}</b> | Quadras: <b>{num_quadras_re}</b> | Tabela Atual: <b>Tabela {tab_praticada_u}</b></p>
                     
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
                         <thead>
-                            <tr style="background-color:#F8F9FA; text-align:left; color:#2D3748;">
+                            <tr style="background-color:#F8F9FA; text-align:left; color:#022D8A;">
                                 <th style="padding:6px; border:1px solid #ddd;">Critério Avaliado</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Referência / Alvo da Rede</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Desempenho Unidade</th>
@@ -1159,20 +1264,27 @@ else:
                         </tbody>
                     </table>
 
-                    <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:10px; border-radius:4px; margin-bottom:15px; text-align:center; font-size:13px;">
-                        <b>Resumo:</b> <span style="color:#15803D;">Positivos: {qtd_positivos} ({pct_positivos:.0f}%)</span> | 
+                    <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:10px; border-radius:4px; margin-bottom:15px; text-align:center; font-size:12px;">
+                        <b>Resumo da Matriz:</b> <span style="color:#15803D;">Positivos: {qtd_positivos} ({pct_positivos:.0f}%)</span> | 
                         <span style="color:#A16207;">Atenção: {qtd_atencao}</span> | 
                         <span style="color:#B91C1C;">Críticos: {qtd_criticos}</span>
                     </div>
 
                     <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:15px; border-radius:6px; margin-bottom:20px;">
-                        <h3 style="margin:0 0 5px 0; font-size:14px; color:{cor_pop};">Diretriz Estratégica (Comitê)</h3>
-                        <p style="margin:0; font-size:14px; color:#2D3748; line-height:1.5;">{rec_pop}</p>
+                        <h3 style="margin:0 0 5px 0; font-size:13px; color:{cor_pop}; text-transform:uppercase;">Diretriz Estratégica (Comitê)</h3>
+                        <p style="margin:0; font-size:13px; color:#2D3748; line-height:1.4;">{rec_pop}</p>
                     </div>
+
+                    {f'''
+                    <div style="background-color:#FFFDF5; border-left:4px solid #D69E2E; padding:12px; border-radius:4px; margin-bottom:20px;">
+                        <h4 style="margin:0 0 4px 0; color:#975A16; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
+                        <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m3}</p>
+                    </div>
+                    ''' if consideracoes_m3 else ''}
                     
-                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; cursor: pointer;">Imprimir / Salvar PDF</button>
+                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
                 </div>
                 """
-                st.components.v1.html(html_pdf_m2, height=650, scrolling=True)
+                st.components.v1.html(html_pdf_m3, height=680, scrolling=True)
     else:
         st.info("Aguardando a seleção da unidade para carregar os dados demográficos do banco e iniciar a avaliação.")
