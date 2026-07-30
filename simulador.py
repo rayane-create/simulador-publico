@@ -364,7 +364,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
             
-            # PREÇO MÉDIO PRIMEIRO, CHECKBOX ABAIXO (CORREÇÃO 1)
+            # PREÇO MÉDIO PRIMEIRO, CHECKBOX ABAIXO
             media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
             sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
 
@@ -486,7 +486,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 </div>
             """, unsafe_allow_html=True)
 
-        # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP (CORREÇÃO 2)
+        # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP
         st.write("")
         with st.container(border=True):
             st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -563,7 +563,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
-        # RELATÓRIO PDF COMPLETO (CORREÇÃO 6)
+        # RELATÓRIO PDF COMPLETO
         st.write("")
         st.markdown("---")
         with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
@@ -795,7 +795,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     </div>
                 """, unsafe_allow_html=True)
 
-            # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP NO MÓDULO 2 (CORREÇÃO 2)
+            # RESTAURAÇÃO DA SELEÇÃO DO STATUS DO BP NO MÓDULO 2
             st.write("")
             with st.container(border=True):
                 st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
@@ -809,7 +809,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         key="val_pre_viabilidade_bp"
                     )
 
-            # CÁLCULO DE UNIDADES SIMILARES (CORREÇÃO 4 - EXCLUI A PRÓPRIA UNIDADE)
+            # CÁLCULO DE UNIDADES SIMILARES NO MÓDULO 2
             st.write("")
             st.markdown("##### Unidades da Rede com Perfil Similar")
             
@@ -848,7 +848,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES (MÓDULO 2)
+                    # GRÁFICO EMPILHADO DE PERFIL DE RENDA/CLASSES
                     if PLOTLY_DISPONIVEL:
                         fig_pre = go.Figure()
                         nomes_grafico_pre = [dados_u_pre['Unidade']] + df_ranking["Unidade"].tolist()
@@ -872,7 +872,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         )
                         st.plotly_chart(fig_pre, use_container_width=True)
 
-            # RELATÓRIO PDF COMPLETO (CORREÇÃO 6)
+            # RELATÓRIO PDF
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
