@@ -533,7 +533,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO (MENSAGEM REMOVIDA DA TELA)
+        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO (MENSAGEM REMOVIDA)
         preco_preliminar = precos[tab_sugerida_preliminar]
 
         if not sem_concorrente and media_mercado > 0:
@@ -642,7 +642,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     key="val_viabilidade_bp"
                 )
 
-        # CÁLCULO DE UNIDADES SIMILARES
         st.write("")
         st.markdown("##### Unidades da Rede com Perfil Similar")
         
@@ -690,7 +689,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 ]
                 for _, r_u in df_ranking.iterrows():
                     colunas_grafico.append({
-                        "nome": limpar_nome_unidade(r_u["Unidade"]),
+                        "nome": str(r_u["Unidade"]).replace("Fast Tennis ", "").strip(),
                         "b1": float(r_u["B1"]) * 100,
                         "ap": float(r_u["A+"]) * 100,
                         "app": float(r_u["A++"]) * 100,
@@ -720,12 +719,10 @@ if modulo_selecionado == "Simulador Precificação Inicial":
 
                 st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela}</div><div class="rotulos-container-fixed">{rotulos_html_tela}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
-        # CAMPO DE CONSIDERAÇÕES FINAIS DO COMITÊ
         st.write("")
         st.markdown("##### Considerações Finais do Comitê")
         consideracoes_m1 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto comercial, concorrência ou viabilidade...", height=80, key="val_m1_consideracoes")
 
-        # RELATÓRIO PDF EXECUTIVO COMPLETO
         st.write("")
         st.markdown("---")
         with st.expander("📄 Exportar Relatório Executivo Oficial (PDF)", expanded=False):
@@ -804,7 +801,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (CORRIGIDO ESCOPO DE VARIÁVEL)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (BLOCO PROTEGIDO)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1056,11 +1053,11 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                     
                     colunas_grafico_pre = [
-                        {"nome": limpar_nome_unidade(dados_u_pre['Unidade']), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
+                        {"nome": str(dados_u_pre['Unidade']).replace("Fast Tennis ", "").strip(), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                     ]
                     for _, r_u in df_ranking.iterrows():
                         colunas_grafico_pre.append({
-                            "nome": limpar_nome_unidade(r_u["Unidade"]),
+                            "nome": str(r_u["Unidade"]).replace("Fast Tennis ", "").strip(),
                             "b1": float(r_u["B1"]) * 100,
                             "ap": float(r_u["A+"]) * 100,
                             "app": float(r_u["A++"]) * 100,
@@ -1169,6 +1166,8 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 </div>
                 """
                 st.components.v1.html(html_relatorio, height=680, scrolling=True)
+    else:
+        st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
 
 # ==============================================================================
 # MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
