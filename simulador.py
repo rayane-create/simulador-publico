@@ -134,6 +134,66 @@ st.markdown(
             flex-direction: column;
             justify-content: center;
         }
+
+        /* ESTRUTURA DO GRÁFICO 100% IGUAL COM 4 CLASSES */
+        .grafico-executivo-container {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 25px 20px 15px 20px;
+            margin-top: 15px;
+        }
+        .linha-grafico-flex {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding-bottom: 0px;
+            border-bottom: 2px solid #CBD5E0;
+        }
+        .barra-coluna-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        .barra-empilhada-box {
+            width: 52px;
+            height: 180px; /* Altura fixa rigorosa para todas as barras */
+            background-color: transparent;
+            display: flex;
+            flex-direction: column-reverse;
+            overflow: hidden;
+            border-radius: 4px 4px 0 0;
+            border: 1px solid #CBD5E0;
+        }
+        .rotulos-container-fixed {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+        }
+        .rotulo-unidade-box {
+            flex: 1;
+            text-align: center;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #022D8A;
+            line-height: 1.3;
+            min-height: 42px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 0 4px;
+        }
+        .tag-similaridade {
+            background-color: #022D8A;
+            color: #0DF205;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -531,20 +591,10 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # GRÁFICO NATIVO DO STREAMLIT BARRAS AGRUPADAS (100% GARANTIDO, SEM DESALINHAMENTO)
+                # OPÇÃO 1: BARRAS COM 100% DA POPULAÇÃO DIVIDIDAS EM 4 CLASSES (CINZA + B1 + A+ + A++)
                 st.write("")
-                st.markdown("**Perfil da Renda e Distribuição de Classes (%) por Praça**")
+                st.markdown("**Perfil da Renda e Distribuição de Classes (Soma de 100% da População)**")
                 
-                nomes_praças = ["Ponto Simulado (Alvo)"] + [f"{limpar_nome_unidade(u)} ({s})" for u, s in zip(df_ranking["Unidade"], df_ranking["% Similaridade"])]
-                
-                chart_df = pd.DataFrame({
-                    "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
-                    "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
-                    "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
-                }, index=nomes_praças)
-
-                st.bar_chart(chart_df, color=["#053CD8", "#0DF205", "#15803D"], height=320)
-
                 colunas_grafico = [
                     {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                 ]
@@ -557,8 +607,25 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                         "sim": r_u["% Similaridade"]
                     })
 
+                barras_html_tela = ""
+                rotulos_html_tela = ""
+
                 for item in colunas_grafico:
-                    barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{item['b1']*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['ap']*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['app']*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+                    v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
+                    v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app)) # Completa até 100% em cinza
+
+                    # Escala exata em pixels (180px representa 100%)
+                    h_outras = int((v_outras / 100.0) * 180)
+                    h_b1 = int((v_b1 / 100.0) * 180)
+                    h_ap = int((v_ap / 100.0) * 180)
+                    h_app = int((v_app / 100.0) * 180)
+
+                    barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras Classes (C/D/E): {v_outras:.1f}%"></div><div style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div><div style="height:{h_ap}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div><div style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div></div></div>"""
+                    rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
+                    
+                    barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_outras*0.7}px; width:22px; background:#CBD5E0; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_b1*0.7}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.7}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.7}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+
+                st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela}</div><div class="rotulos-container-fixed">{rotulos_html_tela}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
         # CAMPO DE CONSIDERAÇÕES FINAIS DO COMITÊ
         st.write("")
@@ -625,6 +692,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     {barras_html_pdf}
                 </div>
                 <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:20px;">
+                    <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
                     <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
                     <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
                     <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
@@ -877,20 +945,10 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO NATIVO DO STREAMLIT BARRAS AGRUPADAS (100% GARANTIDO E ALINHADO)
+                    # OPÇÃO 1 NO MÓDULO 2 (SOMA 100% POPULAÇÃO DIVIDIDA EM 4 CLASSES)
                     st.write("")
-                    st.markdown("**Perfil da Renda e Distribuição de Classes (%) por Praça**")
+                    st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                     
-                    nomes_praças_pre = [f"{limpar_nome_unidade(dados_u_pre['Unidade'])} (Alvo)"] + [f"{limpar_nome_unidade(u)} ({s})" for u, s in zip(df_ranking["Unidade"], df_ranking["% Similaridade"])]
-                    
-                    chart_df_pre = pd.DataFrame({
-                        "Classe B1 (Base)": [classe_b1 * 100] + (df_ranking["B1"] * 100).tolist(),
-                        "Classe A+ (Elevada)": [classe_a_mais * 100] + (df_ranking["A+"] * 100).tolist(),
-                        "Classe A++ (Mais Elevada)": [classe_a_mais_mais * 100] + (df_ranking["A++"] * 100).tolist(),
-                    }, index=nomes_praças_pre)
-
-                    st.bar_chart(chart_df_pre, color=["#053CD8", "#0DF205", "#15803D"], height=320)
-
                     colunas_grafico_pre = [
                         {"nome": limpar_nome_unidade(dados_u_pre['Unidade']), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
                     ]
@@ -903,8 +961,24 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                             "sim": r_u["% Similaridade"]
                         })
 
+                    barras_html_tela_pre = ""
+                    rotulos_html_tela_pre = ""
+
                     for item in colunas_grafico_pre:
-                        barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{item['b1']*1.3}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['ap']*1.3}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{item['app']*1.3}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+                        v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
+                        v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app))
+
+                        h_outras = int((v_outras / 100.0) * 180)
+                        h_b1 = int((v_b1 / 100.0) * 180)
+                        h_ap = int((v_ap / 100.0) * 180)
+                        h_app = int((v_app / 100.0) * 180)
+
+                        barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras Classes (C/D/E): {v_outras:.1f}%"></div><div style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div><div style="height:{h_ap}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div><div style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div></div></div>"""
+                        rotulos_html_tela_pre += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
+                        
+                        barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_outras*0.7}px; width:22px; background:#CBD5E0; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_b1*0.7}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.7}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.7}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+
+                    st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela_pre}</div><div class="rotulos-container-fixed">{rotulos_html_tela_pre}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
             # CAMPO DE CONSIDERAÇÕES FINAIS
             st.write("")
@@ -970,6 +1044,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         {barras_html_pdf_pre}
                     </div>
                     <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:20px;">
+                        <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
                         <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
                         <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
                         <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
