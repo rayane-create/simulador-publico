@@ -277,7 +277,6 @@ with st.sidebar:
     
     st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
     
-    # OPÇÕES DO MENU COM SELEÇÃO DIRETA E SEM KEY DUPLICADA
     opcoes_menu = [
         "Simulador Precificação Inicial",
         "Simulador Pontos Pré-Definidos",
@@ -414,6 +413,14 @@ for item in df_existentes_raw:
 df_base_unidades = pd.DataFrame(df_existentes)
 LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
+TABELAS_OFICIAIS = {
+    1: {"tkm": 338, "plus": 329},
+    2: {"tkm": 411, "plus": 399},
+    3: {"tkm": 470, "plus": 499},
+    4: {"tkm": 570, "plus": 599},
+    5: {"tkm": 690, "plus": 710}
+}
+
 # ==============================================================================
 # MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
 # ==============================================================================
@@ -501,7 +508,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
     if not dados_preenchidos:
         st.info("Aguardando dados. Por favor, preencha as informações para gerar o diagnóstico.")
     else:
-        # Lógica das tabelas
         if estado == "SP":
             if renda_media <= 8500.00: tab_min, tab_max = 1, 2
             elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -527,14 +533,13 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-        trava_concorrencia_ativada = False
+        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO (MENSAGEM REMOVIDA DA TELA)
         preco_preliminar = precos[tab_sugerida_preliminar]
 
         if not sem_concorrente and media_mercado > 0:
             diferenca_percentual_preliminar = (preco_preliminar - media_mercado) / media_mercado
             if diferenca_percentual_preliminar > 0.30:
                 tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
-                trava_concorrencia_ativada = True
             else:
                 tabela_sugerida = tab_sugerida_preliminar
         else:
@@ -552,7 +557,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                     <h2>Tabela {tabela_sugerida}</h2>
                     <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
-                    {f'<p style="margin:8px 0 0 0; font-size:12.5px; color:#991B1B;"><b>⚠️ Trava Primária de Mercado Ativada:</b> A tabela original ficava mais de 30% acima da concorrência. O algoritmo reduziu a recomendação para a Tabela {tabela_sugerida} para preservar a competitividade local.</p>' if trava_concorrencia_ativada else ''}
                 </div>
             """, unsafe_allow_html=True)
             tabela_final = tabela_sugerida
@@ -800,7 +804,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM REGRA MESTRA DE > 30%)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (CORRIGIDO ESCOPO DE VARIÁVEL)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -901,14 +905,12 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
             tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-            trava_concorrencia_ativada_pre = False
             preco_preliminar_pre = precos[tab_sugerida_preliminar]
 
             if not sem_concorrente and media_mercado > 0:
                 diferenca_percentual_pre = (preco_preliminar_pre - media_mercado) / media_mercado
                 if diferenca_percentual_pre > 0.30:
                     tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
-                    trava_concorrencia_ativada_pre = True
                 else:
                     tabela_sugerida = tab_sugerida_preliminar
             else:
@@ -926,7 +928,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                         <h2>Tabela {tabela_sugerida}</h2>
                         <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
-                        {f'<p style="margin:8px 0 0 0; font-size:12.5px; color:#991B1B;"><b>⚠️ Trava Primária de Mercado Ativada:</b> A tabela original ficava mais de 30% acima da concorrência. O algoritmo reduziu a recomendação para a Tabela {tabela_sugerida} para preservar a competitividade local.</p>' if trava_concorrencia_ativada_pre else ''}
                     </div>
                 """, unsafe_allow_html=True)
                 tabela_final = tabela_sugerida
@@ -1089,12 +1090,10 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
 
                     st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela_pre}</div><div class="rotulos-container-fixed">{rotulos_html_tela_pre}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
-            # CAMPO DE CONSIDERAÇÕES FINAIS
             st.write("")
             st.markdown("##### Considerações Finais do Comitê")
             consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", height=80, key="val_m2_consideracoes")
 
-            # RELATÓRIO PDF EXECUTIVO COMPLETO
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
