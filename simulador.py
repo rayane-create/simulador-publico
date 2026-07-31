@@ -224,6 +224,38 @@ st.markdown(
             border-radius: 12px;
             margin-bottom: 8px;
         }
+
+        /* ESTILIZAÇÃO DOS BALÕES EXECUTIVOS DE STATUS DA MATRIZ */
+        .badge-positivo {
+            background-color: #DCFCE7;
+            color: #15803D;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            display: inline-block;
+            border: 1px solid #86EFAC;
+        }
+        .badge-atencao {
+            background-color: #FEF9C3;
+            color: #A16207;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            display: inline-block;
+            border: 1px solid #FDE047;
+        }
+        .badge-critico {
+            background-color: #FEE2E2;
+            color: #B91C1C;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            display: inline-block;
+            border: 1px solid #FCA5A5;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -286,6 +318,74 @@ with st.sidebar:
     
     st.markdown("---")
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
+
+# ==========================================
+# BANCO DE DADOS DE REALIZADO FINANCEIRO (ATINGIMENTO MES A MES)
+# ==========================================
+FINANCEIRO_REALIZADO = {
+    "Fast Tennis Aguas Claras - Brasília": {"fat": 136.45, "ll": 185.09},
+    "Fast Tennis Alphaville - São Paulo": {"fat": 123.59, "ll": 159.93},
+    "Fast Tennis Alto do Ipiranga - São Paulo": {"fat": 102.81, "ll": 105.28},
+    "Fast Tennis Alto de Pinheiros - São Paulo": {"fat": 88.14, "ll": 72.89},
+    "Fast Tennis Anhanguera - Jundiaí": {"fat": 96.98, "ll": -23.48},
+    "Fast Tennis Bebedouro - Bebedouro": {"fat": 80.95, "ll": 62.11},
+    "Fast Tennis Belvedere - Belo Horizonte": {"fat": 95.71, "ll": 81.10},
+    "Fast Tennis Boa Viagem - Recife": {"fat": 115.25, "ll": 130.88},
+    "Fast Tennis Botafogo - Campinas": {"fat": 114.62, "ll": 492.23},
+    "Fast Tennis Brooklin - São Paulo": {"fat": 102.78, "ll": 107.11},
+    "Fast Tennis Buritis I - Belo Horizonte": {"fat": 89.86, "ll": 78.84},
+    "Fast Tennis Calafate - Belo Horizonte": {"fat": 105.52, "ll": 111.69},
+    "Fast Tennis Campo Belo - São Paulo": {"fat": 111.40, "ll": 120.36},
+    "Fast Tennis Cantareira - São Paulo": {"fat": 101.34, "ll": 105.30},
+    "Fast Tennis Capim Macio - Natal": {"fat": 116.75, "ll": 132.49},
+    "Fast Tennis Castelo - Belo Horizonte": {"fat": 111.01, "ll": 170.81},
+    "Fast Tennis Centro São Bernardo - São Bernardo do Campo": {"fat": 125.72, "ll": 125.72},
+    "Fast Tennis Chacará Inglesa - São Paulo": {"fat": 84.69, "ll": 50.73},
+    "Fast Tennis Chacará Santo Antônio - São Paulo": {"fat": 101.45, "ll": 103.59},
+    "Fast Tennis Cidade Nova - Cidade Nova": {"fat": 93.38, "ll": 84.89},
+    "Fast Tennis Contagem - Contagem": {"fat": 105.38, "ll": 111.09},
+    "Fast Tennis Estoril - Belo Horizonte": {"fat": 83.93, "ll": 68.36},
+    "Fast Tennis Estrela Sul - Juiz de Fora": {"fat": 107.53, "ll": 114.20},
+    "Fast Tennis Guararapes - Fortaleza": {"fat": 132.08, "ll": 209.00},
+    "Fast Tennis Indaiatuba - São Paulo": {"fat": 107.41, "ll": 116.55},
+    "Fast Tennis Jardim Portal da Colina - Sorocaba": {"fat": 99.35, "ll": 104.90},
+    "Fast Tennis Jardim - São Paulo": {"fat": 96.71, "ll": 92.27},
+    "Fast Tennis Jardim Social - Curitiba": {"fat": 117.20, "ll": 117.20},
+    "Fast Tennis Lapa - São Paulo": {"fat": 85.90, "ll": 433.06},
+    "Fast Tennis Moema - São Paulo": {"fat": 122.82, "ll": 157.50},
+    "Fast Tennis Mooca - São Paulo": {"fat": 120.67, "ll": 233.92},
+    "Fast Tennis Morada da Colina - Uberlândia": {"fat": 107.25, "ll": 162.06},
+    "Fast Tennis Morumbi - São Paulo": {"fat": 70.74, "ll": 70.74},
+    "Fast Tennis Nova Aliança Sul - Ribeirão Preto": {"fat": 94.08, "ll": 94.08},
+    "Fast Tennis Orla da Pampulha - Belo Horizonte": {"fat": 84.18, "ll": 47.48},
+    "Fast Tennis Pampulha - Belo Horizonte": {"fat": 124.17, "ll": 150.02},
+    "Fast Tennis Parque Piqueri - São Paulo": {"fat": 68.39, "ll": 68.39},
+    "Fast Tennis Ponte JK - Brasília": {"fat": 89.76, "ll": 75.02},
+    "Fast Tennis Praia do Canto - Vitória": {"fat": 117.46, "ll": 117.46},
+    "Fast Tennis Praia Grande - Praia Grande": {"fat": 111.18, "ll": 148.13},
+    "FastTennis Radial Leste - São Paulo": {"fat": 176.25, "ll": 1314.96},
+    "Fast Tennis Recreio - Rio de Janeiro": {"fat": 116.60, "ll": 152.92},
+    "Fast Tennis Rio Claro - São Paulo": {"fat": 105.66, "ll": 132.25},
+    "Fast Tennis Salgado Filho - Curitiba": {"fat": 110.48, "ll": 110.48},
+    "Fast Tennis Salto - São Paulo": {"fat": 139.96, "ll": 139.96},
+    "Fast Tennis Santa Lúcia - Belo Horizonte": {"fat": 87.99, "ll": 70.06},
+    "Fast Tennis Santa Rosa - Niterói": {"fat": 113.08, "ll": 118.24},
+    "Fast Tennis Santana - São Paulo": {"fat": 146.21, "ll": 146.21},
+    "Fast Tennis Santo Amaro": {"fat": 92.13, "ll": 79.72},
+    "Fast Tennis São Bento - Belo Horizonte": {"fat": 69.77, "ll": -437.96},
+    "Fast Tennis São Caetano - São Caetano do Sul": {"fat": 110.41, "ll": 128.89},
+    "Fast Tennis Saúde - São Paulo": {"fat": 136.60, "ll": 334.83},
+    "Fast Tennis Saul Macedo - Belo Horizonte": {"fat": 73.42, "ll": 73.42},
+    "Fast Tennis Savassi - Belo Horizonte": {"fat": 246.25, "ll": 246.25},
+    "Fast Tennis Sete Lagoas - Sete Lagoas": {"fat": 96.37, "ll": 89.25},
+    "Fast Tennis Setor Bueno - Goiânia": {"fat": 93.00, "ll": 93.00},
+    "Fast Tennis Tirol- Natal": {"fat": 138.19, "ll": 225.10},
+    "Fast Tennis Três Poderes - São Paulo": {"fat": 91.72, "ll": 78.73},
+    "Fast Tennis Verbo Divino - São Paulo": {"fat": 118.48, "ll": 509.92},
+    "Fast Tennis Vila Olímpia - São Paulo": {"fat": 121.60, "ll": 121.60},
+    "Fast Tennis Vilhena - Rondônia": {"fat": 138.93, "ll": 53.26},
+    "Fast Tennis Ypiranga - São Paulo": {"fat": 89.57, "ll": 89.57}
+}
 
 # ==========================================
 # LISTAS DE COBERTURA DE QUADRAS
@@ -413,14 +513,6 @@ for item in df_existentes_raw:
 df_base_unidades = pd.DataFrame(df_existentes)
 LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
-TABELAS_OFICIAIS = {
-    1: {"tkm": 338, "plus": 329},
-    2: {"tkm": 411, "plus": 399},
-    3: {"tkm": 470, "plus": 499},
-    4: {"tkm": 570, "plus": 599},
-    5: {"tkm": 690, "plus": 710}
-}
-
 # ==============================================================================
 # MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
 # ==============================================================================
@@ -533,7 +625,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO (MENSAGEM REMOVIDA)
         preco_preliminar = precos[tab_sugerida_preliminar]
 
         if not sem_concorrente and media_mercado > 0:
@@ -801,7 +892,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (BLOCO PROTEGIDO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ESCOPO TOTALMENTE ISOLADO E PROTEGIDO)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1170,7 +1261,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (COM CARREGAMENTO AUTO)
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1182,7 +1273,7 @@ else:
         st.session_state["val_m3_consideracoes"] = ""
         for key in ["m2_mix", "m2_cres_base", "m2_vendedor"]:
             st.session_state[key] = "Selecione..."
-        for key in ["m2_tkm_real", "m2_ll", "m2_fat", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p"]:
+        for key in ["m2_tkm_real", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p"]:
             st.session_state[key] = 0.0
 
     if "m2_nome_u" not in st.session_state:
@@ -1223,6 +1314,11 @@ else:
         tkm_esperado_rede = TABELAS_OFICIAIS[tab_praticada_u]["tkm"]
         preco_plus_esperado = TABELAS_OFICIAIS[tab_praticada_u]["plus"]
 
+        # PUXA O CARREGAMENTO AUTOMÁTICO FINANCEIRO DO MES
+        dados_fin = FINANCEIRO_REALIZADO.get(nome_unidade_sel, {"fat": 0.0, "ll": 0.0})
+        atingimento_fat_auto = dados_fin["fat"]
+        atingimento_ll_auto = dados_fin["ll"]
+
         html_card_reav = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1246,10 +1342,10 @@ else:
             u1, u2, u3 = st.columns(3)
             
             with u1:
-                st.markdown("**Desempenho Financeiro**")
+                st.markdown("**Desempenho Financeiro (Carregado Automaticamente)**")
+                st.number_input("% Atingimento Meta Lucro Líquido:", value=atingimento_ll_auto, disabled=True, key="m2_ll_show")
+                st.number_input("% Atingimento Meta Faturamento:", value=atingimento_fat_auto, disabled=True, key="m2_fat_show")
                 tkm_real_unidade = st.number_input("TKM Real Praticado (R$):", min_value=0.0, step=5.0, key="m2_tkm_real")
-                atingimento_ll = st.number_input("% Atingimento Meta Lucro Líquido:", min_value=0.0, step=1.0, key="m2_ll")
-                atingimento_fat = st.number_input("% Atingimento Meta Faturamento:", min_value=0.0, step=1.0, key="m2_fat")
 
             with u2:
                 st.markdown("**Conversão e Vendas**")
@@ -1285,11 +1381,11 @@ else:
             
             matriz_sinais = []
 
-            s_ll = "Positivo" if atingimento_ll >= 90 else "Atenção" if atingimento_ll >= 80 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Lucro Líquido", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_ll:.1f}%", "Sinal": s_ll})
+            s_ll = "Positivo" if atingimento_ll_auto >= 90 else "Atenção" if atingimento_ll_auto >= 80 else "Crítico"
+            matriz_sinais.append({"Critério Avaliado": "Lucro Líquido", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_ll_auto:.1f}%", "Sinal": s_ll})
 
-            s_fat = "Positivo" if atingimento_fat >= 90 else "Atenção" if atingimento_fat >= 80 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Faturamento", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_fat:.1f}%", "Sinal": s_fat})
+            s_fat = "Positivo" if atingimento_fat_auto >= 90 else "Atenção" if atingimento_fat_auto >= 80 else "Crítico"
+            matriz_sinais.append({"Critério Avaliado": "Faturamento", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_fat_auto:.1f}%", "Sinal": s_fat})
 
             s_mix = "Positivo" if "saudável" in mix_produtos else "Atenção" if "8%" in mix_produtos else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Mix de Produtos", "Referência / Alvo": "Consumo Saudável", "Desempenho Unidade": mix_produtos, "Sinal": s_mix})
@@ -1322,22 +1418,36 @@ else:
             s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
 
-            df_sinais = pd.DataFrame(matriz_sinais)
-            qtd_positivos = sum(1 for x in matriz_sinais if x["Sinal"] == "Positivo")
-            qtd_atencao = sum(1 for x in matriz_sinais if x["Sinal"] == "Atenção")
-            qtd_criticos = sum(1 for x in matriz_sinais if x["Sinal"] == "Crítico")
+            # RENDERIZAÇÃO DA MATRIZ COM BALÕES EXECUTIVOS NAS CORES
+            for item in matriz_sinais:
+                st_val = item["Sinal"]
+                if st_val == "Positivo":
+                    item["Sinal"] = f'<span class="badge-positivo">Positivo</span>'
+                elif st_val == "Atenção":
+                    item["Sinal"] = f'<span class="badge-atencao">Atenção</span>'
+                else:
+                    item["Sinal"] = f'<span class="badge-critico">Crítico</span>'
+
+            df_sinais_html = pd.DataFrame(matriz_sinais).to_html(escape=False, index=False)
+            
+            st.markdown(f"""
+                <div style="background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:15px; overflow-x:auto;">
+                    <style>
+                        table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+                        th {{ background-color: #F8F9FA; color: #022D8A; padding: 10px; text-align: left; border-bottom: 2px solid #CBD5E0; font-weight: 800; }}
+                        td {{ padding: 10px; border-bottom: 1px solid #E2E8F0; color: #2D3748; }}
+                    </style>
+                    {df_sinais_html}
+                </div>
+            """, unsafe_allow_html=True)
+
+            qtd_positivos = sum(1 for x in matriz_sinais if "Positivo" in x["Sinal"])
+            qtd_atencao = sum(1 for x in matriz_sinais if "Atenção" in x["Sinal"])
+            qtd_criticos = sum(1 for x in matriz_sinais if "Crítico" in x["Sinal"])
             pct_positivos = (qtd_positivos / len(matriz_sinais)) * 100
 
-            def estilizar_sinais(val):
-                if val == "Positivo": return 'background-color: #DCFCE7; color: #15803D; font-weight: bold;'
-                if val == "Atenção": return 'background-color: #FEF9C3; color: #A16207; font-weight: bold;'
-                if val == "Crítico": return 'background-color: #FEE2E2; color: #B91C1C; font-weight: bold;'
-                return ''
-                
-            st.dataframe(df_sinais.style.map(estilizar_sinais, subset=['Sinal']), use_container_width=True, hide_index=True)
-
             st.markdown(f"""
-                <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:12px 20px; border-radius:4px; margin-top:8px; display:flex; justify-content:space-around;">
+                <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:12px 20px; border-radius:4px; margin-top:12px; display:flex; justify-content:space-around;">
                     <span style="font-size:14px; color:#2D3748;">Resumo da Avaliação ➔</span>
                     <span style="font-size:14px;">Positivos: <b style="color:#15803D;">{qtd_positivos} ({pct_positivos:.0f}%)</b></span>
                     <span style="font-size:14px;">Atenção: <b style="color:#A16207;">{qtd_atencao}</b></span>
@@ -1380,13 +1490,14 @@ else:
             with st.expander("📄 Exportar Relatório de Reavaliação (PDF)", expanded=False):
                 linhas_tabela_pdf = ""
                 for x in matriz_sinais:
-                    cor_fundo = "#DCFCE7" if x['Sinal'] == "Positivo" else "#FEF9C3" if x['Sinal'] == "Atenção" else "#FEE2E2"
-                    cor_texto = "#15803D" if x['Sinal'] == "Positivo" else "#A16207" if x['Sinal'] == "Atenção" else "#B91C1C"
+                    st_clean = x['Sinal'].replace('<span class="badge-positivo">', '').replace('<span class="badge-atencao">', '').replace('<span class="badge-critico">', '').replace('</span>', '')
+                    cor_fundo = "#DCFCE7" if "Positivo" in st_clean else "#FEF9C3" if "Atenção" in st_clean else "#FEE2E2"
+                    cor_texto = "#15803D" if "Positivo" in st_clean else "#A16207" if "Atenção" in st_clean else "#B91C1C"
                     linhas_tabela_pdf += f"""<tr>
                         <td style="padding:6px; border:1px solid #ddd;">{x['Critério Avaliado']}</td>
                         <td style="padding:6px; border:1px solid #ddd;">{x['Referência / Alvo']}</td>
                         <td style="padding:6px; border:1px solid #ddd;">{x['Desempenho Unidade']}</td>
-                        <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo}; color:{cor_texto}; font-weight:bold; text-align:center;">{x['Sinal']}</td>
+                        <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo}; color:{cor_texto}; font-weight:bold; text-align:center;">{st_clean}</td>
                     </tr>"""
 
                 html_pdf_m3 = f"""
