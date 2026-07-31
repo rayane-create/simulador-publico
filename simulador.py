@@ -61,20 +61,22 @@ st.markdown(
             color: #FFFFFF !important;
         }
 
-        /* TABELA SUGERIDA - DESTAQUE PRINCIPAL (QUANDO SEM EXCEÇÃO) */
+        /* TABELA SUGERIDA - VERDE MAIS FORTE PORÉM TRANSLÚCIDO */
         .tabela-sugerida-box {
-            background-color: #F0FDF4;
-            padding: 25px 30px;
+            background-color: rgba(13, 242, 5, 0.12); /* Verde mais forte e translúcido */
+            padding: 22px 28px;
             border-radius: 12px;
-            border-left: 12px solid #00A807; /* Verde mais escuro para destaque */
-            margin: 20px 0;
-            border: 1px solid #BBF7D0;
-            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.12);
+            border-left: 12px solid #00A807; /* Borda verde marcante */
+            margin: 15px 0;
+            border-top: 1px solid rgba(0, 168, 7, 0.25);
+            border-right: 1px solid rgba(0, 168, 7, 0.25);
+            border-bottom: 1px solid rgba(0, 168, 7, 0.25);
+            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.15);
         }
         .tabela-sugerida-box h2 {
-            margin: 8px 0;
+            margin: 6px 0;
             color: #022D8A !important;
-            font-size: 38px !important;
+            font-size: 36px !important;
             font-weight: 800 !important;
             letter-spacing: -0.5px;
         }
@@ -85,7 +87,7 @@ st.markdown(
             padding: 12px 20px;
             border-radius: 8px;
             border-left: 6px solid #CBD5E0;
-            margin: 15px 0 10px 0;
+            margin: 12px 0;
             border: 1px solid #E2E8F0;
         }
         .tabela-sugerida-reduzida h2 {
@@ -95,20 +97,22 @@ st.markdown(
             font-weight: 700 !important;
         }
 
-        /* TABELA EXCEÇÃO - PROTAGONISTA TOTAL QUANDO ATIVADA */
+        /* TABELA EXCEÇÃO - DESTAQUE GIGANTE */
         .tabela-excecao-box {
-            background-color: #F0FDF4;
-            padding: 25px 30px;
+            background-color: rgba(13, 242, 5, 0.12);
+            padding: 22px 28px;
             border-radius: 12px;
             border-left: 12px solid #00A807;
-            margin: 15px 0 20px 0;
-            border: 1px solid #BBF7D0;
-            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.15);
+            margin: 15px 0;
+            border-top: 1px solid rgba(0, 168, 7, 0.25);
+            border-right: 1px solid rgba(0, 168, 7, 0.25);
+            border-bottom: 1px solid rgba(0, 168, 7, 0.25);
+            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.18);
         }
         .tabela-excecao-box h2 {
-            margin: 8px 0;
+            margin: 6px 0;
             color: #00A807 !important;
-            font-size: 38px !important;
+            font-size: 36px !important;
             font-weight: 800 !important;
         }
 
@@ -116,16 +120,16 @@ st.markdown(
             background-color: #F8F9FA;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
-            padding: 12px 15px;
-            margin-top: 6px;
+            padding: 10px 14px;
+            margin-top: 4px;
         }
 
         .card-resumo-unidade {
             background-color: #F0F4FF;
             border: 1px solid #C3D3FC;
             border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
+            padding: 14px 18px;
+            margin-bottom: 15px;
         }
 
         .alerta-fino-executivo {
@@ -137,7 +141,7 @@ st.markdown(
             font-size: 12.5px;
             font-weight: 600;
             border-radius: 4px;
-            margin: 12px 0;
+            margin: 10px 0;
         }
 
         .box-relatorio-equilibrado {
@@ -145,25 +149,25 @@ st.markdown(
             border-radius: 8px;
             border: 1px solid #E2E8F0;
             padding: 12px 16px;
-            min-height: 90px !important;
+            min-height: 85px !important;
             box-sizing: border-box !important;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        /* ESTRUTURA DO GRÁFICO MAIS PRÓXIMO PARA COMPARATIVO DIRETO */
+        /* GRÁFICO EXECUTIVO COM PERCENTUAIS E COMPACTO */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
             border-radius: 10px;
-            padding: 25px 20px 15px 20px;
+            padding: 20px 15px 12px 15px;
             margin-top: 15px;
         }
         .linha-grafico-flex {
             display: flex;
-            justify-content: center; /* Aproxima as barras ao centro */
-            gap: 35px; /* Espaçamento compacto e simétrico */
+            justify-content: center;
+            gap: 30px;
             align-items: flex-end;
             padding-bottom: 0px;
             border-bottom: 2px solid #CBD5E0;
@@ -172,11 +176,11 @@ st.markdown(
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 80px; /* Largura máxima fixa aproximada */
+            width: 85px;
         }
         .barra-empilhada-box {
-            width: 48px;
-            height: 180px; /* Altura fixa rigorosa para todas as barras */
+            width: 50px;
+            height: 180px;
             background-color: transparent;
             display: flex;
             flex-direction: column-reverse;
@@ -184,20 +188,30 @@ st.markdown(
             border-radius: 4px 4px 0 0;
             border: 1px solid #CBD5E0;
         }
+        .segmento-classe {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #FFFFFF;
+            overflow: hidden;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.5);
+        }
         .rotulos-container-fixed {
             display: flex;
             justify-content: center;
-            gap: 35px;
+            gap: 30px;
             padding-top: 10px;
         }
         .rotulo-unidade-box {
-            width: 80px;
+            width: 85px;
             text-align: center;
             font-size: 11px;
             font-weight: 700;
             color: #022D8A;
             line-height: 1.25;
-            min-height: 40px;
+            min-height: 38px;
             display: flex;
             align-items: flex-start;
             justify-content: center;
@@ -206,11 +220,11 @@ st.markdown(
         .tag-similaridade {
             background-color: #022D8A;
             color: #0DF205;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 800;
             padding: 2px 8px;
             border-radius: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
     </style>
     """,
@@ -370,7 +384,7 @@ with st.sidebar:
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
 
 # ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (PONTOS NÃO DEFINIDOS)
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (ENXUTO E LIMPO)
 # ==============================================================================
 if modulo_selecionado == "Simulador Precificação Inicial":
     
@@ -381,8 +395,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         st.session_state["val_classe_a_mais_mais"] = 0.0
         st.session_state["val_classe_a_mais"] = 0.0
         st.session_state["val_classe_b1"] = 0.0
-        st.session_state["val_regic"] = "Selecione..."
-        st.session_state["val_tipo_praca"] = "Selecione..."
         st.session_state["val_renda_media"] = 0.0
         st.session_state["val_tempo_proxima"] = 0
         st.session_state["val_sem_unidade_proxima"] = False
@@ -402,40 +414,44 @@ if modulo_selecionado == "Simulador Precificação Inicial":
     st.markdown("<p style='font-size:13.5px; color:#5A6578; margin-bottom:15px;'>Insira os dados geográficos e mercadológicos extraídos da ferramenta oficial.</p>", unsafe_allow_html=True)
 
     with st.container(border=True):
-        c1, c2, c3 = st.columns(3)
+        c1, c2 = st.columns([1.2, 1])
         with c1:
-            st.markdown("**Localização e Demografia**")
-            lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
-            estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
-            cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
-            regic = st.selectbox("REGIC:", ["Selecione...", "Centro Sub-Regional", "Capital Regional C", "Capital Regional B", "Capital Regional A", "Metrópole", "Grande Metrópole", "Metrópole Nacional"], key="val_regic")
-            populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
+            st.markdown("**Localização & Indicadores de População**")
+            sub_c1, sub_c2 = st.columns(2)
+            with sub_c1:
+                lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
+                estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
+                populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
+            with sub_c2:
+                cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
+                renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
 
-        with c2:
-            st.markdown("**Percentuais de Classes**")
-            classe_a_mais_mais = st.number_input("% Classe A++ (Ex: 0.15):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
-            classe_a_mais = st.number_input("% Classe A+ (Ex: 0.23):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais")
-            classe_b1 = st.number_input("% Classe B1 (Ex: 0.21):", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_b1")
-            
+            st.markdown("**Proporção de Classes de Renda**")
+            sub_cl1, sub_cl2, sub_cl3 = st.columns(3)
+            with sub_cl1:
+                classe_a_mais_mais = st.number_input("% Classe A++:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
+            with sub_cl2:
+                classe_a_mais = st.number_input("% Classe A+:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais")
+            with sub_cl3:
+                classe_b1 = st.number_input("% Classe B1:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_b1")
+
             soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
             calculo_alvo = int(soma_percentuais * populacao)
             
             st.markdown(f"""
                 <div class="card-destaque">
-                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span><br>
-                    <span style="font-size:22px; font-weight:800; color:#022D8A;">{calculo_alvo:,} hab.</span><br>
-                    <small style="color:#6C757D;">Soma das classes: <b>{soma_percentuais*100:.1f}%</b> da população.</small>
+                    <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span> &nbsp;|&nbsp; 
+                    <b style="font-size:16px; color:#022D8A;">{calculo_alvo:,} hab.</b> 
+                    <small style="color:#6C757D;">({soma_percentuais*100:.1f}% da área)</small>
                 </div>
             """, unsafe_allow_html=True)
 
-        with c3:
-            st.markdown("**Mercado e Vocação**")
-            tipo_praca = st.selectbox("Perfil da Praça:", ["Selecione...", "Comercial", "Mista", "Residencial", "Mista Qualificada"], key="val_tipo_praca")
-            renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
-            
+        with c2:
+            st.markdown("**Mercado & Concorrência Local**")
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
             sem_unidade_proxima = st.checkbox("Não possui unidades Fast próximas no raio", key="val_sem_unidade_proxima")
             
+            st.write("")
             media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
             sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
 
@@ -445,8 +461,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.button("Limpar Avaliação", on_click=limpar_campos_m1, use_container_width=True)
 
     dados_preenchidos = (
-        estado != "Selecione..." and regic != "Selecione..." and tipo_praca != "Selecione..." and 
-        cidade.strip() != "" and renda_media > 0 and (sem_concorrente or media_mercado > 0)
+        estado != "Selecione..." and cidade.strip() != "" and renda_media > 0 and (sem_concorrente or media_mercado > 0)
     )
 
     if not dados_preenchidos:
@@ -610,7 +625,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
                 
                 st.dataframe(
-                    df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada", "% Similaridade"]], 
+                    df_ranking[["Unidade", "Cidade", "Renda Média", "População", "Tabela Praticada", "% Similaridade"]], 
                     use_container_width=True, 
                     hide_index=True
                 )
@@ -618,7 +633,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # OPÇÃO 1: BARRAS COM 100% DA POPULAÇÃO DIVIDIDAS EM 4 CLASSES (COMPACTO E APROXIMADO)
+                # OPÇÃO 1: BARRAS COM 100% DA POPULAÇÃO E PERCENTUAIS INTEGRADOS NOS SEGMENTOS
                 st.write("")
                 st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                 
@@ -646,7 +661,12 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     h_ap = int((v_ap / 100.0) * 180)
                     h_app = int((v_app / 100.0) * 180)
 
-                    barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras Classes (C/D/E): {v_outras:.1f}%"></div><div style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div><div style="height:{h_ap}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div><div style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div></div></div>"""
+                    # Rótulos internos se a altura permitir
+                    txt_b1 = f"{v_b1:.0f}%" if h_b1 > 14 else ""
+                    txt_ap = f"{v_ap:.0f}%" if h_ap > 14 else ""
+                    txt_app = f"{v_app:.0f}%" if h_app > 14 else ""
+
+                    barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                     rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
                     
                     barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_outras*0.7}px; width:22px; background:#CBD5E0; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_b1*0.7}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.7}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.7}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
@@ -737,7 +757,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (SEM EMOJI NO ENDEREÇO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ENXUTO E LIMPO)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -779,26 +799,24 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO (SEM EMOJI NO ENDEREÇO)
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
         html_card_unidade = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u_pre['Unidade']} ({cidade} - {estado})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:12px;">Status: {status_u} | Quadras: {num_quadras_pre}</span>
                 </div>
-                <p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_pre}</p>
+                <p style="margin:0 0 8px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_pre}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Área:</b> {populacao:,} hab.</div>
                     <div><b>Renda Média:</b> R$ {renda_media:,.2f}</div>
                     <div><b>🎯 Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</div>
-                    <div><b>REGIC:</b> {regic}</div>
-                    <div><b>Perfil Praça:</b> {tipo_praca}</div>
                 </div>
             </div>
         """
         st.markdown(html_card_unidade, unsafe_allow_html=True)
 
-        st.subheader("2. Informações de Concorrência Local")
+        st.subheader("2. Concorrência & Entorno Local")
         with st.container(border=True):
             col_pre1, col_pre2 = st.columns(2)
             with col_pre1:
@@ -972,7 +990,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
                     
                     st.dataframe(
-                        df_ranking[["Unidade", "Cidade", "Renda Média", "População", "REGIC", "Tabela Praticada", "% Similaridade"]], 
+                        df_ranking[["Unidade", "Cidade", "Renda Média", "População", "Tabela Praticada", "% Similaridade"]], 
                         use_container_width=True, 
                         hide_index=True
                     )
@@ -1008,7 +1026,11 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         h_ap = int((v_ap / 100.0) * 180)
                         h_app = int((v_app / 100.0) * 180)
 
-                        barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras Classes (C/D/E): {v_outras:.1f}%"></div><div style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%"></div><div style="height:{h_ap}px; background-color:#0DF205;" title="Classe A+: {v_ap:.1f}%"></div><div style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%"></div></div></div>"""
+                        txt_b1 = f"{v_b1:.0f}%" if h_b1 > 14 else ""
+                        txt_ap = f"{v_ap:.0f}%" if h_ap > 14 else ""
+                        txt_app = f"{v_app:.0f}%" if h_app > 14 else ""
+
+                        barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                         rotulos_html_tela_pre += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
                         
                         barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_outras*0.7}px; width:22px; background:#CBD5E0; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_b1*0.7}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.7}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.7}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
@@ -1152,14 +1174,14 @@ else:
         tkm_esperado_rede = TABELAS_OFICIAIS[tab_praticada_u]["tkm"]
         preco_plus_esperado = TABELAS_OFICIAIS[tab_praticada_u]["plus"]
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO (SEM EMOJI NO ENDEREÇO)
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
         html_card_reav = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u['Unidade']} ({dados_u['Cidade']})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u} | Quadras: {num_quadras_re}</span>
                 </div>
-                <p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
+                <p style="margin:0 0 8px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Residente:</b> {populacao_u:,} hab.</div>
                     <div><b>🎯 Público Alvo (B1+A+ A++):</b> {num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</div>
