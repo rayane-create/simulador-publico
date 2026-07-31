@@ -235,9 +235,6 @@ st.markdown(
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 
-if "modulo_selecionado" not in st.session_state:
-    st.session_state["modulo_selecionado"] = "Simulador Precificação Inicial"
-
 # ==========================================
 # CONTROLE DE ACESSO (LOGIN)
 # ==========================================
@@ -280,16 +277,13 @@ with st.sidebar:
     
     st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
     
-    modulo_selecionado = st.selectbox(
-        "Selecione o Módulo:",
-        [
-            "Simulador Precificação Inicial",
-            "Simulador Pontos Pré-Definidos",
-            "Reavaliação Estratégica"
-        ],
-        key="modulo_navegacao"
-    )
-    st.session_state["modulo_selecionado"] = modulo_selecionado
+    # OPÇÕES DO MENU COM SELEÇÃO DIRETA E SEM KEY DUPLICADA
+    opcoes_menu = [
+        "Simulador Precificação Inicial",
+        "Simulador Pontos Pré-Definidos",
+        "Reavaliação Estratégica"
+    ]
+    modulo_selecionado = st.selectbox("Selecione o Módulo:", opcoes_menu)
     
     st.markdown("---")
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
@@ -420,45 +414,8 @@ for item in df_existentes_raw:
 df_base_unidades = pd.DataFrame(df_existentes)
 LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
-TABELAS_OFICIAIS = {
-    1: {"tkm": 338, "plus": 329},
-    2: {"tkm": 411, "plus": 399},
-    3: {"tkm": 470, "plus": 499},
-    4: {"tkm": 570, "plus": 599},
-    5: {"tkm": 690, "plus": 710}
-}
-
-def limpar_nome_unidade(nome):
-    """Remove o prefixo 'Fast Tennis ' para exibição limpa nos gráficos."""
-    return str(nome).replace("Fast Tennis ", "").strip()
-
-# ==========================================
-# SIDEBAR - MENU DROPDOWN NOMES LIMPOS
-# ==========================================
-with st.sidebar:
-    st.markdown("""
-        <div style="text-align:center; padding: 10px 0 20px 0;">
-            <a href="#" style="background-color:#0DF205; color:#022D8A; padding:10px 24px; border-radius:20px; font-weight:800; text-decoration:none; display:inline-block;">Sair do Sistema</a>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
-    
-    modulo_selecionado = st.selectbox(
-        "Selecione o Módulo:",
-        [
-            "Simulador Precificação Inicial",
-            "Simulador Pontos Pré-Definidos",
-            "Reavaliação Estratégica"
-        ],
-        key="modulo_navegacao"
-    )
-    
-    st.markdown("---")
-    st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
-
 # ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (LAYOUT 3 COLUNAS SIMÉTRICAS)
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
 # ==============================================================================
 if modulo_selecionado == "Simulador Precificação Inicial":
     
@@ -570,7 +527,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
         trava_concorrencia_ativada = False
         preco_preliminar = precos[tab_sugerida_preliminar]
 
@@ -920,7 +876,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.button("Limpar Avaliação", on_click=limpar_campos_m1_pre, use_container_width=True)
 
         if sem_concorrente or media_mercado > 0:
-            # Lógica das tabelas
             if estado == "SP":
                 if renda_media <= 8500.00: tab_min, tab_max = 1, 2
                 elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -946,7 +901,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
             tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-            # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
             trava_concorrencia_ativada_pre = False
             preco_preliminar_pre = precos[tab_sugerida_preliminar]
 
@@ -1058,7 +1012,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         key="val_pre_viabilidade_bp"
                     )
 
-            # CÁLCULO DE UNIDADES SIMILARES
             st.write("")
             st.markdown("##### Unidades da Rede com Perfil Similar")
             
@@ -1098,7 +1051,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # OPÇÃO 1 NO MÓDULO 2 (SOMA 100% POPULAÇÃO DIVIDIDA EM 4 CLASSES)
                     st.write("")
                     st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                     
@@ -1241,7 +1193,6 @@ else:
         st.session_state["m2_med_churn"] = 0.0
         limpar_campos_m2()
 
-    # 1. MÉDIAS GLOBAIS DA REDE
     st.subheader("1. Parâmetros Médios Atuais da Rede")
     with st.container(border=True):
         mr1, mr2, mr3 = st.columns(3)
@@ -1254,7 +1205,6 @@ else:
 
     st.write("")
     
-    # SELEÇÃO DA UNIDADE
     st.subheader("2. Seleção de Unidade & Diagnóstico Operacional")
     nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_NOMES_UNIDADES, key="m2_nome_u")
 
@@ -1275,7 +1225,6 @@ else:
         tkm_esperado_rede = TABELAS_OFICIAIS[tab_praticada_u]["tkm"]
         preco_plus_esperado = TABELAS_OFICIAIS[tab_praticada_u]["plus"]
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
         html_card_reav = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1294,7 +1243,6 @@ else:
         """
         st.markdown(html_card_reav, unsafe_allow_html=True)
 
-        # CAMPOS OPERACIONAIS REQUISITADOS
         with st.container(border=True):
             st.markdown("<p style='color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;'>Preenchimento do Desempenho Operacional da Unidade</p>", unsafe_allow_html=True)
             u1, u2, u3 = st.columns(3)
@@ -1339,56 +1287,43 @@ else:
             
             matriz_sinais = []
 
-            # 1. Lucro Líquido
             s_ll = "Positivo" if atingimento_ll >= 90 else "Atenção" if atingimento_ll >= 80 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Lucro Líquido", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_ll:.1f}%", "Sinal": s_ll})
 
-            # 2. Faturamento
             s_fat = "Positivo" if atingimento_fat >= 90 else "Atenção" if atingimento_fat >= 80 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Faturamento", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_fat:.1f}%", "Sinal": s_fat})
 
-            # 3. Mix
             s_mix = "Positivo" if "saudável" in mix_produtos else "Atenção" if "8%" in mix_produtos else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Mix de Produtos", "Referência / Alvo": "Consumo Saudável", "Desempenho Unidade": mix_produtos, "Sinal": s_mix})
 
-            # 4. Objeções
             s_obj = "Positivo" if objecoes_preco <= 10 else "Atenção" if objecoes_preco <= 25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Objeções por Preço", "Referência / Alvo": "≤ 10.0%", "Desempenho Unidade": f"{objecoes_preco:.1f}%", "Sinal": s_obj})
 
-            # 5. Conversão
             s_conv = "Positivo" if conversao_unidade >= media_rede_conversao else "Atenção" if conversao_unidade >= (media_rede_conversao * 0.90) else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Conversão", "Referência / Alvo": f"Média Rede ({media_rede_conversao:.1f}%)", "Desempenho Unidade": f"{conversao_unidade:.1f}%", "Sinal": s_conv})
 
-            # 6. Lead Conectado
             s_lead = "Positivo" if lead_conect_unidade >= media_rede_lead_conect else "Atenção" if lead_conect_unidade >= (media_rede_lead_conect * 0.90) else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "% Lead Conectado", "Referência / Alvo": f"Média Rede ({media_rede_lead_conect:.1f}%)", "Desempenho Unidade": f"{lead_conect_unidade:.1f}%", "Sinal": s_lead})
 
-            # 7. TKM
             s_tkm = "Positivo" if tkm_real_unidade >= tkm_esperado_rede else "Atenção" if tkm_real_unidade >= (tkm_esperado_rede * 0.90) else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "TKM Praticado", "Referência / Alvo": f"Esp. Tab {tab_praticada_u} (R$ {tkm_esperado_rede})", "Desempenho Unidade": f"R$ {tkm_real_unidade:.0f}", "Sinal": s_tkm})
 
-            # 8. Crescimento Base
             s_base = "Positivo" if "saudável" in crescimento_base else "Atenção" if "Oscilação" in crescimento_base else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Crescimento Base", "Referência / Alvo": "Crescimento Saudável", "Desempenho Unidade": "Oscilação/Queda" if s_base != "Positivo" else "Saudável", "Sinal": s_base})
 
-            # 9. Churn
             s_churn = "Positivo" if churn_unidade <= media_rede_churn else "Atenção" if churn_unidade <= (media_rede_churn * 1.15) else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "% Churn", "Referência / Alvo": f"Média Rede ({media_rede_churn:.1f}%)", "Desempenho Unidade": f"{churn_unidade:.1f}%", "Sinal": s_churn})
 
-            # 10. Perfil Vendedor
             s_vend = "Positivo" if "alta performance" in perfil_vendedor else "Atenção" if "desenvolvimento" in perfil_vendedor else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Referência / Alvo": "Alta Performance", "Desempenho Unidade": "Desenvolvimento/Desalinhado" if s_vend != "Positivo" else "Alta Perform.", "Sinal": s_vend})
 
-            # 11. Pesquisa Mercado
             dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
             s_merc = "Positivo" if abs(dif_conc) <= 0.10 else "Atenção" if abs(dif_conc) <= 0.20 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Pesquisa de Mercado", "Referência / Alvo": "Aderente (Até 10% dif)", "Desempenho Unidade": f"{dif_conc*100:+.1f}% vs Conc.", "Sinal": s_merc})
 
-            # 12. Potencial Região
             s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
 
-            # Compilação
             df_sinais = pd.DataFrame(matriz_sinais)
             qtd_positivos = sum(1 for x in matriz_sinais if x["Sinal"] == "Positivo")
             qtd_atencao = sum(1 for x in matriz_sinais if x["Sinal"] == "Atenção")
@@ -1438,12 +1373,10 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-            # CAMPO DE CONSIDERAÇÕES FINAIS (MÓDULO 3)
             st.write("")
             st.markdown("##### Considerações Finais do Comitê")
             consideracoes_m3 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários operacionais ou justificativas técnicas...", height=80, key="val_m3_consideracoes")
 
-            # RELATÓRIO PDF EXECUTIVO PARA O MÓDULO 3
             st.write("")
             st.markdown("---")
             with st.expander("📄 Exportar Relatório de Reavaliação (PDF)", expanded=False):
