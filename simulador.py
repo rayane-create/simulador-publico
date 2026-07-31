@@ -225,7 +225,7 @@ st.markdown(
             margin-bottom: 8px;
         }
 
-        /* ESTILIZAÇÃO DOS BALÕES EXECUTIVOS DE STATUS DA MATRIZ */
+        /* BALÕES EXECUTIVOS DE STATUS DA MATRIZ */
         .badge-positivo {
             background-color: #DCFCE7;
             color: #15803D;
@@ -1261,7 +1261,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (COM CARREGAMENTO AUTO)
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1273,7 +1273,7 @@ else:
         st.session_state["val_m3_consideracoes"] = ""
         for key in ["m2_mix", "m2_cres_base", "m2_vendedor"]:
             st.session_state[key] = "Selecione..."
-        for key in ["m2_tkm_real", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p"]:
+        for key in ["m2_tkm_real", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p", "m2_ll_manual", "m2_fat_manual"]:
             st.session_state[key] = 0.0
 
     if "m2_nome_u" not in st.session_state:
@@ -1311,13 +1311,19 @@ else:
         pct_alvo_u = float(dados_u["A++"] + dados_u["A+"] + dados_u["B1"])
         num_alvo_u = int(pct_alvo_u * populacao_u)
         
-        tkm_esperado_rede = TABELAS_OFICIAIS[tab_praticada_u]["tkm"]
-        preco_plus_esperado = TABELAS_OFICIAIS[tab_praticada_u]["plus"]
+        tkm_esperado_rede = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})["tkm"]
+        preco_plus_esperado = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})["plus"]
 
-        # PUXA O CARREGAMENTO AUTOMÁTICO FINANCEIRO DO MES
-        dados_fin = FINANCEIRO_REALIZADO.get(nome_unidade_sel, {"fat": 0.0, "ll": 0.0})
-        atingimento_fat_auto = dados_fin["fat"]
-        atingimento_ll_auto = dados_fin["ll"]
+        # CHECA SE A UNIDADE EXISTE NO RELATÓRIO MENSAL
+        unidade_no_relatorio = nome_unidade_sel in FINANCEIRO_REALIZADO
+
+        if unidade_no_relatorio:
+            dados_fin = FINANCEIRO_REALIZADO[nome_unidade_sel]
+            atingimento_fat_val = dados_fin["fat"]
+            atingimento_ll_val = dados_fin["ll"]
+        else:
+            atingimento_fat_val = 0.0
+            atingimento_ll_val = 0.0
 
         html_card_reav = f"""
             <div class="card-resumo-unidade">
@@ -1342,9 +1348,15 @@ else:
             u1, u2, u3 = st.columns(3)
             
             with u1:
-                st.markdown("**Desempenho Financeiro (Carregado Automaticamente)**")
-                st.number_input("% Atingimento Meta Lucro Líquido:", value=atingimento_ll_auto, disabled=True, key="m2_ll_show")
-                st.number_input("% Atingimento Meta Faturamento:", value=atingimento_fat_auto, disabled=True, key="m2_fat_show")
+                if unidade_no_relatorio:
+                    st.markdown("**Desempenho Financeiro (Carregado Automaticamente)**")
+                    atingimento_ll_auto = st.number_input("% Atingimento Meta Lucro Líquido:", value=atingimento_ll_val, disabled=True, key="m2_ll_auto")
+                    atingimento_fat_auto = st.number_input("% Atingimento Meta Faturamento:", value=atingimento_fat_val, disabled=True, key="m2_fat_auto")
+                else:
+                    st.markdown("**Desempenho Financeiro (Digitação Manual)**")
+                    atingimento_ll_auto = st.number_input("% Atingimento Meta Lucro Líquido:", min_value=-500.0, step=1.0, key="m2_ll_manual")
+                    atingimento_fat_auto = st.number_input("% Atingimento Meta Faturamento:", min_value=0.0, step=1.0, key="m2_fat_manual")
+
                 tkm_real_unidade = st.number_input("TKM Real Praticado (R$):", min_value=0.0, step=5.0, key="m2_tkm_real")
 
             with u2:
