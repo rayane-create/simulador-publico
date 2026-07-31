@@ -167,7 +167,7 @@ st.markdown(
         .linha-grafico-flex {
             display: flex;
             justify-content: center;
-            gap: 45px; /* Barras levemente mais afastadas para fôlego visual */
+            gap: 45px;
             align-items: flex-end;
             padding-bottom: 0px;
             border-bottom: 2px solid #CBD5E0;
@@ -179,8 +179,8 @@ st.markdown(
             width: 100px;
         }
         .barra-empilhada-box {
-            width: 64px; /* Barra mais larga para caber os textos */
-            height: 280px; /* Altura ampliada de 180px para 280px */
+            width: 64px;
+            height: 280px;
             background-color: transparent;
             display: flex;
             flex-direction: column-reverse;
@@ -192,7 +192,7 @@ st.markdown(
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px; /* Fonte maior e legível */
+            font-size: 11px;
             font-weight: 800;
             color: #FFFFFF;
             overflow: hidden;
@@ -266,9 +266,36 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==========================================
+# LISTAS DE COBERTURA DE QUADRAS
+# ==========================================
+QUADRAS_ADULTAS_COBERTAS = {
+    "Fast Tennis Alto do Ipiranga - São Paulo",
+    "Fast Tennis Boa Viagem - Recife",
+    "Fast Tennis Capim Macio - Natal",
+    "Fast Tennis Jardim - São Paulo",
+    "Fast Tennis Tirol- Natal",
+    "Fast Tennis Vilhena - Rondônia"
+}
+
+QUADRAS_INFANTIS_COBERTAS = {
+    "Fast Tennis Belvedere - Belo Horizonte",
+    "Fast Tennis Brooklin - São Paulo",
+    "Fast Tennis Cidade Nova - Cidade Nova",
+    "Fast Tennis Estrela Sul - Juiz de Fora",
+    "Fast Tennis Jardim Portal da Colina - Sorocaba",
+    "Fast Tennis Jardim Social - Curitiba",
+    "Fast Tennis Ponte JK - Brasília",
+    "Fast Tennis Praia Grande - Praia Grande",
+    "Fast Tennis Santa Lúcia - Belo Horizonte",
+    "Fast Tennis São Bento - Belo Horizonte",
+    "Fast Tennis São Caetano - São Caetano do Sul",
+    "Fast Tennis Vila Olímpia - São Paulo"
+}
+
+# ==========================================
 # BANCO DE DADOS COMPLETO E ATUALIZADO
 # ==========================================
-df_existentes = [
+df_existentes_raw = [
     {"Status": "Operando", "Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "Trecho 3 Q 5 - Sul, Brasília - DF, 71936-500", "Quadras": 3, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.29},
     {"Status": "Pausada", "Unidade": "Fast Tennis Alphaville - São Paulo", "Cidade": "Barueri", "Estado": "SP", "Endereço": "R. Vicente de Carvalho, 205 - Melville Empresarial II, Barueri - SP, 06485-360", "Quadras": 1, "Renda Média": 27400, "População": 44300, "REGIC": "Grande Metrópole", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 5", "A++": 0.27, "A+": 0.23, "B1": 0.21},
     {"Status": "Operando", "Unidade": "Fast Tennis Alto da Boa Vista - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Adolfo Pinheiro, 810 – Santo Amaro, São Paulo/SP", "Quadras": 1, "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.20, "A+": 0.24, "B1": 0.18},
@@ -350,6 +377,18 @@ df_existentes = [
     {"Status": "Operando", "Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Azira Assad Jafet, 22 - Ipiranga, São Paulo - SP, Brasil", "Quadras": 1, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.17, "B1": 0.16}
 ]
 
+# ADICIONA MAPEAMENTO DINÂMICO DE QUADRAS COBERTAS
+df_existentes = []
+for item in df_existentes_raw:
+    u_nome = item["Unidade"]
+    if u_nome in QUADRAS_INFANTIS_COBERTAS:
+        item["Cobertura"] = "Quadra Adulta + Quadra Infantil Coberta"
+    elif u_nome in QUADRAS_ADULTAS_COBERTAS:
+        item["Cobertura"] = "Quadra Adulta Coberta"
+    else:
+        item["Cobertura"] = "Não coberta / Descoberta"
+    df_existentes.append(item)
+
 df_base_unidades = pd.DataFrame(df_existentes)
 LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
@@ -391,7 +430,7 @@ with st.sidebar:
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
 
 # ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (LAYOUT 3 COLUNAS SIMÉTRICAS)
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
 # ==============================================================================
 if modulo_selecionado == "Simulador Precificação Inicial":
     
@@ -420,7 +459,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
     st.subheader("1. Dados da Área de Estudo e Mercado")
     st.markdown("<p style='font-size:13.5px; color:#5A6578; margin-bottom:15px;'>Insira os dados geográficos e mercadológicos extraídos da ferramenta oficial.</p>", unsafe_allow_html=True)
 
-    # REORGANIZAÇÃO EM 3 COLUNAS PERFEITAS E SIMÉTRICAS
     with st.container(border=True):
         col1, col2, col3 = st.columns([1, 1, 1.1])
         
@@ -511,7 +549,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
 
         st.write("")
         if not aplicar_excecao:
-            # TABELA SUGERIDA EM PROTAGONISMO GIGANTE
             st.markdown(f"""
                 <div class="tabela-sugerida-box">
                     <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
@@ -522,7 +559,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             tabela_final = tabela_sugerida
             justificativa_excecao = ""
         else:
-            # TABELA SUGERIDA EM ESTILO SECUNDÁRIO/REDUZIDO
             st.markdown(f"""
                 <div class="tabela-sugerida-reduzida">
                     <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Referência):</p>
@@ -537,7 +573,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 justificativa_excecao = st.text_input("Justificativa Estratégica (Obrigatório):", placeholder="Ex: Concorrência com forte posicionamento premium...", key="val_justificativa_excecao")
 
             tabela_final = tabela_escolhida
-            # TABELA EXCEÇÃO EM DESTAQUE GIGANTE
             st.markdown(f"""
                 <div class="tabela-excecao-box">
                     <p style="margin:0; font-size:12px; color:#00A807; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO DEFINITIVA)</p>
@@ -667,13 +702,11 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
                     v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app))
 
-                    # Escala ampliada de 280px para dar espaço aos números
                     h_outras = int((v_outras / 100.0) * 280)
                     h_b1 = int((v_b1 / 100.0) * 280)
                     h_ap = int((v_ap / 100.0) * 280)
                     h_app = int((v_app / 100.0) * 280)
 
-                    # Rótulos garantidos em TODAS as 3 classes relevantes
                     txt_b1 = f"{v_b1:.0f}%" if v_b1 >= 1 else ""
                     txt_ap = f"{v_ap:.0f}%" if v_ap >= 1 else ""
                     txt_app = f"{v_app:.0f}%" if v_app >= 1 else ""
@@ -769,7 +802,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM INFORMAÇÃO DE COBERTURA)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -798,6 +831,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         cidade = dados_u_pre["Cidade"]
         endereco_pre = dados_u_pre["Endereço"]
         num_quadras_pre = int(dados_u_pre["Quadras"])
+        cobertura_pre = dados_u_pre["Cobertura"]
         populacao = int(dados_u_pre["População"])
         renda_media = float(dados_u_pre["Renda Média"])
         regic = dados_u_pre["REGIC"]
@@ -811,14 +845,15 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
+        # RESUMO AUTOMÁTICO DA UNIDADE COM STATUS DE COBERTURA
         html_card_unidade = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u_pre['Unidade']} ({cidade} - {estado})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:12px;">Status: {status_u} | Quadras: {num_quadras_pre}</span>
                 </div>
-                <p style="margin:0 0 8px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_pre}</p>
+                <p style="margin:0 0 6px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_pre}</p>
+                <p style="margin:0 0 10px 0; font-size:13px; color:#00A807;"><b>Infraestrutura de Quadra:</b> {cobertura_pre}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Área:</b> {populacao:,} hab.</div>
                     <div><b>Renda Média:</b> R$ {renda_media:,.2f}</div>
@@ -877,7 +912,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
 
             st.write("")
             if not aplicar_excecao:
-                # TABELA SUGERIDA EM PROTAGONISMO GIGANTE
                 st.markdown(f"""
                     <div class="tabela-sugerida-box">
                         <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
@@ -888,7 +922,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 tabela_final = tabela_sugerida
                 justificativa_excecao = ""
             else:
-                # TABELA SUGERIDA REDUZIDA
                 st.markdown(f"""
                     <div class="tabela-sugerida-reduzida">
                         <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Referência):</p>
@@ -903,7 +936,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     justificativa_excecao = st.text_input("Justificativa Estratégica (Obrigatório):", placeholder="Ex: Concorrência com forte posicionamento premium...", key="val_justificativa_excecao_pre")
 
                 tabela_final = tabela_escolhida
-                # TABELA EXCEÇÃO EM DESTAQUE GIGANTE
                 st.markdown(f"""
                     <div class="tabela-excecao-box">
                         <p style="margin:0; font-size:12px; color:#00A807; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO DEFINITIVA)</p>
@@ -1010,7 +1042,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # OPÇÃO 1 NO MÓDULO 2 (SOMA 100% POPULAÇÃO DIVIDIDA EM 4 CLASSES)
+                    # GRÁFICO MÓDULO 2 COM PERCENTUAIS EM TODAS AS CLASSES
                     st.write("")
                     st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                     
@@ -1076,8 +1108,8 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                             <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço Cadastrado:</b> {endereco_pre}</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo:</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço:</b> {endereco_pre}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Cobertura:</b> {cobertura_pre}</td>
                         </tr>
                     </table>
 
@@ -1132,7 +1164,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (COM INFORMAÇÃO DE COBERTURA)
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1179,6 +1211,7 @@ else:
         populacao_u = int(dados_u["População"])
         renda_u = float(dados_u["Renda Média"])
         num_quadras_re = int(dados_u["Quadras"])
+        cobertura_re = dados_u["Cobertura"]
         endereco_re = dados_u["Endereço"]
         pct_alvo_u = float(dados_u["A++"] + dados_u["A+"] + dados_u["B1"])
         num_alvo_u = int(pct_alvo_u * populacao_u)
@@ -1193,7 +1226,8 @@ else:
                     <h3 style="margin:0; color:#022D8A;">{dados_u['Unidade']} ({dados_u['Cidade']})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u} | Quadras: {num_quadras_re}</span>
                 </div>
-                <p style="margin:0 0 8px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
+                <p style="margin:0 0 6px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
+                <p style="margin:0 0 10px 0; font-size:13px; color:#00A807;"><b>Infraestrutura de Quadra:</b> {cobertura_re}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Residente:</b> {populacao_u:,} hab.</div>
                     <div><b>🎯 Público Alvo (B1+A+ A++):</b> {num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</div>
@@ -1380,7 +1414,8 @@ else:
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
                     <h4 style="margin:0 0 5px 0; color:#022D8A;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']})</h4>
-                    <p style="margin:0 0 15px 0; font-size:12px; color:#2D3748;">Endereço: <b>{endereco_re}</b> | Quadras: <b>{num_quadras_re}</b> | Tabela Atual: <b>Tabela {tab_praticada_u}</b></p>
+                    <p style="margin:0 0 5px 0; font-size:12px; color:#2D3748;">Endereço: <b>{endereco_re}</b> | Quadras: <b>{num_quadras_re}</b> | Tabela Atual: <b>Tabela {tab_praticada_u}</b></p>
+                    <p style="margin:0 0 15px 0; font-size:12px; color:#00A807;">Cobertura: <b>{cobertura_re}</b></p>
                     
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
                         <thead>
