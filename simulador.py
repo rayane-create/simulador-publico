@@ -7,7 +7,7 @@ st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica de Precific
 
 # ==========================================
 # APLICAÇÃO DA IDENTIDADE VISUAL FAST TENNIS (GUIDELINE 2025)
-# Paleta Oficial: Blue FT (#053CD8), Navy FT (#022D8A), Green FT (#0DF205)
+# Paleta Oficial: Blue FT (#053CD8), Navy FT (#022D8A), Green FT (#0DF205), Green FT Escuro (#00A807)
 # ==========================================
 st.markdown(
     """
@@ -61,15 +61,15 @@ st.markdown(
             color: #FFFFFF !important;
         }
 
-        /* TABELA SUGERIDA */
+        /* TABELA SUGERIDA - DESTAQUE PRINCIPAL (QUANDO SEM EXCEÇÃO) */
         .tabela-sugerida-box {
             background-color: #F0FDF4;
             padding: 25px 30px;
             border-radius: 12px;
-            border-left: 12px solid #0DF205;
+            border-left: 12px solid #00A807; /* Verde mais escuro para destaque */
             margin: 20px 0;
-            border: 1px solid #DCFCE7;
-            box-shadow: 0 4px 15px rgba(13, 242, 5, 0.12);
+            border: 1px solid #BBF7D0;
+            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.12);
         }
         .tabela-sugerida-box h2 {
             margin: 8px 0;
@@ -79,18 +79,35 @@ st.markdown(
             letter-spacing: -0.5px;
         }
 
+        /* TABELA SUGERIDA REDUZIDA (QUANDO EXCEÇÃO ATIVADA) */
+        .tabela-sugerida-reduzida {
+            background-color: #F8F9FA;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border-left: 6px solid #CBD5E0;
+            margin: 15px 0 10px 0;
+            border: 1px solid #E2E8F0;
+        }
+        .tabela-sugerida-reduzida h2 {
+            margin: 2px 0;
+            color: #6C757D !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+        }
+
+        /* TABELA EXCEÇÃO - PROTAGONISTA TOTAL QUANDO ATIVADA */
         .tabela-excecao-box {
             background-color: #F0FDF4;
             padding: 25px 30px;
             border-radius: 12px;
-            border-left: 12px solid #0DF205;
-            margin: 20px 0;
-            border: 1px solid #DCFCE7;
-            box-shadow: 0 4px 15px rgba(13, 242, 5, 0.12);
+            border-left: 12px solid #00A807;
+            margin: 15px 0 20px 0;
+            border: 1px solid #BBF7D0;
+            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.15);
         }
         .tabela-excecao-box h2 {
             margin: 8px 0;
-            color: #166534 !important;
+            color: #00A807 !important;
             font-size: 38px !important;
             font-weight: 800 !important;
         }
@@ -135,7 +152,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* ESTRUTURA DO GRÁFICO 100% IGUAL COM 4 CLASSES */
+        /* ESTRUTURA DO GRÁFICO MAIS PRÓXIMO PARA COMPARATIVO DIRETO */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -145,7 +162,8 @@ st.markdown(
         }
         .linha-grafico-flex {
             display: flex;
-            justify-content: space-around;
+            justify-content: center; /* Aproxima as barras ao centro */
+            gap: 35px; /* Espaçamento compacto e simétrico */
             align-items: flex-end;
             padding-bottom: 0px;
             border-bottom: 2px solid #CBD5E0;
@@ -154,11 +172,10 @@ st.markdown(
             display: flex;
             flex-direction: column;
             align-items: center;
-            flex: 1;
-            justify-content: flex-end;
+            width: 80px; /* Largura máxima fixa aproximada */
         }
         .barra-empilhada-box {
-            width: 52px;
+            width: 48px;
             height: 180px; /* Altura fixa rigorosa para todas as barras */
             background-color: transparent;
             display: flex;
@@ -169,21 +186,22 @@ st.markdown(
         }
         .rotulos-container-fixed {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 35px;
             padding-top: 10px;
         }
         .rotulo-unidade-box {
-            flex: 1;
+            width: 80px;
             text-align: center;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             color: #022D8A;
-            line-height: 1.3;
-            min-height: 42px;
+            line-height: 1.25;
+            min-height: 40px;
             display: flex;
             align-items: flex-start;
             justify-content: center;
-            padding: 0 4px;
+            padding: 0 2px;
         }
         .tag-similaridade {
             background-color: #022D8A;
@@ -463,19 +481,29 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
 
-        st.write("")
-        st.markdown(f"""
-            <div class="tabela-sugerida-box">
-                <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
-                <h2>Tabela {tabela_sugerida}</h2>
-                <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
-            </div>
-        """, unsafe_allow_html=True)
-
         aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrescrever tabela baseada no comportamento de mercado)", key="chk_excecao")
 
-        justificativa_excecao = ""
-        if aplicar_excecao:
+        st.write("")
+        if not aplicar_excecao:
+            # TABELA SUGERIDA EM PROTAGONISMO GIGANTE
+            st.markdown(f"""
+                <div class="tabela-sugerida-box">
+                    <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
+                    <h2>Tabela {tabela_sugerida}</h2>
+                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
+                </div>
+            """, unsafe_allow_html=True)
+            tabela_final = tabela_sugerida
+            justificativa_excecao = ""
+        else:
+            # TABELA SUGERIDA EM ESTILO SECUNDÁRIO/REDUZIDO
+            st.markdown(f"""
+                <div class="tabela-sugerida-reduzida">
+                    <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Referência):</p>
+                    <h2>Tabela {tabela_sugerida} <span style="font-size:13px; font-weight:normal; color:#4A5568;">(R$ {preco_sugerido},00 | TKM: R$ {tkm_sugerido},00)</span></h2>
+                </div>
+            """, unsafe_allow_html=True)
+
             col_exc1, col_exc2 = st.columns([1, 2])
             with col_exc1:
                 tabela_escolhida = st.selectbox("Selecione a Tabela Definitiva:", [1, 2, 3, 4, 5], index=tabela_sugerida - 1, key="val_tabela_excecao")
@@ -483,16 +511,15 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 justificativa_excecao = st.text_input("Justificativa Estratégica (Obrigatório):", placeholder="Ex: Concorrência com forte posicionamento premium...", key="val_justificativa_excecao")
 
             tabela_final = tabela_escolhida
+            # TABELA EXCEÇÃO EM DESTAQUE GIGANTE
             st.markdown(f"""
                 <div class="tabela-excecao-box">
-                    <p style="margin:0; font-size:12px; color:#166534; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO)</p>
+                    <p style="margin:0; font-size:12px; color:#00A807; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO DEFINITIVA)</p>
                     <h2>Tabela {tabela_final}</h2>
                     <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkms[tabela_final]},00</b></p>
-                    {f'<p style="margin:8px 0 0 0; font-size:13px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
+                    {f'<p style="margin:8px 0 0 0; font-size:13px; color:#00A807;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                 </div>
             """, unsafe_allow_html=True)
-        else:
-            tabela_final = tabela_sugerida
 
         preco_ref = precos[tabela_final]
         tkm_ref = tkms[tabela_final]
@@ -591,9 +618,9 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # OPÇÃO 1: BARRAS COM 100% DA POPULAÇÃO DIVIDIDAS EM 4 CLASSES (CINZA + B1 + A+ + A++)
+                # OPÇÃO 1: BARRAS COM 100% DA POPULAÇÃO DIVIDIDAS EM 4 CLASSES (COMPACTO E APROXIMADO)
                 st.write("")
-                st.markdown("**Perfil da Renda e Distribuição de Classes (Soma de 100% da População)**")
+                st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                 
                 colunas_grafico = [
                     {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
@@ -612,9 +639,8 @@ if modulo_selecionado == "Simulador Precificação Inicial":
 
                 for item in colunas_grafico:
                     v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
-                    v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app)) # Completa até 100% em cinza
+                    v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app))
 
-                    # Escala exata em pixels (180px representa 100%)
                     h_outras = int((v_outras / 100.0) * 180)
                     h_b1 = int((v_b1 / 100.0) * 180)
                     h_ap = int((v_ap / 100.0) * 180)
@@ -660,7 +686,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </tr>
                 </table>
 
-                <div style="background-color:#F0FDF4; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #DCFCE7;">
+                <div style="background-color:#F0FDF4; border-left:6px solid #00A807; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #BBF7D0;">
                     <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                     <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
                     <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
@@ -711,7 +737,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (PUXANDO ENDEREÇO AUTOMÁTICO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (SEM EMOJI NO ENDEREÇO)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -753,14 +779,14 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO (SEM EMOJI NO ENDEREÇO)
         html_card_unidade = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u_pre['Unidade']} ({cidade} - {estado})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:12px;">Status: {status_u} | Quadras: {num_quadras_pre}</span>
                 </div>
-                <p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>📍 Endereço Cadastrado:</b> {endereco_pre}</p>
+                <p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_pre}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Área:</b> {populacao:,} hab.</div>
                     <div><b>Renda Média:</b> R$ {renda_media:,.2f}</div>
@@ -817,19 +843,29 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             preco_sugerido = precos[tabela_sugerida]
             tkm_sugerido = tkms[tabela_sugerida]
 
-            st.write("")
-            st.markdown(f"""
-                <div class="tabela-sugerida-box">
-                    <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
-                    <h2>Tabela {tabela_sugerida}</h2>
-                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
-                </div>
-            """, unsafe_allow_html=True)
-
             aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrescrever tabela baseada no comportamento de mercado)", key="chk_excecao_pre")
 
-            justificativa_excecao = ""
-            if aplicar_excecao:
+            st.write("")
+            if not aplicar_excecao:
+                # TABELA SUGERIDA EM PROTAGONISMO GIGANTE
+                st.markdown(f"""
+                    <div class="tabela-sugerida-box">
+                        <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
+                        <h2>Tabela {tabela_sugerida}</h2>
+                        <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
+                    </div>
+                """, unsafe_allow_html=True)
+                tabela_final = tabela_sugerida
+                justificativa_excecao = ""
+            else:
+                # TABELA SUGERIDA REDUZIDA
+                st.markdown(f"""
+                    <div class="tabela-sugerida-reduzida">
+                        <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Referência):</p>
+                        <h2>Tabela {tabela_sugerida} <span style="font-size:13px; font-weight:normal; color:#4A5568;">(R$ {preco_sugerido},00 | TKM: R$ {tkm_sugerido},00)</span></h2>
+                    </div>
+                """, unsafe_allow_html=True)
+
                 col_exc1, col_exc2 = st.columns([1, 2])
                 with col_exc1:
                     tabela_escolhida = st.selectbox("Selecione a Tabela Definitiva:", [1, 2, 3, 4, 5], index=tabela_sugerida - 1, key="val_tabela_excecao_pre")
@@ -837,16 +873,15 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     justificativa_excecao = st.text_input("Justificativa Estratégica (Obrigatório):", placeholder="Ex: Concorrência com forte posicionamento premium...", key="val_justificativa_excecao_pre")
 
                 tabela_final = tabela_escolhida
+                # TABELA EXCEÇÃO EM DESTAQUE GIGANTE
                 st.markdown(f"""
                     <div class="tabela-excecao-box">
-                        <p style="margin:0; font-size:12px; color:#166534; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO)</p>
+                        <p style="margin:0; font-size:12px; color:#00A807; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO DEFINITIVA)</p>
                         <h2>Tabela {tabela_final}</h2>
                         <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkms[tabela_final]},00</b></p>
-                        {f'<p style="margin:8px 0 0 0; font-size:13px; color:#166534;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
+                        {f'<p style="margin:8px 0 0 0; font-size:13px; color:#00A807;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
                     </div>
                 """, unsafe_allow_html=True)
-            else:
-                tabela_final = tabela_sugerida
 
             preco_ref = precos[tabela_final]
             tkm_ref = tkms[tabela_final]
@@ -1012,7 +1047,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </tr>
                     </table>
 
-                    <div style="background-color:#F0FDF4; border-left:6px solid #0DF205; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #DCFCE7;">
+                    <div style="background-color:#F0FDF4; border-left:6px solid #00A807; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #BBF7D0;">
                         <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                         <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
                         <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
@@ -1063,7 +1098,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (SEM EMOJI NO ENDEREÇO)
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1117,14 +1152,14 @@ else:
         tkm_esperado_rede = TABELAS_OFICIAIS[tab_praticada_u]["tkm"]
         preco_plus_esperado = TABELAS_OFICIAIS[tab_praticada_u]["plus"]
 
-        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO
+        # RESUMO AUTOMÁTICO DA UNIDADE FORMATADO (SEM EMOJI NO ENDEREÇO)
         html_card_reav = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3 style="margin:0; color:#022D8A;">{dados_u['Unidade']} ({dados_u['Cidade']})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u} | Quadras: {num_quadras_re}</span>
                 </div>
-                <p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>📍 Endereço Cadastrado:</b> {endereco_re}</p>
+                <p style="margin:0 0 10px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Residente:</b> {populacao_u:,} hab.</div>
                     <div><b>🎯 Público Alvo (B1+A+ A++):</b> {num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</div>
