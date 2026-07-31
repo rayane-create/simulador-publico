@@ -63,10 +63,10 @@ st.markdown(
 
         /* TABELA SUGERIDA - VERDE MAIS FORTE PORÉM TRANSLÚCIDO */
         .tabela-sugerida-box {
-            background-color: rgba(13, 242, 5, 0.12); /* Verde mais forte e translúcido */
+            background-color: rgba(13, 242, 5, 0.12);
             padding: 22px 28px;
             border-radius: 12px;
-            border-left: 12px solid #00A807; /* Borda verde marcante */
+            border-left: 12px solid #00A807;
             margin: 15px 0;
             border-top: 1px solid rgba(0, 168, 7, 0.25);
             border-right: 1px solid rgba(0, 168, 7, 0.25);
@@ -128,7 +128,7 @@ st.markdown(
             background-color: #F0F4FF;
             border: 1px solid #C3D3FC;
             border-radius: 8px;
-            padding: 14px 18px;
+            padding: 16px;
             margin-bottom: 15px;
         }
 
@@ -156,7 +156,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* GRÁFICO EXECUTIVO COM PERCENTUAIS E COMPACTO */
+        /* GRÁFICO EXECUTIVO COM PERCENTUAIS EM TODAS AS CLASSES */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -179,7 +179,7 @@ st.markdown(
             width: 85px;
         }
         .barra-empilhada-box {
-            width: 50px;
+            width: 52px;
             height: 180px;
             background-color: transparent;
             display: flex;
@@ -192,11 +192,11 @@ st.markdown(
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 9.5px;
+            font-size: 9px;
             font-weight: 800;
             color: #FFFFFF;
             overflow: hidden;
-            text-shadow: 0px 1px 2px rgba(0,0,0,0.5);
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.6);
         }
         .rotulos-container-fixed {
             display: flex;
@@ -384,7 +384,7 @@ with st.sidebar:
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
 
 # ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (ENXUTO E LIMPO)
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (LAYOUT REORGANIZADO E SIMÉTRICO)
 # ==============================================================================
 if modulo_selecionado == "Simulador Precificação Inicial":
     
@@ -414,9 +414,15 @@ if modulo_selecionado == "Simulador Precificação Inicial":
     st.markdown("<p style='font-size:13.5px; color:#5A6578; margin-bottom:15px;'>Insira os dados geográficos e mercadológicos extraídos da ferramenta oficial.</p>", unsafe_allow_html=True)
 
     with st.container(border=True):
-        c1, c2 = st.columns([1.2, 1])
+        c1, c2 = st.columns([1.15, 1])
         with c1:
-            st.markdown("**Localização & Indicadores de População**")
+            # ADICIONADA BORDALATERAL DISCRETA ENTRE AS COLUNAS
+            st.markdown("""
+                <div style="border-right: 1px solid #E2E8F0; padding-right: 22px;">
+                    <p style="color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;">Localização & Indicadores de População</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
             sub_c1, sub_c2 = st.columns(2)
             with sub_c1:
                 lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
@@ -426,7 +432,8 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
                 renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
 
-            st.markdown("**Proporção de Classes de Renda**")
+            st.write("")
+            st.markdown("<p style='color:#022D8A; font-weight:800; font-size:14px; margin-bottom:8px;'>Proporção de Classes de Renda</p>", unsafe_allow_html=True)
             sub_cl1, sub_cl2, sub_cl3 = st.columns(3)
             with sub_cl1:
                 classe_a_mais_mais = st.number_input("% Classe A++:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
@@ -439,7 +446,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             calculo_alvo = int(soma_percentuais * populacao)
             
             st.markdown(f"""
-                <div class="card-destaque">
+                <div class="card-destaque" style="margin-top:10px;">
                     <span style="color:#6C757D; font-size:11px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo Calculado (B1 + A+ + A++)</span> &nbsp;|&nbsp; 
                     <b style="font-size:16px; color:#022D8A;">{calculo_alvo:,} hab.</b> 
                     <small style="color:#6C757D;">({soma_percentuais*100:.1f}% da área)</small>
@@ -447,7 +454,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             """, unsafe_allow_html=True)
 
         with c2:
-            st.markdown("**Mercado & Concorrência Local**")
+            st.markdown("<p style='color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;'>Mercado & Concorrência Local</p>", unsafe_allow_html=True)
             tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
             sem_unidade_proxima = st.checkbox("Não possui unidades Fast próximas no raio", key="val_sem_unidade_proxima")
             
@@ -633,7 +640,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # OPÇÃO 1: BARRAS COM 100% DA POPULAÇÃO E PERCENTUAIS INTEGRADOS NOS SEGMENTOS
+                # OPÇÃO 1: BARRAS COM PERCENTUAIS EM TODAS AS CLASSES (B1, A+, A++)
                 st.write("")
                 st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                 
@@ -661,10 +668,10 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     h_ap = int((v_ap / 100.0) * 180)
                     h_app = int((v_app / 100.0) * 180)
 
-                    # Rótulos internos se a altura permitir
-                    txt_b1 = f"{v_b1:.0f}%" if h_b1 > 14 else ""
-                    txt_ap = f"{v_ap:.0f}%" if h_ap > 14 else ""
-                    txt_app = f"{v_app:.0f}%" if h_app > 14 else ""
+                    # Rótulos para TODAS as classes (B1, A+, A++)
+                    txt_b1 = f"{v_b1:.0f}%" if v_b1 >= 3 else ""
+                    txt_ap = f"{v_ap:.0f}%" if v_ap >= 3 else ""
+                    txt_app = f"{v_app:.0f}%" if v_app >= 3 else ""
 
                     barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                     rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
@@ -757,7 +764,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ENXUTO E LIMPO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1026,9 +1033,9 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         h_ap = int((v_ap / 100.0) * 180)
                         h_app = int((v_app / 100.0) * 180)
 
-                        txt_b1 = f"{v_b1:.0f}%" if h_b1 > 14 else ""
-                        txt_ap = f"{v_ap:.0f}%" if h_ap > 14 else ""
-                        txt_app = f"{v_app:.0f}%" if h_app > 14 else ""
+                        txt_b1 = f"{v_b1:.0f}%" if v_b1 >= 3 else ""
+                        txt_ap = f"{v_ap:.0f}%" if v_ap >= 3 else ""
+                        txt_app = f"{v_app:.0f}%" if v_app >= 3 else ""
 
                         barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                         rotulos_html_tela_pre += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
@@ -1120,7 +1127,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (SEM EMOJI NO ENDEREÇO)
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
