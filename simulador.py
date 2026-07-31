@@ -511,7 +511,24 @@ for item in df_existentes_raw:
     df_existentes.append(item)
 
 df_base_unidades = pd.DataFrame(df_existentes)
-LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
+
+# LISTAS SEPARADAS DE UNIDADES
+LISTA_GERAL_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
+
+# UNIDADES FILTRADAS EXCLUSIVAMENTE EM OPERAÇÃO PARA O MÓDULO 3
+df_operando_m3 = df_base_unidades[
+    (df_base_unidades["Status"] == "Operando") & 
+    (df_base_unidades["Tabela Praticada"] != "Não Decidida")
+]
+LISTA_OPERANDO_M3 = ["Selecione..."] + sorted(df_operando_m3["Unidade"].tolist())
+
+TABELAS_OFICIAIS = {
+    1: {"tkm": 338, "plus": 329},
+    2: {"tkm": 411, "plus": 399},
+    3: {"tkm": 470, "plus": 499},
+    4: {"tkm": 570, "plus": 599},
+    5: {"tkm": 690, "plus": 710}
+}
 
 # ==============================================================================
 # MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
@@ -625,6 +642,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
+        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
         preco_preliminar = precos[tab_sugerida_preliminar]
 
         if not sem_concorrente and media_mercado > 0:
@@ -892,7 +910,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ESCOPO TOTALMENTE ISOLADO E PROTEGIDO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ESCOPO TOTALMENTE ISOLADO)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -912,7 +930,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         limpar_campos_m1_pre()
 
     st.subheader("1. Seleção da Unidade Mapeada")
-    nome_u_pre = st.selectbox("Selecione a Unidade Mapeada:", LISTA_NOMES_UNIDADES, key="val_pre_unidade")
+    nome_u_pre = st.selectbox("Selecione a Unidade Mapeada:", LISTA_GERAL_UNIDADES, key="val_pre_unidade")
 
     if nome_u_pre != "Selecione...":
         dados_u_pre = df_base_unidades[df_base_unidades["Unidade"] == nome_u_pre].iloc[0]
@@ -1261,7 +1279,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO (APENAS UNIDADES EM OPERAÇÃO)
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1295,13 +1313,17 @@ else:
     st.write("")
     
     st.subheader("2. Seleção de Unidade & Diagnóstico Operacional")
-    nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_NOMES_UNIDADES, key="m2_nome_u")
+    # FILTRADO EXCLUSIVAMENTE COM A LISTA DE UNIDADES EM OPERAÇÃO
+    nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_OPERANDO_M3, key="m2_nome_u")
 
     if nome_unidade_sel != "Selecione...":
-        dados_u = df_base_unidades[df_base_unidades["Unidade"] == nome_unidade_sel].iloc[0]
+        dados_u = df_operando_m3[df_operando_m3["Unidade"] == nome_unidade_sel].iloc[0]
         
         tab_praticada_str = str(dados_u["Tabela Praticada"])
-        tab_praticada_u = int(tab_praticada_str.replace("Tabela", "").strip()) if "Tabela" in tab_praticada_str else 3
+        try:
+            tab_praticada_u = int(tab_praticada_str.replace("Tabela", "").strip())
+        except ValueError:
+            tab_praticada_u = 3
         
         populacao_u = int(dados_u["População"])
         renda_u = float(dados_u["Renda Média"])
@@ -1311,8 +1333,10 @@ else:
         pct_alvo_u = float(dados_u["A++"] + dados_u["A+"] + dados_u["B1"])
         num_alvo_u = int(pct_alvo_u * populacao_u)
         
-        tkm_esperado_rede = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})["tkm"]
-        preco_plus_esperado = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})["plus"]
+        # BUSCA SEGURA DE TABELA OFICIAL (SEM RISCO DE KEYERROR)
+        info_tab = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})
+        tkm_esperado_rede = info_tab["tkm"]
+        preco_plus_esperado = info_tab["plus"]
 
         # CHECA SE A UNIDADE EXISTE NO RELATÓRIO MENSAL
         unidade_no_relatorio = nome_unidade_sel in FINANCEIRO_REALIZADO
@@ -1563,3 +1587,5 @@ else:
                 </div>
                 """
                 st.components.v1.html(html_pdf_m3, height=680, scrolling=True)
+    else:
+        st.info("Aguardando a seleção de uma unidade ativa em operação acima para realizar a avaliação.")
