@@ -81,7 +81,6 @@ st.markdown(
             letter-spacing: -0.5px;
         }
 
-        /* TABELA SUGERIDA REDUZIDA (QUANDO EXCEÇÃO ATIVADA) */
         .tabela-sugerida-reduzida {
             background-color: #F8F9FA;
             padding: 12px 20px;
@@ -97,7 +96,6 @@ st.markdown(
             font-weight: 700 !important;
         }
 
-        /* TABELA EXCEÇÃO */
         .tabela-excecao-box {
             background-color: rgba(13, 242, 5, 0.12);
             padding: 22px 28px;
@@ -156,7 +154,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* GRÁFICO AMPLIO E PROPORCIONAL COM RÓTULOS NÍTIDOS */
+        /* GRÁFICO AMPLIO E PROPORCIONAL */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -232,13 +230,18 @@ st.markdown(
 )
 
 # ==========================================
-# CONTROLE DE AMBIENTE SEGURO (AUTENTICAÇÃO)
+# GARANTIA DE VARIÁVEIS DE ESTADO NO GLOBAL
 # ==========================================
-
-USUARIOS_PERMITIDOS = {"rayane@fasttennis.com.br": "Simulador8734"}
-
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
+
+if "modulo_selecionado" not in st.session_state:
+    st.session_state["modulo_selecionado"] = "Simulador Precificação Inicial"
+
+# ==========================================
+# CONTROLE DE ACESSO (LOGIN)
+# ==========================================
+USUARIOS_PERMITIDOS = {"rayane@fasttennis.com.br": "Simulador8734"}
 
 def realizar_login():
     email_input = st.session_state["login_email"].strip()
@@ -264,6 +267,32 @@ if not st.session_state["autenticado"]:
         st.text_input("Senha de Acesso:", type="password", key="login_senha")
         st.button("Entrar no Sistema", on_click=realizar_login, use_container_width=True)
     st.stop()
+
+# ==========================================
+# SIDEBAR - MENU NAVEGAÇÃO
+# ==========================================
+with st.sidebar:
+    st.markdown("""
+        <div style="text-align:center; padding: 10px 0 20px 0;">
+            <a href="#" style="background-color:#0DF205; color:#022D8A; padding:10px 24px; border-radius:20px; font-weight:800; text-decoration:none; display:inline-block;">Sair do Sistema</a>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
+    
+    modulo_selecionado = st.selectbox(
+        "Selecione o Módulo:",
+        [
+            "Simulador Precificação Inicial",
+            "Simulador Pontos Pré-Definidos",
+            "Reavaliação Estratégica"
+        ],
+        key="modulo_navegacao"
+    )
+    st.session_state["modulo_selecionado"] = modulo_selecionado
+    
+    st.markdown("---")
+    st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
 
 # ==========================================
 # LISTAS DE COBERTURA DE QUADRAS
@@ -391,8 +420,45 @@ for item in df_existentes_raw:
 df_base_unidades = pd.DataFrame(df_existentes)
 LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
+TABELAS_OFICIAIS = {
+    1: {"tkm": 338, "plus": 329},
+    2: {"tkm": 411, "plus": 399},
+    3: {"tkm": 470, "plus": 499},
+    4: {"tkm": 570, "plus": 599},
+    5: {"tkm": 690, "plus": 710}
+}
+
+def limpar_nome_unidade(nome):
+    """Remove o prefixo 'Fast Tennis ' para exibição limpa nos gráficos."""
+    return str(nome).replace("Fast Tennis ", "").strip()
+
+# ==========================================
+# SIDEBAR - MENU DROPDOWN NOMES LIMPOS
+# ==========================================
+with st.sidebar:
+    st.markdown("""
+        <div style="text-align:center; padding: 10px 0 20px 0;">
+            <a href="#" style="background-color:#0DF205; color:#022D8A; padding:10px 24px; border-radius:20px; font-weight:800; text-decoration:none; display:inline-block;">Sair do Sistema</a>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
+    
+    modulo_selecionado = st.selectbox(
+        "Selecione o Módulo:",
+        [
+            "Simulador Precificação Inicial",
+            "Simulador Pontos Pré-Definidos",
+            "Reavaliação Estratégica"
+        ],
+        key="modulo_navegacao"
+    )
+    
+    st.markdown("---")
+    st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
+
 # ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (NOVA REGRA MESTRA DE MERCADO DE > 30%)
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (LAYOUT 3 COLUNAS SIMÉTRICAS)
 # ==============================================================================
 if modulo_selecionado == "Simulador Precificação Inicial":
     
@@ -478,7 +544,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
     if not dados_preenchidos:
         st.info("Aguardando dados. Por favor, preencha as informações para gerar o diagnóstico.")
     else:
-        # 1. PASSO 1: Intervalo de Tabelas por Renda (Regra Base)
+        # Lógica das tabelas
         if estado == "SP":
             if renda_media <= 8500.00: tab_min, tab_max = 1, 2
             elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -492,7 +558,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             elif renda_media <= 25000.00: tab_min, tab_max = 4, 5
             else: tab_min, tab_max = 5, 5
 
-        # 2. PASSO 2: Definição Inicial pelo Volume de Público Alvo
         if populacao < 40000:
             tab_sugerida_preliminar = tab_min
         else:
@@ -505,13 +570,12 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-        # 3. PASSO 3: NOVA REGRA MESTRA NÚMERO 1 - TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
+        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
         trava_concorrencia_ativada = False
         preco_preliminar = precos[tab_sugerida_preliminar]
 
         if not sem_concorrente and media_mercado > 0:
             diferenca_percentual_preliminar = (preco_preliminar - media_mercado) / media_mercado
-            # SE FICAR MAIS DE 30% ACIMA DO CONCORRENTE: REBAIXA A TABELA PARA A INFERIOR
             if diferenca_percentual_preliminar > 0.30:
                 tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
                 trava_concorrencia_ativada = True
@@ -856,7 +920,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.button("Limpar Avaliação", on_click=limpar_campos_m1_pre, use_container_width=True)
 
         if sem_concorrente or media_mercado > 0:
-            # 1. PASSO 1: Intervalo de Tabelas por Renda
+            # Lógica das tabelas
             if estado == "SP":
                 if renda_media <= 8500.00: tab_min, tab_max = 1, 2
                 elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -870,7 +934,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 elif renda_media <= 25000.00: tab_min, tab_max = 4, 5
                 else: tab_min, tab_max = 5, 5
 
-            # 2. PASSO 2: Definição Inicial pelo Público Alvo
             if populacao < 40000:
                 tab_sugerida_preliminar = tab_min
             else:
@@ -883,7 +946,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
             tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-            # 3. PASSO 3: NOVA REGRA MESTRA NÚMERO 1 - TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
+            # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
             trava_concorrencia_ativada_pre = False
             preco_preliminar_pre = precos[tab_sugerida_preliminar]
 
@@ -1355,7 +1418,7 @@ else:
             indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho highly saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
@@ -1420,7 +1483,7 @@ else:
                             </tr>
                         </thead>
                         <tbody>
-                            {linhas_similares_pdf}
+                            {linhas_tabela_pdf}
                         </tbody>
                     </table>
 
