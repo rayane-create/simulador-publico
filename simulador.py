@@ -61,7 +61,7 @@ st.markdown(
             color: #FFFFFF !important;
         }
 
-        /* TABELA SUGERIDA - VERDE TRANSLÚCIDO E MARCANTE */
+        /* TABELA SUGERIDA */
         .tabela-sugerida-box {
             background-color: rgba(13, 242, 5, 0.12);
             padding: 22px 28px;
@@ -97,7 +97,7 @@ st.markdown(
             font-weight: 700 !important;
         }
 
-        /* TABELA EXCEÇÃO - DESTAQUE GIGANTE */
+        /* TABELA EXCEÇÃO */
         .tabela-excecao-box {
             background-color: rgba(13, 242, 5, 0.12);
             padding: 22px 28px;
@@ -377,7 +377,6 @@ df_existentes_raw = [
     {"Status": "Operando", "Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Azira Assad Jafet, 22 - Ipiranga, São Paulo - SP, Brasil", "Quadras": 1, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.17, "B1": 0.16}
 ]
 
-# ADICIONA MAPEAMENTO DINÂMICO DE QUADRAS COBERTAS
 df_existentes = []
 for item in df_existentes_raw:
     u_nome = item["Unidade"]
@@ -392,45 +391,8 @@ for item in df_existentes_raw:
 df_base_unidades = pd.DataFrame(df_existentes)
 LISTA_NOMES_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
-TABELAS_OFICIAIS = {
-    1: {"tkm": 338, "plus": 329},
-    2: {"tkm": 411, "plus": 399},
-    3: {"tkm": 470, "plus": 499},
-    4: {"tkm": 570, "plus": 599},
-    5: {"tkm": 690, "plus": 710}
-}
-
-def limpar_nome_unidade(nome):
-    """Remove o prefixo 'Fast Tennis ' para exibição limpa nos gráficos."""
-    return str(nome).replace("Fast Tennis ", "").strip()
-
-# ==========================================
-# SIDEBAR - MENU DROPDOWN NOMES LIMPOS
-# ==========================================
-with st.sidebar:
-    st.markdown("""
-        <div style="text-align:center; padding: 10px 0 20px 0;">
-            <a href="#" style="background-color:#0DF205; color:#022D8A; padding:10px 24px; border-radius:20px; font-weight:800; text-decoration:none; display:inline-block;">Sair do Sistema</a>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
-    
-    modulo_selecionado = st.selectbox(
-        "Selecione o Módulo:",
-        [
-            "Simulador Precificação Inicial",
-            "Simulador Pontos Pré-Definidos",
-            "Reavaliação Estratégica"
-        ],
-        key="modulo_navegacao"
-    )
-    
-    st.markdown("---")
-    st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state['usuario_logado']}</b></small>", unsafe_allow_html=True)
-
 # ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
+# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL (NOVA REGRA MESTRA DE MERCADO DE > 30%)
 # ==============================================================================
 if modulo_selecionado == "Simulador Precificação Inicial":
     
@@ -516,7 +478,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
     if not dados_preenchidos:
         st.info("Aguardando dados. Por favor, preencha as informações para gerar o diagnóstico.")
     else:
-        # Lógica das tabelas
+        # 1. PASSO 1: Intervalo de Tabelas por Renda (Regra Base)
         if estado == "SP":
             if renda_media <= 8500.00: tab_min, tab_max = 1, 2
             elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -530,17 +492,33 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             elif renda_media <= 25000.00: tab_min, tab_max = 4, 5
             else: tab_min, tab_max = 5, 5
 
+        # 2. PASSO 2: Definição Inicial pelo Volume de Público Alvo
         if populacao < 40000:
-            tabela_sugerida = tab_min
+            tab_sugerida_preliminar = tab_min
         else:
-            if calculo_alvo >= 25000: tabela_sugerida = tab_max
+            if calculo_alvo >= 25000: tab_sugerida_preliminar = tab_max
             else:
-                if soma_percentuais >= 0.40: tabela_sugerida = tab_max
-                elif soma_percentuais >= 0.30: tabela_sugerida = int(np.round((tab_min + tab_max) / 2))
-                else: tabela_sugerida = tab_min
+                if soma_percentuais >= 0.40: tab_sugerida_preliminar = tab_max
+                elif soma_percentuais >= 0.30: tab_sugerida_preliminar = int(np.round((tab_min + tab_max) / 2))
+                else: tab_sugerida_preliminar = tab_min
 
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
+
+        # 3. PASSO 3: NOVA REGRA MESTRA NÚMERO 1 - TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
+        trava_concorrencia_ativada = False
+        preco_preliminar = precos[tab_sugerida_preliminar]
+
+        if not sem_concorrente and media_mercado > 0:
+            diferenca_percentual_preliminar = (preco_preliminar - media_mercado) / media_mercado
+            # SE FICAR MAIS DE 30% ACIMA DO CONCORRENTE: REBAIXA A TABELA PARA A INFERIOR
+            if diferenca_percentual_preliminar > 0.30:
+                tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
+                trava_concorrencia_ativada = True
+            else:
+                tabela_sugerida = tab_sugerida_preliminar
+        else:
+            tabela_sugerida = tab_sugerida_preliminar
 
         preco_sugerido = precos[tabela_sugerida]
         tkm_sugerido = tkms[tabela_sugerida]
@@ -554,6 +532,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                     <h2>Tabela {tabela_sugerida}</h2>
                     <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
+                    {f'<p style="margin:8px 0 0 0; font-size:12.5px; color:#991B1B;"><b>⚠️ Trava Primária de Mercado Ativada:</b> A tabela original ficava mais de 30% acima da concorrência. O algoritmo reduziu a recomendação para a Tabela {tabela_sugerida} para preservar a competitividade local.</p>' if trava_concorrencia_ativada else ''}
                 </div>
             """, unsafe_allow_html=True)
             tabela_final = tabela_sugerida
@@ -679,7 +658,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                 for _, r in df_ranking.iterrows():
                     linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                # OPÇÃO 1: BARRAS AMPLIADAS COM RÓTULOS EM TODAS AS CLASSES (B1, A+, A++)
                 st.write("")
                 st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                 
@@ -802,7 +780,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM INFORMAÇÃO DE COBERTURA)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM REGRA MESTRA DE > 30%)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -845,7 +823,6 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
         calculo_alvo = int(soma_percentuais * populacao)
 
-        # RESUMO AUTOMÁTICO DA UNIDADE COM STATUS DE COBERTURA
         html_card_unidade = f"""
             <div class="card-resumo-unidade">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -879,7 +856,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.button("Limpar Avaliação", on_click=limpar_campos_m1_pre, use_container_width=True)
 
         if sem_concorrente or media_mercado > 0:
-            # Lógica das tabelas
+            # 1. PASSO 1: Intervalo de Tabelas por Renda
             if estado == "SP":
                 if renda_media <= 8500.00: tab_min, tab_max = 1, 2
                 elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
@@ -893,17 +870,32 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 elif renda_media <= 25000.00: tab_min, tab_max = 4, 5
                 else: tab_min, tab_max = 5, 5
 
+            # 2. PASSO 2: Definição Inicial pelo Público Alvo
             if populacao < 40000:
-                tabela_sugerida = tab_min
+                tab_sugerida_preliminar = tab_min
             else:
-                if calculo_alvo >= 25000: tabela_sugerida = tab_max
+                if calculo_alvo >= 25000: tab_sugerida_preliminar = tab_max
                 else:
-                    if soma_percentuais >= 0.40: tabela_sugerida = tab_max
-                    elif soma_percentuais >= 0.30: tabela_sugerida = int(np.round((tab_min + tab_max) / 2))
-                    else: tabela_sugerida = tab_min
+                    if soma_percentuais >= 0.40: tab_sugerida_preliminar = tab_max
+                    elif soma_percentuais >= 0.30: tab_sugerida_preliminar = int(np.round((tab_min + tab_max) / 2))
+                    else: tab_sugerida_preliminar = tab_min
 
             precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
             tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
+
+            # 3. PASSO 3: NOVA REGRA MESTRA NÚMERO 1 - TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
+            trava_concorrencia_ativada_pre = False
+            preco_preliminar_pre = precos[tab_sugerida_preliminar]
+
+            if not sem_concorrente and media_mercado > 0:
+                diferenca_percentual_pre = (preco_preliminar_pre - media_mercado) / media_mercado
+                if diferenca_percentual_pre > 0.30:
+                    tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
+                    trava_concorrencia_ativada_pre = True
+                else:
+                    tabela_sugerida = tab_sugerida_preliminar
+            else:
+                tabela_sugerida = tab_sugerida_preliminar
 
             preco_sugerido = precos[tabela_sugerida]
             tkm_sugerido = tkms[tabela_sugerida]
@@ -917,6 +909,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
                         <h2>Tabela {tabela_sugerida}</h2>
                         <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
+                        {f'<p style="margin:8px 0 0 0; font-size:12.5px; color:#991B1B;"><b>⚠️ Trava Primária de Mercado Ativada:</b> A tabela original ficava mais de 30% acima da concorrência. O algoritmo reduziu a recomendação para a Tabela {tabela_sugerida} para preservar a competitividade local.</p>' if trava_concorrencia_ativada_pre else ''}
                     </div>
                 """, unsafe_allow_html=True)
                 tabela_final = tabela_sugerida
@@ -1042,7 +1035,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     for _, r in df_ranking.iterrows():
                         linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
 
-                    # GRÁFICO MÓDULO 2 COM PERCENTUAIS EM TODAS AS CLASSES
+                    # OPÇÃO 1 NO MÓDULO 2 (SOMA 100% POPULAÇÃO DIVIDIDA EM 4 CLASSES)
                     st.write("")
                     st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
                     
@@ -1164,7 +1157,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                 st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS (COM INFORMAÇÃO DE COBERTURA)
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO DE UNIDADES ATIVAS
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1226,7 +1219,7 @@ else:
                     <h3 style="margin:0; color:#022D8A;">{dados_u['Unidade']} ({dados_u['Cidade']})</h3>
                     <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u} | Quadras: {num_quadras_re}</span>
                 </div>
-                <p style="margin:0 0 6px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
+                <p style="margin:0 0 8px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
                 <p style="margin:0 0 10px 0; font-size:13px; color:#00A807;"><b>Infraestrutura de Quadra:</b> {cobertura_re}</p>
                 <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
                     <div><b>População Residente:</b> {populacao_u:,} hab.</div>
@@ -1362,7 +1355,7 @@ else:
             indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho highly saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
@@ -1427,7 +1420,7 @@ else:
                             </tr>
                         </thead>
                         <tbody>
-                            {linhas_tabela_pdf}
+                            {linhas_similares_pdf}
                         </tbody>
                     </table>
 
