@@ -929,7 +929,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ESCOPO TOTALMENTE ISOLADO)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1477,7 +1477,7 @@ else:
             s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
 
-            # RENDERIZAÇÃO DA MATRIZ COM BALÕES EXECUTIVOS
+            # RENDERIZAÇÃO DA MATRIZ COM ALINHAMENTO E BORDAS CENTRALIZADAS
             for item in matriz_sinais:
                 st_val = item["Sinal"]
                 if st_val == "Positivo":
@@ -1493,8 +1493,9 @@ else:
                 <div style="background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:15px; overflow-x:auto;">
                     <style>
                         table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-                        th {{ background-color: #F8F9FA; color: #022D8A; padding: 10px; text-align: left; border-bottom: 2px solid #CBD5E0; font-weight: 800; }}
-                        td {{ padding: 10px; border-bottom: 1px solid #E2E8F0; color: #2D3748; }}
+                        th {{ background-color: #F8F9FA; color: #022D8A; padding: 10px; text-align: center !important; border-bottom: 2px solid #CBD5E0; font-weight: 800; }}
+                        td {{ padding: 10px; border-bottom: 1px solid #E2E8F0; color: #2D3748; text-align: center !important; }}
+                        td:first-child {{ text-align: left !important; font-weight: 700; }}
                     </style>
                     {df_sinais_html}
                 </div>
@@ -1515,9 +1516,8 @@ else:
             """, unsafe_allow_html=True)
 
             st.write("")
-            st.subheader("3. Relatório Estratégico de Posicionamento")
+            st.subheader("3. Recomendação")
 
-            # CRUZAMENTOS COM MOSTRA DA COMBINAÇÃO DE SINAIS
             diagnostico_cruzado = ""
             
             if s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos:
@@ -1581,9 +1581,9 @@ else:
                     cor_fundo = "#DCFCE7" if "Positivo" in st_clean else "#FEF9C3" if "Atenção" in st_clean else "#FEE2E2"
                     cor_texto = "#15803D" if "Positivo" in st_clean else "#A16207" if "Atenção" in st_clean else "#B91C1C"
                     linhas_tabela_pdf += f"""<tr>
-                        <td style="padding:6px; border:1px solid #ddd;">{x['Critério Avaliado']}</td>
-                        <td style="padding:6px; border:1px solid #ddd;">{x['Referência / Alvo']}</td>
-                        <td style="padding:6px; border:1px solid #ddd;">{x['Desempenho Unidade']}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:left;">{x['Critério Avaliado']}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">{x['Referência / Alvo']}</td>
+                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">{x['Desempenho Unidade']}</td>
                         <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo}; color:{cor_texto}; font-weight:bold; text-align:center;">{st_clean}</td>
                     </tr>"""
 
@@ -1604,11 +1604,11 @@ else:
                     
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
                         <thead>
-                            <tr style="background-color:#F8F9FA; text-align:left; color:#022D8A;">
-                                <th style="padding:6px; border:1px solid #ddd;">Critério Avaliado</th>
+                            <tr style="background-color:#F8F9FA; text-align:center; color:#022D8A;">
+                                <th style="padding:6px; border:1px solid #ddd; text-align:left;">Critério Avaliado</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Referência / Alvo da Rede</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Desempenho Unidade</th>
-                                <th style="padding:6px; border:1px solid #ddd; text-align:center;">Classificação</th>
+                                <th style="padding:6px; border:1px solid #ddd;">Classificação</th>
                             </tr>
                         </thead>
                         <tbody>
