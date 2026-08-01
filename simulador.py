@@ -256,6 +256,27 @@ st.markdown(
             display: inline-block;
             border: 1px solid #FCA5A5;
         }
+
+        .box-sinais-cruzados {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #2D3748;
+            line-height: 1.4;
+        }
+        .tag-comb-sinais {
+            background-color: #022D8A;
+            color: #FFFFFF;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -320,7 +341,7 @@ with st.sidebar:
     st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
 
 # ==========================================
-# BANCO DE DADOS DE REALIZADO FINANCEIRO (ATINGIMENTO MES A MES)
+# BANCO DE DADOS DE REALIZADO FINANCEIRO
 # ==========================================
 FINANCEIRO_REALIZADO = {
     "Fast Tennis Aguas Claras - Brasília": {"fat": 136.45, "ll": 185.09},
@@ -512,10 +533,9 @@ for item in df_existentes_raw:
 
 df_base_unidades = pd.DataFrame(df_existentes)
 
-# LISTAS SEPARADAS DE UNIDADES
 LISTA_GERAL_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
-# UNIDADES FILTRADAS EXCLUSIVAMENTE EM OPERAÇÃO PARA O MÓDULO 3
+# UNIDADES FILTRADAS EXCLUSIVAMENTE EM OPERAÇÃO E COM TABELA DEFINIDA PARA O MÓDULO 3
 df_operando_m3 = df_base_unidades[
     (df_base_unidades["Status"] == "Operando") & 
     (df_base_unidades["Tabela Praticada"] != "Não Decidida")
@@ -642,7 +662,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
         precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
         tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
 
-        # REGRA MESTRA NÚMERO 1: TRAVA DE MERCADO DE > 30% DE DESLOCAMENTO
         preco_preliminar = precos[tab_sugerida_preliminar]
 
         if not sem_concorrente and media_mercado > 0:
@@ -910,7 +929,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=680, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ESCOPO TOTALMENTE ISOLADO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1313,7 +1332,6 @@ else:
     st.write("")
     
     st.subheader("2. Seleção de Unidade & Diagnóstico Operacional")
-    # APENAS UNIDADES EM OPERAÇÃO E COM TABELA DEFINIDA APARECEM AQUI
     nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_OPERANDO_M3, key="m2_nome_u")
 
     if nome_unidade_sel != "Selecione...":
@@ -1333,12 +1351,10 @@ else:
         pct_alvo_u = float(dados_u["A++"] + dados_u["A+"] + dados_u["B1"])
         num_alvo_u = int(pct_alvo_u * populacao_u)
         
-        # BUSCA SEGURA DE TABELA OFICIAL (SEM RISCO DE KEYERROR)
         info_tab = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})
         tkm_esperado_rede = info_tab["tkm"]
         preco_plus_esperado = info_tab["plus"]
 
-        # CHECA SE A UNIDADE EXISTE NO RELATÓRIO MENSAL FINANCEIRO
         unidade_no_relatorio = nome_unidade_sel in FINANCEIRO_REALIZADO
 
         if unidade_no_relatorio:
@@ -1447,7 +1463,7 @@ else:
             s_vend = "Positivo" if "alta performance" in perfil_vendedor else "Atenção" if "desenvolvimento" in perfil_vendedor else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Referência / Alvo": "Alta Performance", "Desempenho Unidade": "Desenvolvimento/Desalinhado" if s_vend != "Positivo" else "Alta Perform.", "Sinal": s_vend})
 
-            # PARAMETRIZAÇÃO AJUSTADA DA CONCORRÊNCIA: ATÉ 20% OK, 20.1% A 30% ATENÇÃO, ACIMA DE 30% CRÍTICO
+            # PARAMETRIZAÇÃO DE CONCORRÊNCIA: ATÉ 20% OK, DE 20.1% A 30% ATENÇÃO, ACIMA DE 30% CRÍTICO
             dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
             if dif_conc <= 0.20:
                 s_merc = "Positivo"
@@ -1461,7 +1477,7 @@ else:
             s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
 
-            # RENDERIZAÇÃO DA MATRIZ COM BALÕES EXECUTIVOS NAS CORES
+            # RENDERIZAÇÃO DA MATRIZ COM BALÕES EXECUTIVOS
             for item in matriz_sinais:
                 st_val = item["Sinal"]
                 if st_val == "Positivo":
@@ -1501,18 +1517,35 @@ else:
             st.write("")
             st.subheader("3. Relatório Estratégico de Posicionamento")
 
-            # CRUZAMENTOS INTELIGENTES COM A PALAVRA RETENÇÃO
+            # CRUZAMENTOS COM MOSTRA DA COMBINAÇÃO DE SINAIS
             diagnostico_cruzado = ""
             
-            # Cenas Cruzadas
             if s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos:
-                diagnostico_cruzado += "<p style='margin:4px 0;'><b>🔍 Causa Raiz - Sensibilidade a Preço & Retenção:</b> Sinais de resistência ao valor percebido local com impacto direto na <b>retenção inicial</b>. A combinação de baixa conversão, objeções recorrentes sobre valores e migração acentuada para o plano Smart sugere barreira de preço. Recomenda-se avaliar em Comitê a adequação de 1 nível de tabela para ganho de volume e melhora nos índices de <b>retenção</b> de novos alunos.</p>"
+                comb_1 = "Objeção de Preço Alta + Conversão Abaixo da Média + Mix Smart > 15%"
+                diagnostico_cruzado += f"""
+                    <div class="box-sinais-cruzados">
+                        <span class="tag-comb-sinais">{comb_1}</span><br>
+                        Sinais de sensibilidade ao valor percebido local com impacto na <b>retenção inicial</b>. A baixa conversão aliada ao fluxo para o plano Smart sugere barreira de preço. Recomenda-se avaliar em Comitê a adequação de 1 nível de tabela para ganho de volume e melhora nos índices de <b>retenção</b> de novos alunos.
+                    </div>
+                """
             
-            if s_conv == "Crítico" and "desenvolvimento" in perfil_vendedor or "desalinhado" in perfil_vendedor:
-                diagnostico_cruzado += "<p style='margin:4px 0;'><b>🔍 Causa Raiz - Processo Comercial:</b> Gargalo identificado na conversão do pitch de vendas. O mercado apresenta potencial e fluxo de atração, indicando que o desafio não está na precificação nem na <b>retenção</b> primária de atratividade. Recomenda-se priorizar a capacitação da equipe e reciclagem do pitch comercial antes de propor alterações tarifárias.</p>"
+            if (s_conv == "Crítico") and ("desenvolvimento" in perfil_vendedor or "desalinhado" in perfil_vendedor):
+                comb_2 = "Atração Aderente + Conversão Abaixo da Média + Equipe Comercial em Desenvolvimento/Desalinhada"
+                diagnostico_cruzado += f"""
+                    <div class="box-sinais-cruzados">
+                        <span class="tag-comb-sinais">{comb_2}</span><br>
+                        Gargalo na conversão do pitch de vendas. O mercado apresenta atração saudável, indicando que o desafio não está no preço nem na <b>retenção</b> primária de atratividade. Priorizar a capacitação da equipe e reciclagem comercial antes de propor alterações tarifárias.
+                    </div>
+                """
             
             if s_churn == "Crítico" or s_merc == "Crítico":
-                diagnostico_cruzado += "<p style='margin:4px 0;'><b>🔍 Causa Raiz - Pressão Competitiva & Risco de Churn:</b> Atenção ao posicionamento perante a concorrência direta. O descolamento tarifário em relação aos players locais coloca em risco a <b>retenção sustentável</b> e a maturação da base de alunos. Recomenda-se monitorar de perto os índices de cancelamento e aplicar ações pontuais de <b>retenção</b> do aluno ativo.</p>"
+                comb_3 = f"Preço Fast Tennis > 20% vs Concorrência ({dif_conc*100:+.1f}%) + Churn Alto + Base Estagnada/Oscilando"
+                diagnostico_cruzado += f"""
+                    <div class="box-sinais-cruzados">
+                        <span class="tag-comb-sinais">{comb_3}</span><br>
+                        Atenção ao posicionamento perante a concorrência direta. O descolamento tarifário em relação aos players locais coloca em risco a <b>retenção sustentável</b> e a maturação da base. Recomenda-se monitorar de perto os índices de cancelamento e aplicar ações pontuais de <b>retenção</b> do aluno ativo.
+                    </div>
+                """
 
             if pct_positivos >= 70.0:
                 rec_pop = "<b>Elegível a Manutenção Premium ou Teste de Elevação</b>: Posicionamento tarifário em ponto de equilíbrio ideal. A unidade apresenta consistência de margem, aderência do público e excelente <b>retenção da base de alunos</b>. A diretriz primária é a manutenção da tabela atual ou elevação pontual caso validado em Comitê."
@@ -1529,9 +1562,9 @@ else:
 
             st.markdown(f"""
                 <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:18px; border-radius:8px; margin-bottom:15px;">
-                    <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Diretriz Estratégica do Comitê</p>
+                    <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Recomendação</p>
                     <p style="margin:6px 0 10px 0; font-size:15px; color:#2D3748; line-height:1.5;">{rec_pop}</p>
-                    {f'<div style="background-color:#FFFFFF; border:1px solid #CBD5E0; padding:12px; border-radius:6px; font-size:13px; color:#2D3748;">{diagnostico_cruzado}</div>' if diagnostico_cruzado else ''}
+                    {f'<div style="margin-top:10px;">{diagnostico_cruzado}</div>' if diagnostico_cruzado else ''}
                 </div>
             """, unsafe_allow_html=True)
 
@@ -1590,7 +1623,7 @@ else:
                     </div>
 
                     <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:15px; border-radius:6px; margin-bottom:20px;">
-                        <h3 style="margin:0 0 5px 0; font-size:13px; color:{cor_pop}; text-transform:uppercase;">Diretriz Estratégica (Comitê)</h3>
+                        <h3 style="margin:0 0 5px 0; font-size:13px; color:{cor_pop}; text-transform:uppercase;">Recomendação</h3>
                         <p style="margin:0; font-size:13px; color:#2D3748; line-height:1.4;">{rec_pop}</p>
                     </div>
 
