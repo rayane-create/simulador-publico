@@ -1279,7 +1279,7 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
         st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
 
 # ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO (APENAS UNIDADES EM OPERAÇÃO)
+# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO (EXCLUSIVAMENTE UNIDADES EM OPERAÇÃO)
 # ==============================================================================
 else:
     st.title("Reavaliação Estratégica de Unidades Ativas")
@@ -1313,7 +1313,7 @@ else:
     st.write("")
     
     st.subheader("2. Seleção de Unidade & Diagnóstico Operacional")
-    # FILTRADO EXCLUSIVAMENTE COM A LISTA DE UNIDADES EM OPERAÇÃO
+    # APENAS UNIDADES EM OPERAÇÃO E COM TABELA DEFINIDA APARECEM AQUI
     nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_OPERANDO_M3, key="m2_nome_u")
 
     if nome_unidade_sel != "Selecione...":
@@ -1338,7 +1338,7 @@ else:
         tkm_esperado_rede = info_tab["tkm"]
         preco_plus_esperado = info_tab["plus"]
 
-        # CHECA SE A UNIDADE EXISTE NO RELATÓRIO MENSAL
+        # CHECA SE A UNIDADE EXISTE NO RELATÓRIO MENSAL FINANCEIRO
         unidade_no_relatorio = nome_unidade_sel in FINANCEIRO_REALIZADO
 
         if unidade_no_relatorio:
@@ -1447,9 +1447,16 @@ else:
             s_vend = "Positivo" if "alta performance" in perfil_vendedor else "Atenção" if "desenvolvimento" in perfil_vendedor else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Referência / Alvo": "Alta Performance", "Desempenho Unidade": "Desenvolvimento/Desalinhado" if s_vend != "Positivo" else "Alta Perform.", "Sinal": s_vend})
 
+            # PARAMETRIZAÇÃO AJUSTADA DA CONCORRÊNCIA: ATÉ 20% OK, 20.1% A 30% ATENÇÃO, ACIMA DE 30% CRÍTICO
             dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
-            s_merc = "Positivo" if abs(dif_conc) <= 0.10 else "Atenção" if abs(dif_conc) <= 0.20 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Pesquisa de Mercado", "Referência / Alvo": "Aderente (Até 10% dif)", "Desempenho Unidade": f"{dif_conc*100:+.1f}% vs Conc.", "Sinal": s_merc})
+            if dif_conc <= 0.20:
+                s_merc = "Positivo"
+            elif dif_conc <= 0.30:
+                s_merc = "Atenção"
+            else:
+                s_merc = "Crítico"
+            
+            matriz_sinais.append({"Critério Avaliado": "Pesquisa de Mercado", "Referência / Alvo": "Até 20% dif (OK) | >30% Crítico", "Desempenho Unidade": f"{dif_conc*100:+.1f}% vs Conc.", "Sinal": s_merc})
 
             s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
@@ -1494,26 +1501,37 @@ else:
             st.write("")
             st.subheader("3. Relatório Estratégico de Posicionamento")
 
-            indicio_desalinhamento = (s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos)
+            # CRUZAMENTOS INTELIGENTES COM A PALAVRA RETENÇÃO
+            diagnostico_cruzado = ""
+            
+            # Cenas Cruzadas
+            if s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos:
+                diagnostico_cruzado += "<p style='margin:4px 0;'><b>🔍 Causa Raiz - Sensibilidade a Preço & Retenção:</b> Sinais de resistência ao valor percebido local com impacto direto na <b>retenção inicial</b>. A combinação de baixa conversão, objeções recorrentes sobre valores e migração acentuada para o plano Smart sugere barreira de preço. Recomenda-se avaliar em Comitê a adequação de 1 nível de tabela para ganho de volume e melhora nos índices de <b>retenção</b> de novos alunos.</p>"
+            
+            if s_conv == "Crítico" and "desenvolvimento" in perfil_vendedor or "desalinhado" in perfil_vendedor:
+                diagnostico_cruzado += "<p style='margin:4px 0;'><b>🔍 Causa Raiz - Processo Comercial:</b> Gargalo identificado na conversão do pitch de vendas. O mercado apresenta potencial e fluxo de atração, indicando que o desafio não está na precificação nem na <b>retenção</b> primária de atratividade. Recomenda-se priorizar a capacitação da equipe e reciclagem do pitch comercial antes de propor alterações tarifárias.</p>"
+            
+            if s_churn == "Crítico" or s_merc == "Crítico":
+                diagnostico_cruzado += "<p style='margin:4px 0;'><b>🔍 Causa Raiz - Pressão Competitiva & Risco de Churn:</b> Atenção ao posicionamento perante a concorrência direta. O descolamento tarifário em relação aos players locais coloca em risco a <b>retenção sustentável</b> e a maturação da base de alunos. Recomenda-se monitorar de perto os índices de cancelamento e aplicar ações pontuais de <b>retenção</b> do aluno ativo.</p>"
 
             if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Aumento ou Manutenção Premium</b>: Desempenho altamente saudável. Tabela aderente ao mercado e perfil do público. Unidade qualificada para elevação em Comitê."
+                rec_pop = "<b>Elegível a Manutenção Premium ou Teste de Elevação</b>: Posicionamento tarifário em ponto de equilíbrio ideal. A unidade apresenta consistência de margem, aderência do público e excelente <b>retenção da base de alunos</b>. A diretriz primária é a manutenção da tabela atual ou elevação pontual caso validado em Comitê."
                 cor_pop = "#166534"
                 bg_pop = "#F0FDF4"
             elif qtd_criticos >= 3:
-                rec_pop = "<b>Reavaliação de Posicionamento / Redução de Tabela</b>: Alta concentração de indicadores críticos na unidade. Necessária intervenção imediata para ajuste de margem ou estratégia promocional agressiva."
+                rec_pop = "<b>Reavaliação de Posicionamento / Adequação de Tabela</b>: Alta concentração de indicadores críticos na unidade. Necessária intervenção estratégica imediata para ajuste de margem e preservação da <b>retenção</b> da base."
                 cor_pop = "#991B1B"
                 bg_pop = "#FEF2F2"
             else:
-                rec_pop = "<b>Ajuste Operacional (Sem Alteração de Preço Imediata)</b>: Cenário neutro ou em transição. O foco mandatório deve estar na correção dos processos comerciais internos e capacitação da equipe antes de testar sensibilidade de preço."
+                rec_pop = "<b>Ajuste Operacional (Sem Alteração de Preço Imediata)</b>: Cenário neutro ou em transição. O foco mandatório deve estar na correção dos processos comerciais internos, treinamento da equipe e ações focadas na <b>retenção de alunos</b> antes de testar nova sensibilidade de preço."
                 cor_pop = "#975A16"
                 bg_pop = "#FFFDF5"
 
             st.markdown(f"""
                 <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:18px; border-radius:8px; margin-bottom:15px;">
-                    <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Diretriz Estratégica</p>
-                    <p style="margin:6px 0 0 0; font-size:15px; color:#2D3748; line-height:1.5;">{rec_pop}</p>
-                    {f'<p style="margin:8px 0 0 0; font-size:13px; color:#B91C1C;"><b>⚠️ Alerta Crítico Adicional:</b> Identificado forte indício de desalinhamento de tabela (Combinação de alta sensibilidade a preço, baixa conversão e fuga extrema para o plano Smart).</p>' if indicio_desalinhamento else ''}
+                    <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Diretriz Estratégica do Comitê</p>
+                    <p style="margin:6px 0 10px 0; font-size:15px; color:#2D3748; line-height:1.5;">{rec_pop}</p>
+                    {f'<div style="background-color:#FFFFFF; border:1px solid #CBD5E0; padding:12px; border-radius:6px; font-size:13px; color:#2D3748;">{diagnostico_cruzado}</div>' if diagnostico_cruzado else ''}
                 </div>
             """, unsafe_allow_html=True)
 
