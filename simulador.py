@@ -154,7 +154,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* GRÁFICO AMPLIO E PROPORCIONAL */
+        /* GRÁFICO AMPLIO E PROPORCIONAL NO DASHBOARD */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -225,7 +225,6 @@ st.markdown(
             margin-bottom: 8px;
         }
 
-        /* BALÕES EXECUTIVOS DE STATUS DA MATRIZ */
         .badge-positivo {
             background-color: #DCFCE7;
             color: #15803D;
@@ -535,7 +534,6 @@ df_base_unidades = pd.DataFrame(df_existentes)
 
 LISTA_GERAL_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
 
-# UNIDADES FILTRADAS EXCLUSIVAMENTE EM OPERAÇÃO E COM TABELA DEFINIDA PARA O MÓDULO 3
 df_operando_m3 = df_base_unidades[
     (df_base_unidades["Status"] == "Operando") & 
     (df_base_unidades["Tabela Praticada"] != "Não Decidida")
@@ -843,7 +841,19 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                     rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
                     
-                    barras_html_pdf += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_outras*0.5}px; width:22px; background:#CBD5E0; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_b1*0.5}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.5}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.5}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+                    # HTML DE BARRAS REFORÇADO PARA O PDF
+                    barras_html_pdf += f"""
+                    <div style="flex:1; text-align:center; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
+                        <span style="font-size:10px; background:#022D8A !important; color:#0DF205 !important; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px; -webkit-print-color-adjust: exact !important;">{item['sim']}</span>
+                        <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9 !important; border-radius:4px; padding:4px; border: 1px solid #CBD5E0; -webkit-print-color-adjust: exact !important;">
+                            <div style="height:{h_outras*0.5}px; width:26px; background-color:#CBD5E0 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important;"></div>
+                            <div style="height:{h_b1*0.5}px; width:26px; background-color:#053CD8 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_b1*0.5}px; overflow:hidden;">{txt_b1}</div>
+                            <div style="height:{h_ap*0.5}px; width:26px; background-color:#0DF205 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#022D8A; font-size:8px; font-weight:bold; line-height:{h_ap*0.5}px; overflow:hidden;">{txt_ap}</div>
+                            <div style="height:{h_app*0.5}px; width:26px; background-color:#15803D !important; border-radius:2px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_app*0.5}px; overflow:hidden;">{txt_app}</div>
+                        </div>
+                        <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
+                    </div>
+                    """
 
                 st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela}</div><div class="rotulos-container-fixed">{rotulos_html_tela}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
@@ -857,18 +867,26 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
             
             html_relatorio = f"""
-            <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 1px solid #CBD5E0; border-radius: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
+            <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
+                <style>
+                    @media print {{
+                        body {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                        .no-print {{ display: none !important; }}
+                    }}
+                    * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                </style>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A !important; padding:15px 20px; border-radius:6px; color:#ffffff !important;">
                     <div>
-                        <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
-                        <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
+                        <h2 style="color:#ffffff !important; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
+                        <small style="color:#0DF205 !important; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
                     </div>
-                    <span style="font-size:12px; color:#E2E8F0;">Precificação Inicial</span>
+                    <span style="font-size:12px; color:#E2E8F0 !important;">Precificação Inicial</span>
                 </div>
                 <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                 
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
-                    <tr style="background-color:#F8F9FA;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                    <tr style="background-color:#F8F9FA !important;">
                         <td style="padding:8px; border:1px solid #ddd;"><b>Praça / Cidade:</b> {cidade} - {estado}</td>
                         <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
                     </tr>
@@ -878,23 +896,23 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </tr>
                 </table>
 
-                <div style="background-color:#F0FDF4; border-left:6px solid #00A807; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #BBF7D0;">
-                    <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                <div style="background-color:#F0FDF4 !important; border-left:6px solid #00A807 !important; padding:15px; border-radius:4px; margin-bottom:15px; border:1px solid #BBF7D0;">
+                    <h3 style="margin:0; color:#022D8A !important; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                     <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
                     <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
                 </div>
 
-                <div style="font-size:12px; line-height:1.5; margin-bottom:20px; background-color:#FFFFFF; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
+                <div style="font-size:12px; line-height:1.5; margin-bottom:15px; background-color:#FFFFFF !important; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
                     <p style="margin:0 0 4px 0;"><b>Diretriz Regional:</b> {diag}</p>
                     <p style="margin:0 0 4px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
                     <p style="margin:0 0 4px 0;"><b>Recomendação:</b> {rec}</p>
                     <p style="margin:0 0 0 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
                 </div>
 
-                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
-                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
+                <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;">
                     <thead>
-                        <tr style="background-color:#F8F9FA; text-align:left; color:#022D8A;">
+                        <tr style="background-color:#F8F9FA !important; text-align:left; color:#022D8A !important;">
                             <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
                             <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
                             <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
@@ -905,31 +923,33 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     </tbody>
                 </table>
 
-                <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
-                <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:12px;">
-                    {barras_html_pdf}
-                </div>
-                <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:20px;">
-                    <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
-                    <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
-                    <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
-                    <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
+                <div style="page-break-inside: avoid !important;">
+                    <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
+                    <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA !important; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:10px; -webkit-print-color-adjust: exact !important;">
+                        {barras_html_pdf}
+                    </div>
+                    <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
+                        <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
+                        <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
+                        <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
+                        <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
+                    </div>
                 </div>
 
                 {f'''
-                <div style="background-color:#FFFDF5; border-left:4px solid #D69E2E; padding:12px; border-radius:4px; margin-bottom:20px;">
-                    <h4 style="margin:0 0 4px 0; color:#975A16; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
+                <div style="background-color:#FFFDF5 !important; border-left:4px solid #D69E2E !important; padding:12px; border-radius:4px; margin-bottom:15px; page-break-inside: avoid !important;">
+                    <h4 style="margin:0 0 4px 0; color:#975A16 !important; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
                     <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m1}</p>
                 </div>
                 ''' if consideracoes_m1 else ''}
 
-                <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
+                <button onclick="window.print()" class="no-print" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
             </div>
             """
-            st.components.v1.html(html_relatorio, height=680, scrolling=True)
+            st.components.v1.html(html_relatorio, height=720, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (ESCOPO TOTALMENTE ISOLADO)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1211,7 +1231,18 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                         rotulos_html_tela_pre += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
                         
-                        barras_html_pdf_pre += f"""<div style="flex:1; text-align:center;"><span style="font-size:10px; background:#022D8A; color:#0DF205; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px;">{item['sim']}</span><div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9; border-radius:4px; padding:4px;"><div style="height:{h_outras*0.5}px; width:22px; background:#CBD5E0; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_b1*0.5}px; width:22px; background:#053CD8; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_ap*0.5}px; width:22px; background:#0DF205; border-radius:2px; margin-bottom:2px;"></div><div style="height:{h_app*0.5}px; width:22px; background:#15803D; border-radius:2px;"></div></div><span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span></div>"""
+                        barras_html_pdf_pre += f"""
+                        <div style="flex:1; text-align:center; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
+                            <span style="font-size:10px; background:#022D8A !important; color:#0DF205 !important; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px; -webkit-print-color-adjust: exact !important;">{item['sim']}</span>
+                            <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9 !important; border-radius:4px; padding:4px; border: 1px solid #CBD5E0; -webkit-print-color-adjust: exact !important;">
+                                <div style="height:{h_outras*0.5}px; width:26px; background-color:#CBD5E0 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important;"></div>
+                                <div style="height:{h_b1*0.5}px; width:26px; background-color:#053CD8 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_b1*0.5}px; overflow:hidden;">{txt_b1}</div>
+                                <div style="height:{h_ap*0.5}px; width:26px; background-color:#0DF205 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#022D8A; font-size:8px; font-weight:bold; line-height:{h_ap*0.5}px; overflow:hidden;">{txt_ap}</div>
+                                <div style="height:{h_app*0.5}px; width:26px; background-color:#15803D !important; border-radius:2px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_app*0.5}px; overflow:hidden;">{txt_app}</div>
+                            </div>
+                            <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
+                        </div>
+                        """
 
                     st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela_pre}</div><div class="rotulos-container-fixed">{rotulos_html_tela_pre}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
 
@@ -1224,18 +1255,26 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
                 modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
                 html_relatorio = f"""
-                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 1px solid #CBD5E0; border-radius: 8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
+                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
+                    <style>
+                        @media print {{
+                            body {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                            .no-print {{ display: none !important; }}
+                        }}
+                        * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                    </style>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A !important; padding:15px 20px; border-radius:6px; color:#ffffff !important;">
                         <div>
-                            <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
-                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
+                            <h2 style="color:#ffffff !important; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
+                            <small style="color:#0DF205 !important; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
                         </div>
-                        <span style="font-size:12px; color:#E2E8F0;">Pontos Pré-Definidos</span>
+                        <span style="font-size:12px; color:#E2E8F0 !important;">Pontos Pré-Definidos</span>
                     </div>
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
-                        <tr style="background-color:#F8F9FA;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                        <tr style="background-color:#F8F9FA !important;">
                             <td style="padding:8px; border:1px solid #ddd;"><b>Unidade:</b> {dados_u_pre['Unidade']} (Quadras: {num_quadras_pre})</td>
                             <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
                         </tr>
@@ -1245,23 +1284,23 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </tr>
                     </table>
 
-                    <div style="background-color:#F0FDF4; border-left:6px solid #00A807; padding:15px; border-radius:4px; margin-bottom:20px; border:1px solid #BBF7D0;">
-                        <h3 style="margin:0; color:#022D8A; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
+                    <div style="background-color:#F0FDF4 !important; border-left:6px solid #00A807 !important; padding:15px; border-radius:4px; margin-bottom:15px; border:1px solid #BBF7D0;">
+                        <h3 style="margin:0; color:#022D8A !important; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
                         <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
                         <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
                     </div>
 
-                    <div style="font-size:12px; line-height:1.5; margin-bottom:20px; background-color:#FFFFFF; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
+                    <div style="font-size:12px; line-height:1.5; margin-bottom:15px; background-color:#FFFFFF !important; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
                         <p style="margin:0 0 4px 0;"><b>Diretriz Regional:</b> {diag}</p>
                         <p style="margin:0 0 4px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
                         <p style="margin:0 0 4px 0;"><b>Recomendação:</b> {rec}</p>
                         <p style="margin:0 0 0 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
                     </div>
 
-                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
+                    <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;">
                         <thead>
-                            <tr style="background-color:#F8F9FA; text-align:left; color:#022D8A;">
+                            <tr style="background-color:#F8F9FA !important; text-align:left; color:#022D8A !important;">
                                 <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
                                 <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
@@ -1272,28 +1311,30 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                         </tbody>
                     </table>
 
-                    <h4 style="color:#022D8A; margin:15px 0 8px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
-                    <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:12px;">
-                        {barras_html_pdf_pre}
-                    </div>
-                    <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:20px;">
-                        <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
-                        <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
-                        <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
-                        <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
+                    <div style="page-break-inside: avoid !important;">
+                        <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
+                        <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA !important; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:10px; -webkit-print-color-adjust: exact !important;">
+                            {barras_html_pdf_pre}
+                        </div>
+                        <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
+                            <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
+                            <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
+                            <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
+                            <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
+                        </div>
                     </div>
 
                     {f'''
-                    <div style="background-color:#FFFDF5; border-left:4px solid #D69E2E; padding:12px; border-radius:4px; margin-bottom:20px;">
-                        <h4 style="margin:0 0 4px 0; color:#975A16; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
+                    <div style="background-color:#FFFDF5 !important; border-left:4px solid #D69E2E !important; padding:12px; border-radius:4px; margin-bottom:15px; page-break-inside: avoid !important;">
+                        <h4 style="margin:0 0 4px 0; color:#975A16 !important; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
                         <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m2}</p>
                     </div>
                     ''' if consideracoes_m2 else ''}
 
-                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
+                    <button onclick="window.print()" class="no-print" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
                 </div>
                 """
-                st.components.v1.html(html_relatorio, height=680, scrolling=True)
+                st.components.v1.html(html_relatorio, height=720, scrolling=True)
     else:
         st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
 
@@ -1463,7 +1504,6 @@ else:
             s_vend = "Positivo" if "alta performance" in perfil_vendedor else "Atenção" if "desenvolvimento" in perfil_vendedor else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Referência / Alvo": "Alta Performance", "Desempenho Unidade": "Desenvolvimento/Desalinhado" if s_vend != "Positivo" else "Alta Perform.", "Sinal": s_vend})
 
-            # PARAMETRIZAÇÃO DE CONCORRÊNCIA: ATÉ 20% OK, DE 20.1% A 30% ATENÇÃO, ACIMA DE 30% CRÍTICO
             dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
             if dif_conc <= 0.20:
                 s_merc = "Positivo"
@@ -1477,7 +1517,7 @@ else:
             s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
 
-            # RENDERIZAÇÃO DA MATRIZ COM ALINHAMENTO E BORDAS CENTRALIZADAS
+            # CENTRALIZADO NO HTML
             for item in matriz_sinais:
                 st_val = item["Sinal"]
                 if st_val == "Positivo":
@@ -1584,27 +1624,35 @@ else:
                         <td style="padding:6px; border:1px solid #ddd; text-align:left;">{x['Critério Avaliado']}</td>
                         <td style="padding:6px; border:1px solid #ddd; text-align:center;">{x['Referência / Alvo']}</td>
                         <td style="padding:6px; border:1px solid #ddd; text-align:center;">{x['Desempenho Unidade']}</td>
-                        <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo}; color:{cor_texto}; font-weight:bold; text-align:center;">{st_clean}</td>
+                        <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo} !important; color:{cor_texto} !important; font-weight:bold; text-align:center;">{st_clean}</td>
                     </tr>"""
 
                 html_pdf_m3 = f"""
-                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 25px; border: 1px solid #CBD5E0; border-radius: 8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A; padding:15px 20px; border-radius:6px; color:#ffffff;">
+                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
+                    <style>
+                        @media print {{
+                            body {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                            .no-print {{ display: none !important; }}
+                        }}
+                        * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+                    </style>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A !important; padding:15px 20px; border-radius:6px; color:#ffffff !important;">
                         <div>
-                            <h2 style="color:#ffffff; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Reavaliação Estratégica</h2>
-                            <small style="color:#0DF205; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
+                            <h2 style="color:#ffffff !important; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Reavaliação Estratégica</h2>
+                            <small style="color:#0DF205 !important; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
                         </div>
-                        <span style="font-size:12px; color:#E2E8F0;">Unidade Ativa</span>
+                        <span style="font-size:12px; color:#E2E8F0 !important;">Unidade Ativa</span>
                     </div>
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
-                    <h4 style="margin:0 0 5px 0; color:#022D8A;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']})</h4>
+                    <h4 style="margin:0 0 5px 0; color:#022D8A !important;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']})</h4>
                     <p style="margin:0 0 5px 0; font-size:12px; color:#2D3748;">Endereço: <b>{endereco_re}</b> | Quadras: <b>{num_quadras_re}</b> | Tabela Atual: <b>Tabela {tab_praticada_u}</b></p>
-                    <p style="margin:0 0 15px 0; font-size:12px; color:#00A807;">Cobertura: <b>{cobertura_re}</b></p>
+                    <p style="margin:0 0 15px 0; font-size:12px; color:#00A807 !important;">Cobertura: <b>{cobertura_re}</b></p>
                     
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
                         <thead>
-                            <tr style="background-color:#F8F9FA; text-align:center; color:#022D8A;">
+                            <tr style="background-color:#F8F9FA !important; text-align:center; color:#022D8A !important;">
                                 <th style="padding:6px; border:1px solid #ddd; text-align:left;">Critério Avaliado</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Referência / Alvo da Rede</th>
                                 <th style="padding:6px; border:1px solid #ddd;">Desempenho Unidade</th>
@@ -1616,27 +1664,27 @@ else:
                         </tbody>
                     </table>
 
-                    <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:10px; border-radius:4px; margin-bottom:15px; text-align:center; font-size:12px;">
-                        <b>Resumo da Matriz:</b> <span style="color:#15803D;">Positivos: {qtd_positivos} ({pct_positivos:.0f}%)</span> | 
-                        <span style="color:#A16207;">Atenção: {qtd_atencao}</span> | 
-                        <span style="color:#B91C1C;">Críticos: {qtd_criticos}</span>
+                    <div style="background-color:#F8F9FA !important; border:1px solid #E2E8F0; padding:10px; border-radius:4px; margin-bottom:15px; text-align:center; font-size:12px;">
+                        <b>Resumo da Matriz:</b> <span style="color:#15803D !important;">Positivos: {qtd_positivos} ({pct_positivos:.0f}%)</span> | 
+                        <span style="color:#A16207 !important;">Atenção: {qtd_atencao}</span> | 
+                        <span style="color:#B91C1C !important;">Críticos: {qtd_criticos}</span>
                     </div>
 
-                    <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:15px; border-radius:6px; margin-bottom:20px;">
-                        <h3 style="margin:0 0 5px 0; font-size:13px; color:{cor_pop}; text-transform:uppercase;">Recomendação</h3>
+                    <div style="background-color:{bg_pop} !important; border-left:6px solid {cor_pop} !important; padding:15px; border-radius:6px; margin-bottom:20px;">
+                        <h3 style="margin:0 0 5px 0; font-size:13px; color:{cor_pop} !important; text-transform:uppercase;">Recomendação</h3>
                         <p style="margin:0; font-size:13px; color:#2D3748; line-height:1.4;">{rec_pop}</p>
                     </div>
 
                     {f'''
-                    <div style="background-color:#FFFDF5; border-left:4px solid #D69E2E; padding:12px; border-radius:4px; margin-bottom:20px;">
-                        <h4 style="margin:0 0 4px 0; color:#975A16; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
+                    <div style="background-color:#FFFDF5 !important; border-left:4px solid #D69E2E !important; padding:12px; border-radius:4px; margin-bottom:20px; page-break-inside: avoid !important;">
+                        <h4 style="margin:0 0 4px 0; color:#975A16 !important; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
                         <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m3}</p>
                     </div>
                     ''' if consideracoes_m3 else ''}
                     
-                    <button onclick="window.print()" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
+                    <button onclick="window.print()" class="no-print" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
                 </div>
                 """
-                st.components.v1.html(html_pdf_m3, height=680, scrolling=True)
+                st.components.v1.html(html_pdf_m3, height=720, scrolling=True)
     else:
         st.info("Aguardando a seleção de uma unidade ativa em operação acima para realizar a avaliação.")
