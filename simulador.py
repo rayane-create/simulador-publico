@@ -154,7 +154,7 @@ st.markdown(
             justify-content: center;
         }
 
-        /* GRÁFICO AMPLIO E PROPORCIONAL NO DASHBOARD */
+        /* GRÁFICO AMPLIO E PROPORCIONAL */
         .grafico-executivo-container {
             background-color: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -225,6 +225,7 @@ st.markdown(
             margin-bottom: 8px;
         }
 
+        /* BALÕES EXECUTIVOS DE STATUS DA MATRIZ */
         .badge-positivo {
             background-color: #DCFCE7;
             color: #15803D;
@@ -443,6 +444,8 @@ df_existentes_raw = [
     {"Status": "Operando", "Unidade": "Fast Tennis Alto da Boa Vista - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Adolfo Pinheiro, 810 – Santo Amaro, São Paulo/SP", "Quadras": 1, "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.20, "A+": 0.24, "B1": 0.18},
     {"Status": "Operando", "Unidade": "Fast Tennis Alto de Pinheiros - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Avenida São Gualter, 1023 – Alto de Pinheiros São Paulo/SP", "Quadras": 2, "Renda Média": 23900, "População": 82500, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.23, "B1": 0.15},
     {"Status": "Operando", "Unidade": "Fast Tennis Alto do Ipiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Engenheiro Américo de Carvalho Ramos, nº 97, Vila Gumercindo, São Paulo/SP", "Quadras": 1, "Renda Média": 19775, "População": 177000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.16, "A+": 0.20, "B1": 0.18},
+    {"Status": "Em Implantação", "Unidade": "Fast Tennis Álvaro Guimarães", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Álvaro Guimarães, 180 – Planalto, SBC/SP", "Quadras": 1, "Renda Média": 10500, "População": 121308, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.05, "A+": 0.09, "B1": 0.19},
+    {"Status": "Em Implantação", "Unidade": "Fast Tennis Anália Franco", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Álvaro Ramos, 2459 - Quarta Parada, São Paulo - SP, 03331-001", "Quadras": 2, "Renda Média": 15852, "População": 157576, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.11, "A+": 0.17, "B1": 0.17},
     {"Status": "Operando", "Unidade": "Fast Tennis Anhanguera - Jundiaí", "Cidade": "Jundiaí", "Estado": "SP", "Endereço": "Rua Aurora Germano de Lemos, 228 – Vila Guarani, Jundiaí/SP", "Quadras": 1, "Renda Média": 11650, "População": 67900, "REGIC": "Capital Regional C", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.06, "A+": 0.10, "B1": 0.18},
     {"Status": "Operando", "Unidade": "Fast Tennis Bebedouro - Bebedouro", "Cidade": "Bebedouro", "Estado": "SP", "Endereço": "Av. Osvaldo Perrone 376 - Jardim Progresso, Bebedouro/SP", "Quadras": 2, "Renda Média": 5900, "População": 44900, "REGIC": "Centro Sub-Regional B", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.02, "A+": 0.02, "B1": 0.08},
     {"Status": "Operando", "Unidade": "Fast Tennis Belvedere - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Professor Sylvio Barbosa, 416, bairro Belvedere, Belo Horizonte - MG", "Quadras": 5, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
@@ -841,7 +844,6 @@ if modulo_selecionado == "Simulador Precificação Inicial":
                     barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
                     rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
                     
-                    # HTML DE BARRAS REFORÇADO PARA O PDF
                     barras_html_pdf += f"""
                     <div style="flex:1; text-align:center; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
                         <span style="font-size:10px; background:#022D8A !important; color:#0DF205 !important; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px; -webkit-print-color-adjust: exact !important;">{item['sim']}</span>
@@ -949,7 +951,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=720, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM CABEÇALHO COMPLETO NO PDF)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
@@ -1112,9 +1114,11 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             if sem_concorrente or media_mercado == 0:
                 diag, status, rec = "Mercado Exclusivo", "Sem Concorrência Direta", "Oportunidade de captura total da demanda sem pressão concorrencial direta."
                 txt_dif = "Sem Concorrente Directo"
+                txt_conc_pdf = "Sem Concorrente Directo"
             else:
                 dif_mercado = (preco_ref - media_mercado) / media_mercado
                 txt_dif = f"{dif_mercado*100:+.1f}%"
+                txt_conc_pdf = f"R$ {media_mercado:,.2f}"
                 if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
                 elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
                 else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
@@ -1254,6 +1258,8 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
             st.markdown("---")
             with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
                 modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
+                
+                # CABEÇALHO COMPLETO REQUERIDO NO PDF DO MÓDULO 2
                 html_relatorio = f"""
                 <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
                     <style>
@@ -1273,14 +1279,21 @@ elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
                     </div>
                     <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
                     
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 15px;">
                         <tr style="background-color:#F8F9FA !important;">
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Unidade:</b> {dados_u_pre['Unidade']} (Quadras: {num_quadras_pre})</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Unidade / Praça:</b> {dados_u_pre['Unidade']} ({cidade} - {estado})</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>População Área de Estudo:</b> {populacao:,} hab.</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço:</b> {endereco_pre}</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Cobertura:</b> {cobertura_pre}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço Cadastrado:</b> {endereco_pre}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Público-Alvo Calculado (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
+                        </tr>
+                        <tr style="background-color:#F8F9FA !important;">
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Estrutura / Quadras:</b> {num_quadras_pre} quadra(s) | {cobertura_pre}</td>
+                            <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média Região:</b> R$ {renda_media:,.2f}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;" colspan="2"><b>Preço Médio Concorrentes Locais (Plus 1x):</b> {txt_conc_pdf}</td>
                         </tr>
                     </table>
 
