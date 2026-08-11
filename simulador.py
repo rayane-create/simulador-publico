@@ -490,6 +490,7 @@ df_existentes_raw = [
     {"Status": "Operando", "Unidade": "Fast Tennis Parque Piqueri - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua José Tavares Siqueira, 519 - Parque São Jorge, São Paulo - SP, 03085-030", "Quadras": 1, "Renda Média": 12800, "População": 138700, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.08, "A+": 0.14, "B1": 0.14},
     {"Status": "Em Implantação", "Unidade": "Fast Tennis Ponta da Praia - Santos", "Cidade": "Santos", "Estado": "SP", "Endereço": "Rua Governador Fernando Costa, nº 565, Ponta da praia / Santos-SP", "Quadras": 1, "Renda Média": 13654, "População": 79281, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.07, "A+": 0.12, "B1": 0.23},
     {"Status": "Operando", "Unidade": "Fast Tennis Ponte JK - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "SCES Trecho 2 Beira Lago - Setor de Clubes Esportivos Sul Trecho 2 - Plano Piloto, Brasília - DF, Brasil", "Quadras": 3, "Renda Média": 25400, "População": 95617, "REGIC": "Metrópole Nacional", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 4", "A++": 0.24, "A+": 0.30, "B1": 0.22},
+    {"Status": "Em Implantação", "Unidade": "Fast Tennis Portão - Curitiba", "Cidade": "Curitiba", "Estado": "PR", "Endereço": "Rua Carlos Dietzsch, 455, Curitiba, PR", "Quadras": 1, "Renda Média": 12534, "População": 107985, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.04, "A+": 0.21, "B1": 0.18},
     {"Status": "Operando", "Unidade": "Fast Tennis Praia do Canto - Vitória", "Cidade": "Vitória", "Estado": "ES", "Endereço": "R. José Teixeira, 191 - Praia do Canto, Vitória - ES, 29055-310", "Quadras": 1, "Renda Média": 16840, "População": 83239, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.16, "A+": 0.16, "B1": 0.17},
     {"Status": "Operando", "Unidade": "Fast Tennis Praia Grande - Praia Grande", "Cidade": "Praia Grande", "Estado": "SP", "Endereço": "Av. Brasil 400 - Boqueirão, Praia Grande/SP - CEP:11701-090", "Quadras": 2, "Renda Média": 8900, "População": 84400, "REGIC": "Capital Regional B", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.03, "A+": 0.06, "B1": 0.15},
     {"Status": "Operando", "Unidade": "FastTennis Radial Leste - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Pedro Bellegarde, 127 - Tatuapé, São Paulo - SP, 03317-080", "Quadras": 1, "Renda Média": 15700, "População": 146400, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.11, "A+": 0.16, "B1": 0.16},
@@ -951,7 +952,7 @@ if modulo_selecionado == "Simulador Precificação Inicial":
             st.components.v1.html(html_relatorio, height=720, scrolling=True)
 
 # ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM CABEÇALHO COMPLETO NO PDF)
+# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (CABEÇALHO COMPLETO NO PDF)
 # ==============================================================================
 elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
     st.title("Simulador Estratégico para Pontos Pré-Definidos")
