@@ -111,7 +111,6 @@ st.markdown(
             margin: 6px 0;
             color: #00A807 !important;
             font-size: 36px !important;
-            font-weight: 800 !important;
         }
 
         .card-destaque {
@@ -523,10 +522,11 @@ df_existentes_raw = [
     {"Status": "Operando", "Unidade": "Fast Tennis Tirol- Natal", "Cidade": "Natal", "Estado": "RN", "Endereço": "Av. Afonso Pena 863 - Tirol, Natal/RN - CEP: 59020-100", "Quadras": 1, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.23, "B1": 0.17},
     {"Status": "Operando", "Unidade": "Fast Tennis Três Poderes - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Hugo Cacuri, 175 - Instituto de Previdencia, São Paulo - SP, 05578-030", "Quadras": 1, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 4", "A++": 0.19, "A+": 0.18, "B1": 0.17},
     {"Status": "Operando", "Unidade": "Fast Tennis Verbo Divino - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Verbo Divino, 797 - Granja Julieta, São Paulo - SP, 04719-001", "Quadras": 1, "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.16, "B1": 0.18},
+    {"Status": "Em Implantação", "Unidade": "Fast Tennis Vicente Rao - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua do Níquel, 126, São Paulo, SP", "Quadras": 1, "Renda Média": 27427, "População": 118185, "REGIC": "Grande Metrópole", "Perfil Praça": "Mista Qualificada", "Tabela Praticada": "Não Decidida", "A++": 0.27, "A+": 0.25, "B1": 0.16},
     {"Status": "Operando", "Unidade": "Fast Tennis Vila Olímpia - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Santo Amaro, 1860 - Vila Olímpia, São Paulo - SP, 04506-002", "Quadras": 1, "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.33, "A+": 0.27, "B1": 0.15},
     {"Status": "Operando", "Unidade": "Fast Tennis Vila Sônia", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Domingos Olímpio, 227 - Vila Sonia, São Paulo - SP, 05625-060", "Quadras": 1, "Renda Média": 17315, "População": 115968, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.14, "A+": 0.17, "B1": 0.16},
     {"Status": "Operando", "Unidade": "Fast Tennis Vilhena - Rondônia", "Cidade": "Vilhena", "Estado": "RO", "Endereço": "Av. Rio de Janeiro, 1023 - Novo Tempo, Vilhena - RO, Brasil", "Quadras": 1, "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.03, "A+": 0.03, "B1": 0.08},
-    {"Status": "Operando", "Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Azira Assad Jafet, 22 - Ipiranga, São Paulo - SP, Brasil", "Quadras": 1, "Renda Média": 19000, "População": 120000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.17, "B1": 0.16}
+    {"Status": "Operando", "Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Azira Assad Jafet, 22 - Ipiranga, São Paulo - SP, Brasil", "Quadras": 1, "Renda Média": 15457, "População": 119952, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.17, "B1": 0.16}
 ]
 
 df_existentes = []
@@ -1503,8 +1503,15 @@ else:
             s_mix = "Positivo" if "saudável" in mix_produtos else "Atenção" if "8%" in mix_produtos else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Mix de Produtos", "Referência / Alvo": "Consumo Saudável", "Desempenho Unidade": mix_produtos, "Sinal": s_mix})
 
-            s_obj = "Positivo" if objecoes_preco <= 10 else "Atenção" if objecoes_preco <= 25 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Objeções por Preço", "Referência / Alvo": "≤ 10.0%", "Desempenho Unidade": f"{objecoes_preco:.1f}%", "Sinal": s_obj})
+            # REGRA ATUALIZADA: < 10% POSITIVO | 10% A 14.99% ATENÇÃO | >= 15% CRÍTICO
+            if objecoes_preco < 10.0:
+                s_obj = "Positivo"
+            elif objecoes_preco <= 14.9999:
+                s_obj = "Atenção"
+            else:
+                s_obj = "Crítico"
+
+            matriz_sinais.append({"Critério Avaliado": "Objeções por Preço", "Referência / Alvo": "< 10% Positivo | ≥15% Crítico", "Desempenho Unidade": f"{objecoes_preco:.1f}%", "Sinal": s_obj})
 
             s_conv = "Positivo" if conversao_unidade >= media_rede_conversao else "Atenção" if conversao_unidade >= (media_rede_conversao * 0.90) else "Crítico"
             matriz_sinais.append({"Critério Avaliado": "Conversão", "Referência / Alvo": f"Média Rede ({media_rede_conversao:.1f}%)", "Desempenho Unidade": f"{conversao_unidade:.1f}%", "Sinal": s_conv})
@@ -1680,7 +1687,7 @@ else:
                             </tr>
                         </thead>
                         <tbody>
-                            {linhas_similares_pdf_pre if False else linhas_tabela_pdf}
+                            {linhas_tabela_pdf}
                         </tbody>
                     </table>
 
