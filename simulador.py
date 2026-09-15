@@ -320,7 +320,6 @@ def obter_ordem_mes(rotulo_mes):
             return val_ord
     return 50
 
-# FALLBACK PARA MAPEAMENTO CASO A ABA VARIAÇÕES DE PLANO NÃO SEJA ENCONTRADA
 VARIACOES_OFICIAIS = {
     # 1x Plus
     "aulas em grupo 1x na semana plus": "Aulas em Grupo 1x na Semana Plus",
@@ -397,11 +396,9 @@ VARIACOES_OFICIAIS = {
 def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
     p_norm = normalizar_texto(plano_raw)
 
-    # 1. CONSULTA A ABA VARIAÇÕES DE PLANO DO EXCEL
     if mapa_excel and p_norm in mapa_excel:
         return mapa_excel[p_norm]
 
-    # 2. CONSULTA AS VARIAÇÕES PADRÃO DO SISTEMA
     if p_norm in VARIACOES_OFICIAIS:
         return VARIACOES_OFICIAIS[p_norm]
 
@@ -409,18 +406,30 @@ def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
         if var_key in p_norm or p_norm in var_key:
             return cat_val
 
-    # Se não achar nada, retorna a string original limpa para não ignorar o plano
     return str(plano_raw).strip()
 
 def categorizar_plano_v1(plano_raw, mapa_excel=None):
     cat = categorizar_plano_ampliado(plano_raw, mapa_excel)
     
-    # EXCLUI DO MIX PADRÃO APENAS O QUE FOR ESTRITAMENTE EXTRAORDINÁRIO
-    cat_norm = normalizar_texto(cat)
-    if any(ex in cat_norm for ex in ["infinite", "locacao", "bolsista", "familia"]):
-        return None
+    # LISTA FIXA E ESTRITA DOS 11 PLANOS SOLICITADOS
+    LISTA_MIX_PADRAO_EXATA = [
+        "Aulas em Grupo 1x na Semana Plus",
+        "Aulas em Grupo 2x na Semana Plus",
+        "Aulas em Grupo 3x na Semana Plus",
+        "Aulas em Grupo 1x na Semana Smart",
+        "Aulas em Grupo 2x na Semana Smart",
+        "Aulas em Grupo 3x na Semana Smart",
+        "Aulas em Grupo KIDS 1X na semana",
+        "Aulas em Grupo KIDS 2X na semana",
+        "Aulas em Grupo KIDS 3X na semana",
+        "Aula Em Dupla 1x semana",
+        "Aula Individual 1x semana",
+    ]
+    
+    if cat in LISTA_MIX_PADRAO_EXATA:
+        return cat
         
-    return cat
+    return None
 
 def formatar_kpi_cor(valor_num):
     if valor_num is None or pd.isna(valor_num): return "N/A", "#64748B"
@@ -922,7 +931,7 @@ with tab_visao_geral:
                     with st.container(border=True):
                         st.markdown("""
                             <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;'>
-                                <h4 style='font-size:0.95rem; color:#022D8A; margin:0;'>Mix Padrao (Planos Core de Aulas)</h4>
+                                <h4 style='font-size:0.95rem; color:#022D8A; margin:0;'>Mix Padrao (Core 11 Planos Oficial)</h4>
                                 <span style='background-color:rgba(5, 60, 216, 0.08); color:#053CD8; font-size:0.72rem; font-weight:700; padding:3px 7px; border-radius:4px;'>Core 11 Planos</span>
                             </div>
                         """, unsafe_allow_html=True)
