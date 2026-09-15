@@ -423,7 +423,6 @@ def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
 
 def categorizar_plano_v1(plano_raw, mapa_excel=None):
     cat_ampliada = categorizar_plano_ampliado(plano_raw, mapa_excel)
-    # INCLUSÃO DOS PLANOS 3X NA SEMANA NO MIX PADRÃO CONFORME DIRETRIZ 2026
     if cat_ampliada in [
         "Infinite",
         "Locacao Recorrente",
@@ -590,6 +589,10 @@ def converter_para_numero(valor):
     except:
         return 0.0
 
+def limpar_texto_ascii(texto):
+    txt_str = str(texto)
+    return unicodedata.normalize("NFD", txt_str).encode("ascii", "ignore").decode("utf-8")
+
 @st.cache_data(ttl=300)
 def carregar_dados_planilha(caminho_ou_file):
     try:
@@ -718,7 +721,7 @@ def gerar_excel_limpo_comite(df_orig, decisoes):
     df_exp = pd.DataFrame(lista_linhas)
     
     for col in df_exp.columns:
-        df_exp[col] = df_exp[col].astype(str).apply(lambda x: unicodedata.normalize("NFD", x).encode("ascii", "ignore").decode("utf-8"))
+        df_exp[col] = df_exp[col].apply(limpar_texto_ascii)
 
     buffer = io.BytesIO()
     try:
