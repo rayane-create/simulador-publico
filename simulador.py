@@ -115,7 +115,7 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==============================================================================
-# 3. BASE DE DADOS COMPLEMENTAR & TABELA DE PREÇOS (2026)
+# 3. BASE DE DADOS COMPLEMENTAR & TABELA DE PREÇOS VIGENTES (2026)
 # ==============================================================================
 TKM_REDE_REFERENCIA = {1: 330, 2: 410, 3: 470, 4: 570, 5: 680}
 
@@ -320,76 +320,21 @@ def obter_ordem_mes(rotulo_mes):
             return val_ord
     return 50
 
+# Dicionário de Mapeamento com tolerância total a variações de maiúsculas/espaços
 VARIACOES_OFICIAIS = {
-    # 1x Plus
     "aulas em grupo 1x na semana plus": "Aulas em Grupo 1x na Semana Plus",
-    "aula em grupo 1x na semana plus": "Aulas em Grupo 1x na Semana Plus",
-    "aula em grupo 1x por semana plus": "Aulas em Grupo 1x na Semana Plus",
-    "aulas em grupo 1x por semana plus": "Aulas em Grupo 1x na Semana Plus",
-
-    # 2x Plus
     "aulas em grupo 2x na semana plus": "Aulas em Grupo 2x na Semana Plus",
-    "aula em grupo 2x na semana plus": "Aulas em Grupo 2x na Semana Plus",
-    "aula em grupo 2x por semana plus": "Aulas em Grupo 2x na Semana Plus",
-    "aulas em grupo 2x por semana plus": "Aulas em Grupo 2x na Semana Plus",
-
-    # 3x Plus
     "aulas em grupo 3x na semana plus": "Aulas em Grupo 3x na Semana Plus",
-    "aula em grupo 3x na semana plus": "Aulas em Grupo 3x na Semana Plus",
-    "aula em grupo 3x por semana plus": "Aulas em Grupo 3x na Semana Plus",
-    "aulas em grupo 3x por semana plus": "Aulas em Grupo 3x na Semana Plus",
-
-    # 1x Smart
     "aulas em grupo 1x na semana smart": "Aulas em Grupo 1x na Semana Smart",
-    "aula em grupo 1x na semana smart": "Aulas em Grupo 1x na Semana Smart",
-    "aula em grupo 1x por semana smart": "Aulas em Grupo 1x na Semana Smart",
-    "aulas em grupo 1x por semana smart": "Aulas em Grupo 1x na Semana Smart",
-
-    # 2x Smart
     "aulas em grupo 2x na semana smart": "Aulas em Grupo 2x na Semana Smart",
-    "aula em grupo 2x na semana smart": "Aulas em Grupo 2x na Semana Smart",
-    "aula em grupo 2x por semana smart": "Aulas em Grupo 2x na Semana Smart",
-    "aulas em grupo 2x por semana smart": "Aulas em Grupo 2x na Semana Smart",
-
-    # 3x Smart
     "aulas em grupo 3x na semana smart": "Aulas em Grupo 3x na Semana Smart",
-    "aula em grupo 3x na semana smart": "Aulas em Grupo 3x na Semana Smart",
-    "aula em grupo 3x por semana smart": "Aulas em Grupo 3x na Semana Smart",
-    "aulas em grupo 3x por semana smart": "Aulas em Grupo 3x na Semana Smart",
-
-    # KIDS 1x
     "aulas em grupo kids 1x na semana": "Aulas em Grupo KIDS 1X na semana",
-    "aula em grupo 1x por semana kids": "Aulas em Grupo KIDS 1X na semana",
-    "aula kids em grupo 1x na semana": "Aulas em Grupo KIDS 1X na semana",
-    "aulas em grupo kids 1x por semana": "Aulas em Grupo KIDS 1X na semana",
-
-    # KIDS 2x
     "aulas em grupo kids 2x na semana": "Aulas em Grupo KIDS 2X na semana",
-    "aula em grupo 2x por semana kids": "Aulas em Grupo KIDS 2X na semana",
-    "aula kids em grupo 2x na semana": "Aulas em Grupo KIDS 2X na semana",
-    "aulas em grupo kids 2x por semana": "Aulas em Grupo KIDS 2X na semana",
-
-    # KIDS 3x
     "aulas em grupo kids 3x na semana": "Aulas em Grupo KIDS 3X na semana",
-    "aula em grupo 3x por semana kids": "Aulas em Grupo KIDS 3X na semana",
-    "aula kids em grupo 3x na semana": "Aulas em Grupo KIDS 3X na semana",
-    "aulas em grupo kids 3x por semana": "Aulas em Grupo KIDS 3X na semana",
-
-    # Dupla
     "aula em dupla 1x semana": "Aula Em Dupla 1x semana",
-    "aula em dupla 1x por semana plus": "Aula Em Dupla 1x semana",
-
-    # Individual
     "aula individual 1x semana": "Aula Individual 1x semana",
-    "aula individual 1x por semana": "Aula Individual 1x semana",
-
-    # Locacao Recorrente
     "locacao recorrente": "Locacao Recorrente",
-
-    # Bolsista / Familia
     "bolsista": "Bolsista + familia franqueado",
-
-    # Infinite
     "infinite": "Infinite",
 }
 
@@ -399,9 +344,7 @@ def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
     if mapa_excel and p_norm in mapa_excel:
         return mapa_excel[p_norm]
 
-    if p_norm in VARIACOES_OFICIAIS:
-        return VARIACOES_OFICIAIS[p_norm]
-
+    # Busca por correspondência exata ou parcial normalizada
     for var_key, cat_val in VARIACOES_OFICIAIS.items():
         if var_key in p_norm or p_norm in var_key:
             return cat_val
@@ -411,22 +354,22 @@ def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
 def categorizar_plano_v1(plano_raw, mapa_excel=None):
     cat = categorizar_plano_ampliado(plano_raw, mapa_excel)
     
-    # LISTA FIXA E ESTRITA DOS 11 PLANOS SOLICITADOS
-    LISTA_MIX_PADRAO_EXATA = [
-        "Aulas em Grupo 1x na Semana Plus",
-        "Aulas em Grupo 2x na Semana Plus",
-        "Aulas em Grupo 3x na Semana Plus",
-        "Aulas em Grupo 1x na Semana Smart",
-        "Aulas em Grupo 2x na Semana Smart",
-        "Aulas em Grupo 3x na Semana Smart",
-        "Aulas em Grupo KIDS 1X na semana",
-        "Aulas em Grupo KIDS 2X na semana",
-        "Aulas em Grupo KIDS 3X na semana",
-        "Aula Em Dupla 1x semana",
-        "Aula Individual 1x semana",
+    # NORMALIZAÇÃO PARA CHECAGEM DOS 11 PLANOS DO MIX PADRÃO (INSENSÍVEL A CASE/ESPAÇOS)
+    LISTA_MIX_PADRAO_NORMALIZADA = [
+        normalizar_texto("Aulas em Grupo 1x na Semana Plus"),
+        normalizar_texto("Aulas em Grupo 2x na Semana Plus"),
+        normalizar_texto("Aulas em Grupo 3x na Semana Plus"),
+        normalizar_texto("Aulas em Grupo 1x na Semana Smart"),
+        normalizar_texto("Aulas em Grupo 2x na Semana Smart"),
+        normalizar_texto("Aulas em Grupo 3x na Semana Smart"),
+        normalizar_texto("Aulas em Grupo KIDS 1X na semana"),
+        normalizar_texto("Aulas em Grupo KIDS 2X na semana"),
+        normalizar_texto("Aulas em Grupo KIDS 3X na semana"),
+        normalizar_texto("Aula Em Dupla 1x semana"),
+        normalizar_texto("Aula Individual 1x semana"),
     ]
     
-    if cat in LISTA_MIX_PADRAO_EXATA:
+    if normalizar_texto(cat) in LISTA_MIX_PADRAO_NORMALIZADA:
         return cat
         
     return None
@@ -622,19 +565,19 @@ def carregar_dados_planilha(caminho_ou_file):
         df_ft = pd.read_excel(xls, sheet_name="Faturamento e LL") if "Faturamento e LL" in xls.sheet_names else None
         if df_ft is not None: df_ft.columns = df_ft.columns.astype(str).str.strip()
 
-        # LEITURA DA ABA VARIAÇÕES DE PLANO
+        # LEITURA DA ABA VARIAÇÕES DE PLANO DO EXCEL
         mapa_excel = {}
-        if "Variacoes de Plano" in xls.sheet_names or "Variações de Plano" in xls.sheet_names:
-            nome_aba_vp = next(c for c in xls.sheet_names if "variac" in normalizar_texto(c))
-            df_vp = pd.read_excel(xls, sheet_name=nome_aba_vp)
-            if len(df_vp.columns) >= 2:
-                col_de = df_vp.columns[0]
-                col_para = df_vp.columns[1]
-                for _, r_vp in df_vp.iterrows():
-                    val_de = normalizar_texto(r_vp[col_de])
-                    val_para = str(r_vp[col_para]).strip()
-                    if val_de and val_para:
-                        mapa_excel[val_de] = val_para
+        for nome_aba in xls.sheet_names:
+            if "variac" in normalizar_texto(nome_aba):
+                df_vp = pd.read_excel(xls, sheet_name=nome_aba)
+                if len(df_vp.columns) >= 2:
+                    col_de = df_vp.columns[0]
+                    col_para = df_vp.columns[1]
+                    for _, r_vp in df_vp.iterrows():
+                        val_de = normalizar_texto(r_vp[col_de])
+                        val_para = str(r_vp[col_para]).strip()
+                        if val_de and val_para:
+                            mapa_excel[val_de] = val_para
 
         tabela_precos = TABELA_PRECOS_FALLBACK.copy()
         if "Tabelas Praticadas" in xls.sheet_names:
