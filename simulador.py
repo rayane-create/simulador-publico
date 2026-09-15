@@ -115,7 +115,7 @@ if not st.session_state["autenticado"]:
     st.stop()
 
 # ==============================================================================
-# 3. BASE DE DADOS COMPLEMENTAR & TABELA DE PREÇOS (ATUALIZADA 2026)
+# 3. BASE DE DADOS COMPLEMENTAR & TABELA DE PREÇOS (NOVOS VALORES VIGENTES 2026)
 # ==============================================================================
 TKM_REDE_REFERENCIA = {1: 330, 2: 410, 3: 470, 4: 570, 5: 680}
 
@@ -423,6 +423,7 @@ def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
 
 def categorizar_plano_v1(plano_raw, mapa_excel=None):
     cat_ampliada = categorizar_plano_ampliado(plano_raw, mapa_excel)
+    # APENAS PLANOS EXTRAORDINÁRIOS FICAM FORA DO MIX PADRÃO (NOW INCLUDES 3X)
     if cat_ampliada in [
         "Infinite",
         "Locacao Recorrente",
