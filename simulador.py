@@ -1,1717 +1,1343 @@
-import streamlit as st
+import json
+import re
+import io
+import unicodedata
+from datetime import datetime
 import pandas as pd
-import numpy as np
+import streamlit as st
+import altair as alt
+from github import Auth, Github, GithubException
 
-# Configuração da página corporativa da Fast Tennis
-st.set_page_config(page_title="Fast Tennis - Plataforma Estratégica de Precificação", layout="wide")
-
-# ==========================================
-# APLICAÇÃO DA IDENTIDADE VISUAL FAST TENNIS (GUIDELINE 2025)
-# Paleta Oficial: Blue FT (#053CD8), Navy FT (#022D8A), Green FT (#0DF205), Green FT Escuro (#00A807)
-# ==========================================
-st.markdown(
-    """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,800;1,800&display=swap');
-        
-        html, body, [class*="css"] {
-            font-family: 'Bw Nista Geometric', 'Montserrat', sans-serif !important;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            color: #022D8A !important;
-            font-weight: 800 !important;
-        }
-
-        /* ESTILIZAÇÃO DA SIDEBAR */
-        section[data-testid="stSidebar"] {
-            background-color: #022D8A !important;
-        }
-        section[data-testid="stSidebar"] label, 
-        section[data-testid="stSidebar"] p, 
-        section[data-testid="stSidebar"] h1,
-        section[data-testid="stSidebar"] h2,
-        section[data-testid="stSidebar"] h3 {
-            color: #FFFFFF !important;
-        }
-
-        /* Selectbox da Sidebar */
-        section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
-            background-color: #FFFFFF !important;
-            border-radius: 8px !important;
-            border: 1px solid #CBD5E0 !important;
-            color: #022D8A !important;
-            font-weight: 700 !important;
-        }
-        section[data-testid="stSidebar"] div[data-baseweb="select"] * {
-            color: #022D8A !important;
-        }
-        
-        /* Botões Padrão Green FT */
-        div.stButton > button {
-            background-color: #0DF205 !important;
-            color: #022D8A !important;
-            font-weight: 800 !important;
-            border-radius: 20px !important;
-            border: none !important;
-            padding: 8px 24px !important;
-        }
-        div.stButton > button:hover {
-            background-color: #053CD8 !important;
-            color: #FFFFFF !important;
-        }
-
-        /* TABELA SUGERIDA */
-        .tabela-sugerida-box {
-            background-color: rgba(13, 242, 5, 0.12);
-            padding: 22px 28px;
-            border-radius: 12px;
-            border-left: 12px solid #00A807;
-            margin: 15px 0;
-            border-top: 1px solid rgba(0, 168, 7, 0.25);
-            border-right: 1px solid rgba(0, 168, 7, 0.25);
-            border-bottom: 1px solid rgba(0, 168, 7, 0.25);
-            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.15);
-        }
-        .tabela-sugerida-box h2 {
-            margin: 6px 0;
-            color: #022D8A !important;
-            font-size: 36px !important;
-            font-weight: 800 !important;
-            letter-spacing: -0.5px;
-        }
-
-        .tabela-sugerida-reduzida {
-            background-color: #F8F9FA;
-            padding: 12px 20px;
-            border-radius: 8px;
-            border-left: 6px solid #CBD5E0;
-            margin: 12px 0;
-            border: 1px solid #E2E8F0;
-        }
-        .tabela-sugerida-reduzida h2 {
-            margin: 2px 0;
-            color: #6C757D !important;
-            font-size: 20px !important;
-            font-weight: 700 !important;
-        }
-
-        .tabela-excecao-box {
-            background-color: rgba(13, 242, 5, 0.12);
-            padding: 22px 28px;
-            border-radius: 12px;
-            border-left: 12px solid #00A807;
-            margin: 15px 0;
-            border-top: 1px solid rgba(0, 168, 7, 0.25);
-            border-right: 1px solid rgba(0, 168, 7, 0.25);
-            border-bottom: 1px solid rgba(0, 168, 7, 0.25);
-            box-shadow: 0 4px 15px rgba(0, 168, 7, 0.18);
-        }
-        .tabela-excecao-box h2 {
-            margin: 6px 0;
-            color: #00A807 !important;
-            font-size: 36px !important;
-        }
-
-        .card-destaque {
-            background-color: #F8F9FA;
-            border: 1px solid #E2E8F0;
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-top: 6px;
-        }
-
-        .card-resumo-unidade {
-            background-color: #F0F4FF;
-            border: 1px solid #C3D3FC;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 15px;
-        }
-
-        .alerta-fino-executivo {
-            background-color: #F8F9FA;
-            color: #7F1D1D;
-            border: 1px solid #FECACA;
-            border-left: 4px solid #991B1B;
-            padding: 8px 14px;
-            font-size: 12.5px;
-            font-weight: 600;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-
-        .box-relatorio-equilibrado {
-            background-color: #F8F9FA;
-            border-radius: 8px;
-            border: 1px solid #E2E8F0;
-            padding: 12px 16px;
-            min-height: 85px !important;
-            box-sizing: border-box !important;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        /* GRÁFICO AMPLIO E PROPORCIONAL */
-        .grafico-executivo-container {
-            background-color: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 10px;
-            padding: 25px 20px 15px 20px;
-            margin-top: 15px;
-        }
-        .linha-grafico-flex {
-            display: flex;
-            justify-content: center;
-            gap: 45px;
-            align-items: flex-end;
-            padding-bottom: 0px;
-            border-bottom: 2px solid #CBD5E0;
-        }
-        .barra-coluna-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100px;
-        }
-        .barra-empilhada-box {
-            width: 64px;
-            height: 280px;
-            background-color: transparent;
-            display: flex;
-            flex-direction: column-reverse;
-            overflow: hidden;
-            border-radius: 6px 6px 0 0;
-            border: 1px solid #CBD5E0;
-        }
-        .segmento-classe {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 800;
-            color: #FFFFFF;
-            overflow: hidden;
-            text-shadow: 0px 1px 3px rgba(0,0,0,0.7);
-        }
-        .rotulos-container-fixed {
-            display: flex;
-            justify-content: center;
-            gap: 45px;
-            padding-top: 12px;
-        }
-        .rotulo-unidade-box {
-            width: 100px;
-            text-align: center;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: #022D8A;
-            line-height: 1.25;
-            min-height: 38px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 0 2px;
-        }
-        .tag-similaridade {
-            background-color: #022D8A;
-            color: #0DF205;
-            font-size: 11.5px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-
-        /* BALÕES EXECUTIVOS DE STATUS DA MATRIZ */
-        .badge-positivo {
-            background-color: #DCFCE7;
-            color: #15803D;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 12px;
-            display: inline-block;
-            border: 1px solid #86EFAC;
-        }
-        .badge-atencao {
-            background-color: #FEF9C3;
-            color: #A16207;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 12px;
-            display: inline-block;
-            border: 1px solid #FDE047;
-        }
-        .badge-critico {
-            background-color: #FEE2E2;
-            color: #B91C1C;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 12px;
-            display: inline-block;
-            border: 1px solid #FCA5A5;
-        }
-
-        .box-sinais-cruzados {
-            background-color: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 6px;
-            padding: 10px 14px;
-            margin-top: 10px;
-            font-size: 13px;
-            color: #2D3748;
-            line-height: 1.4;
-        }
-        .tag-comb-sinais {
-            background-color: #022D8A;
-            color: #FFFFFF;
-            font-size: 10.5px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 6px;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
+# ==============================================================================
+# 1. CONFIGURAÇÃO DA PÁGINA & IDENTIDADE VISUAL EXECUTIVA (FAST TENNIS)
+# ==============================================================================
+st.set_page_config(
+    page_title="Reajuste Rede 2026",
+    page_icon=None,
+    layout="wide",
 )
 
-# ==========================================
-# GARANTIA DE VARIÁVEIS DE ESTADO NO GLOBAL
-# ==========================================
+HEX_BLUE = "#053CD8"
+HEX_NAVY = "#022D8A"
+HEX_GREEN = "#16A34A"
+HEX_RED = "#DC2626"
+HEX_BG = "#F8FAFC"
+HEX_CARD_BORDER = "#E2E8F0"
+
+PERCENTUAL_IPCA = 0.0444        # 4,44% de Reajuste IPCA 2026
+DESCONTO_MEDIO_REDE = 0.0130    # 1,30% de Impacto Médio de Descontos na Rede
+
+st.markdown(
+    f"""
+    <style>
+    .stApp {{ background-color: {HEX_BG}; }}
+    h1, h2, h3, h4 {{ color: {HEX_NAVY} !important; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; }}
+    .stButton>button {{ background-color: {HEX_BLUE}; color: #FFFFFF; border-radius: 6px; font-weight: 600; border: none; padding: 0.6rem 1.8rem; }}
+    .stButton>button:hover {{ background-color: {HEX_NAVY}; color: #FFFFFF; }}
+    
+    .sticky-unit-header {{ 
+        position: -webkit-sticky; 
+        position: sticky; 
+        top: 0px; 
+        z-index: 999; 
+        background-color: #FFFFFF; 
+        border-bottom: 3px solid {HEX_NAVY}; 
+        padding: 10px 16px; 
+        margin-bottom: 1rem; 
+        border-radius: 8px; 
+        box-shadow: 0 4px 12px rgba(2, 45, 138, 0.08); 
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+    }}
+    
+    .stMultiSelect [data-baseweb="tag"], div[data-baseweb="select"] [data-baseweb="tag"], span[data-baseweb="tag"] {{ background-color: rgba(13, 242, 5, 0.04) !important; border: 1px solid rgba(13, 242, 5, 0.25) !important; border-radius: 4px !important; }}
+    .stMultiSelect [data-baseweb="tag"] *, div[data-baseweb="select"] [data-baseweb="tag"] *, span[data-baseweb="tag"] * {{ color: {HEX_NAVY} !important; fill: {HEX_NAVY} !important; font-weight: 600 !important; }}
+    
+    .header-box {{ background-color: {HEX_NAVY}; padding: 1.1rem 1.8rem; border-radius: 8px; margin-bottom: 1.2rem; box-shadow: 0 2px 8px rgba(2, 45, 138, 0.12); display: flex; align-items: center; justify-content: space-between; }}
+    .header-title {{ color: #FFFFFF !important; margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.3px; line-height: 1.2; }}
+    .header-subtitle {{ color: #93C5FD; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin: 0; }}
+
+    .kpi-card {{ background-color: #FFFFFF; border: 1px solid {HEX_CARD_BORDER}; border-radius: 8px; padding: 1rem 1.2rem; height: 110px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }}
+    .kpi-card-bar {{ position: absolute; top: 0; left: 0; right: 0; height: 3.5px; }}
+    .kpi-title {{ font-size: 0.74rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; }}
+    .kpi-value {{ font-size: 1.65rem; font-weight: 800; color: {HEX_NAVY}; margin: 2px 0 0 0; line-height: 1; }}
+    .kpi-sub {{ font-size: 0.72rem; font-weight: 600; color: #94A3B8; }}
+    
+    .executive-card-half {{ background-color: #FFFFFF; border: 1px solid {HEX_CARD_BORDER}; border-radius: 8px; padding: 1.2rem; height: 195px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; }}
+    .executive-card-title {{ font-size: 0.78rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }}
+    
+    .table-highlight-card-full {{ background-color: rgba(5, 60, 216, 0.04); border: 1.5px solid rgba(5, 60, 216, 0.22); border-top: 4px solid {HEX_BLUE}; border-radius: 8px; padding: 1.2rem 1.8rem; margin-top: 1rem; margin-bottom: 0.8rem; box-shadow: 0 2px 5px rgba(5, 60, 216, 0.03); }}
+    
+    .state-unit-item {{ padding: 7px 10px; border-radius: 5px; margin-bottom: 3px; font-size: 0.83rem; display: flex; align-items: center; justify-content: space-between; }}
+    .state-unit-selected {{ background-color: rgba(5, 60, 216, 0.08); border-left: 3px solid {HEX_BLUE}; font-weight: 700; color: {HEX_NAVY}; }}
+    .state-unit-default {{ background-color: #F8FAFC; color: #334155; }}
+    .mix-bar-container {{ margin-bottom: 8px; }}
+    .mix-label {{ font-size: 0.82rem; font-weight: 600; color: #334155; display: flex; justify-content: space-between; margin-bottom: 2px; }}
+    .mix-bar-bg {{ background-color: #F1F5F9; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }}
+    .mix-bar-fill {{ background-color: {HEX_BLUE}; height: 100%; border-radius: 4px; }}
+    
+    .sim-card {{ background-color: #FFFFFF; border: 1px solid {HEX_CARD_BORDER}; border-radius: 8px; padding: 1rem 1.2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); text-align: center; }}
+    .sim-card-inline {{ text-align: center; padding: 6px 0 2px 0; }}
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
+# ==============================================================================
+# 2. AUTENTICAÇÃO RESTREITA
+# ==============================================================================
+USER_OFICIAL = "operacoes@fasttennis.com.br"
+SENHA_OFICIAL = "Reajuste8734"
+
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 
-# ==========================================
-# CONTROLE DE ACESSO (LOGIN)
-# ==========================================
-USUARIOS_PERMITIDOS = {"rayane@fasttennis.com.br": "Simulador8734"}
-
-def realizar_login():
-    email_input = st.session_state["login_email"].strip()
-    senha_input = st.session_state["login_senha"]
-    if email_input in USUARIOS_PERMITIDOS and USUARIOS_PERMITIDOS[email_input] == senha_input:
-        st.session_state["autenticado"] = True
-        st.session_state["usuario_logado"] = email_input
-        st.rerun()
-    else:
-        st.error("Credenciais corporativas inválidas.")
-
 if not st.session_state["autenticado"]:
-    col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
-    with col_l2:
-        st.markdown("<br><br><br>", unsafe_allow_html=True)
-        st.markdown("""
-            <div style="background-color:#F8F9FA; padding:30px; border-radius:12px; border-top:6px solid #022D8A; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                <h3 style="color:#022D8A; margin-top:0; margin-bottom:5px; font-weight:800;">Acesso Restrito Fast Tennis</h3>
-                <p style="color:#6C757D; font-size:13px; margin-bottom:25px;">Insira suas credenciais corporativas autorizadas.</p>
-            </div>
-        """, unsafe_allow_html=True)
-        st.text_input("E-mail Corporativo:", key="login_email")
-        st.text_input("Senha de Acesso:", type="password", key="login_senha")
-        st.button("Entrar no Sistema", on_click=realizar_login, use_container_width=True)
+    st.markdown(
+        f"<h2 style='text-align: center; color: {HEX_NAVY}; margin-top: 3rem;'>Fast Tennis - Comite Executivo</h2>",
+        unsafe_allow_html=True,
+    )
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        with st.form("form_login"):
+            st.subheader("Acesso Restrito")
+            usuario_input = st.text_input("E-mail corporativo")
+            senha_input = st.text_input("Senha", type="password")
+            btn_login = st.form_submit_button("Acessar Painel")
+
+            if btn_login:
+                if usuario_input == USER_OFICIAL and senha_input == SENHA_OFICIAL:
+                    st.session_state["autenticado"] = True
+                    st.rerun()
+                else:
+                    st.error("Credenciais invalidas.")
     st.stop()
 
-# ==========================================
-# SIDEBAR - MENU NAVEGAÇÃO
-# ==========================================
-with st.sidebar:
-    st.markdown("""
-        <div style="text-align:center; padding: 10px 0 20px 0;">
-            <a href="#" style="background-color:#0DF205; color:#022D8A; padding:10px 24px; border-radius:20px; font-weight:800; text-decoration:none; display:inline-block;">Sair do Sistema</a>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<p style='color:#FFFFFF; font-weight:800; font-size:16px; margin-bottom:5px;'>Filtros de Navegação</p>", unsafe_allow_html=True)
-    
-    opcoes_menu = [
-        "Simulador Precificação Inicial",
-        "Simulador Pontos Pré-Definidos",
-        "Reavaliação Estratégica"
-    ]
-    modulo_selecionado = st.selectbox("Selecione o Módulo:", opcoes_menu)
-    
-    st.markdown("---")
-    st.markdown(f"<small style='color:#FFFFFF;'>Sessão Ativa: <b>{st.session_state.get('usuario_logado', 'Usuário')}</b></small>", unsafe_allow_html=True)
+# ==============================================================================
+# 3. BASE DE DADOS COMPLEMENTAR & TABELA DE PREÇOS (ATUALIZADA 2026)
+# ==============================================================================
+TKM_REDE_REFERENCIA = {1: 330, 2: 410, 3: 470, 4: 570, 5: 680}
 
-# ==========================================
-# BANCO DE DADOS DE REALIZADO FINANCEIRO
-# ==========================================
-FINANCEIRO_REALIZADO = {
-    "Fast Tennis Aguas Claras - Brasília": {"fat": 136.45, "ll": 185.09},
-    "Fast Tennis Alphaville - São Paulo": {"fat": 123.59, "ll": 159.93},
-    "Fast Tennis Alto do Ipiranga - São Paulo": {"fat": 102.81, "ll": 105.28},
-    "Fast Tennis Alto de Pinheiros - São Paulo": {"fat": 88.14, "ll": 72.89},
-    "Fast Tennis Anhanguera - Jundiaí": {"fat": 96.98, "ll": -23.48},
-    "Fast Tennis Bebedouro - Bebedouro": {"fat": 80.95, "ll": 62.11},
-    "Fast Tennis Belvedere - Belo Horizonte": {"fat": 95.71, "ll": 81.10},
-    "Fast Tennis Boa Viagem - Recife": {"fat": 115.25, "ll": 130.88},
-    "Fast Tennis Botafogo - Campinas": {"fat": 114.62, "ll": 492.23},
-    "Fast Tennis Brooklin - São Paulo": {"fat": 102.78, "ll": 107.11},
-    "Fast Tennis Buritis I - Belo Horizonte": {"fat": 89.86, "ll": 78.84},
-    "Fast Tennis Calafate - Belo Horizonte": {"fat": 105.52, "ll": 111.69},
-    "Fast Tennis Campo Belo - São Paulo": {"fat": 111.40, "ll": 120.36},
-    "Fast Tennis Cantareira - São Paulo": {"fat": 101.34, "ll": 105.30},
-    "Fast Tennis Capim Macio - Natal": {"fat": 116.75, "ll": 132.49},
-    "Fast Tennis Castelo - Belo Horizonte": {"fat": 111.01, "ll": 170.81},
-    "Fast Tennis Centro São Bernardo - São Bernardo do Campo": {"fat": 125.72, "ll": 125.72},
-    "Fast Tennis Chacará Inglesa - São Paulo": {"fat": 84.69, "ll": 50.73},
-    "Fast Tennis Chacará Santo Antônio - São Paulo": {"fat": 101.45, "ll": 103.59},
-    "Fast Tennis Cidade Nova - Cidade Nova": {"fat": 93.38, "ll": 84.89},
-    "Fast Tennis Contagem - Contagem": {"fat": 105.38, "ll": 111.09},
-    "Fast Tennis Estoril - Belo Horizonte": {"fat": 83.93, "ll": 68.36},
-    "Fast Tennis Estrela Sul - Juiz de Fora": {"fat": 107.53, "ll": 114.20},
-    "Fast Tennis Guararapes - Fortaleza": {"fat": 132.08, "ll": 209.00},
-    "Fast Tennis Indaiatuba - São Paulo": {"fat": 107.41, "ll": 116.55},
-    "Fast Tennis Jardim Portal da Colina - Sorocaba": {"fat": 99.35, "ll": 104.90},
-    "Fast Tennis Jardim - São Paulo": {"fat": 96.71, "ll": 92.27},
-    "Fast Tennis Jardim Social - Curitiba": {"fat": 117.20, "ll": 117.20},
-    "Fast Tennis Lapa - São Paulo": {"fat": 85.90, "ll": 433.06},
-    "Fast Tennis Moema - São Paulo": {"fat": 122.82, "ll": 157.50},
-    "Fast Tennis Mooca - São Paulo": {"fat": 120.67, "ll": 233.92},
-    "Fast Tennis Morada da Colina - Uberlândia": {"fat": 107.25, "ll": 162.06},
-    "Fast Tennis Morumbi - São Paulo": {"fat": 70.74, "ll": 70.74},
-    "Fast Tennis Nova Aliança Sul - Ribeirão Preto": {"fat": 94.08, "ll": 94.08},
-    "Fast Tennis Orla da Pampulha - Belo Horizonte": {"fat": 84.18, "ll": 47.48},
-    "Fast Tennis Pampulha - Belo Horizonte": {"fat": 124.17, "ll": 150.02},
-    "Fast Tennis Parque Piqueri - São Paulo": {"fat": 68.39, "ll": 68.39},
-    "Fast Tennis Ponte JK - Brasília": {"fat": 89.76, "ll": 75.02},
-    "Fast Tennis Praia do Canto - Vitória": {"fat": 117.46, "ll": 117.46},
-    "Fast Tennis Praia Grande - Praia Grande": {"fat": 111.18, "ll": 148.13},
-    "FastTennis Radial Leste - São Paulo": {"fat": 176.25, "ll": 1314.96},
-    "Fast Tennis Recreio - Rio de Janeiro": {"fat": 116.60, "ll": 152.92},
-    "Fast Tennis Rio Claro - São Paulo": {"fat": 105.66, "ll": 132.25},
-    "Fast Tennis Salgado Filho - Curitiba": {"fat": 110.48, "ll": 110.48},
-    "Fast Tennis Salto - São Paulo": {"fat": 139.96, "ll": 139.96},
-    "Fast Tennis Santa Lúcia - Belo Horizonte": {"fat": 87.99, "ll": 70.06},
-    "Fast Tennis Santa Rosa - Niterói": {"fat": 113.08, "ll": 118.24},
-    "Fast Tennis Santana - São Paulo": {"fat": 146.21, "ll": 146.21},
-    "Fast Tennis Santo Amaro": {"fat": 92.13, "ll": 79.72},
-    "Fast Tennis São Bento - Belo Horizonte": {"fat": 69.77, "ll": -437.96},
-    "Fast Tennis São Caetano - São Caetano do Sul": {"fat": 110.41, "ll": 128.89},
-    "Fast Tennis Saúde - São Paulo": {"fat": 136.60, "ll": 334.83},
-    "Fast Tennis Saul Macedo - Belo Horizonte": {"fat": 73.42, "ll": 73.42},
-    "Fast Tennis Savassi - Belo Horizonte": {"fat": 246.25, "ll": 246.25},
-    "Fast Tennis Sete Lagoas - Sete Lagoas": {"fat": 96.37, "ll": 89.25},
-    "Fast Tennis Setor Bueno - Goiânia": {"fat": 93.00, "ll": 93.00},
-    "Fast Tennis Tirol- Natal": {"fat": 138.19, "ll": 225.10},
-    "Fast Tennis Três Poderes - São Paulo": {"fat": 91.72, "ll": 78.73},
-    "Fast Tennis Verbo Divino - São Paulo": {"fat": 118.48, "ll": 509.92},
-    "Fast Tennis Vila Olímpia - São Paulo": {"fat": 121.60, "ll": 121.60},
-    "Fast Tennis Vila Sônia": {"fat": 89.57, "ll": 89.57},
-    "Fast Tennis Vilhena - Rondônia": {"fat": 138.93, "ll": 53.26},
-    "Fast Tennis Ypiranga - São Paulo": {"fat": 89.57, "ll": 89.57}
+TABELA_PRECOS_FALLBACK = {
+    "Aulas em Grupo 1x na Semana Plus": {1: 349, 2: 419, 3: 529, 4: 629, 5: 749},
+    "Aulas em Grupo 2x na Semana Plus": {1: 559, 2: 669, 3: 789, 4: 999, 5: 1379},
+    "Aulas em Grupo 3x na Semana Plus": {1: 829, 2: 989, 3: 1249, 4: 1489, 5: 1899},
+    "Aulas em Grupo 1x na Semana Smart": {1: 279, 2: 319, 3: 419, 4: 499, 5: 589},
+    "Aulas em Grupo 2x na Semana Smart": {1: 439, 2: 519, 3: 609, 4: 799, 5: 1069},
+    "Aulas em Grupo 3x na Semana Smart": {1: 669, 2: 789, 3: 999, 4: 1189, 5: 1499},
+    "Aulas em Grupo KIDS 1X na semana": {1: 279, 2: 319, 3: 419, 4: 499, 5: 589},
+    "Aulas em Grupo KIDS 2X na semana": {1: 439, 2: 519, 3: 609, 4: 799, 5: 1069},
+    "Aulas em Grupo KIDS 3X na semana": {1: 669, 2: 789, 3: 999, 4: 1189, 5: 1499},
+    "Aula Em Dupla 1x semana": {1: 529, 2: 619, 3: 849, 4: 949, 5: 1399},
+    "Aula Individual 1x semana": {1: 899, 2: 1069, 3: 1289, 4: 1569, 5: 1759},
+    "Locacao Recorrente": {1: 360, 2: 440, 3: 520, 4: 600, 5: 720},
+    "Bolsista + familia franqueado": {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+    "Infinite": {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
 }
 
-# ==========================================
-# LISTAS DE COBERTURA DE QUADRAS
-# ==========================================
-QUADRAS_ADULTAS_COBERTAS = {
-    "Fast Tennis Alto do Ipiranga - São Paulo",
-    "Fast Tennis Boa Viagem - Recife",
-    "Fast Tennis Capim Macio - Natal",
-    "Fast Tennis Jardim - São Paulo",
-    "Fast Tennis Tirol- Natal",
-    "Fast Tennis Vilhena - Rondônia"
+COORDENADORES_MAP = {
+    "Fast Tennis Aguas Claras - Brasilia": "Luan",
+    "Fast Tennis Alphaville - Sao Paulo": "Alberto",
+    "Fast Tennis Alto da Boa Vista - Sao Paulo": "Alberto",
+    "Fast Tennis Alto de Pinheiros - Sao Paulo": "Alberto",
+    "Fast Tennis Alto do Ipiranga - Sao Paulo": "Alberto",
+    "Fast Tennis Anhanguera - Jundiai": "Luan",
+    "Fast Tennis Bebedouro - Bebedouro": "Luan",
+    "Fast Tennis Belvedere - Belo Horizonte": "Daniel",
+    "Fast Tennis Boa Viagem - Recife": "Andressa",
+    "Fast Tennis Botafogo - Campinas": "Luan",
+    "Fast Tennis Brooklin - Sao Paulo": "Alberto",
+    "Fast Tennis Buritis - Belo Horizonte": "Andressa",
+    "Fast Tennis Buritis I - Belo Horizonte": "Andressa",
+    "Fast Tennis Buritis II - Belo Horizonte": "Andressa",
+    "Fast Tennis Buritis I e II - Belo Horizonte": "Andressa",
+    "Fast Tennis Buritis I e  II - Belo Horizonte": "Andressa",
+    "Fast Tennis Calafate - Belo Horizonte": "Luan",
+    "Fast Tennis Campo Belo - Sao Paulo": "Alberto",
+    "Fast Tennis Cantareira - Sao Paulo": "Alberto",
+    "Fast Tennis Capim Macio - Natal": "Andressa",
+    "Fast Tennis Castelo - Belo Horizonte": "Andressa",
+    "Fast Tennis Centro Sao Bernardo - Sao Bernardo do Campo": "Alberto",
+    "Fast Tennis Chacara Inglesa - Sao Paulo": "Alberto",
+    "Fast Tennis Chacara Santo Antonio - Sao Paulo": "Alberto",
+    "Fast Tennis Cidade Nova - Cidade Nova": "Andressa",
+    "Fast Tennis Contagem - Contagem": "Luan",
+    "Fast Tennis Estoril - Belo Horizonte": "Luan",
+    "Fast Tennis Estrela Sul - Juiz de Fora": "Andressa",
+    "Fast Tennis Eusebio - Eusebio": "Luan",
+    "Fast Tennis General Lecor - Sao Paulo": "Alberto",
+    "Fast Tennis Guararapes - Fortaleza": "Luan",
+    "Fast Tennis Indaiatuba - Sao Paulo": "Andressa",
+    "Fast Tennis Jardim Santo Andre - Sao Paulo": "Alberto",
+    "Fast Tennis Jardim Portal da Colina - Sorocaba": "Alberto",
+    "Fast Tennis Jardim Social - Curitiba": "Andressa",
+    "Fast Tennis Lapa - Sao Paulo": "Alberto",
+    "Fast Tennis Moema - Sao Paulo": "Alberto",
+    "Fast Tennis Monte Pascal - Sao Paulo": "Alberto",
+    "Fast Tennis Mooca - Sao Paulo": "Alberto",
+    "Fast Tennis Morada da Colina - Uberlandia": "Luan",
+    "Fast Tennis Morumbi - Sao Paulo": "Alberto",
+    "Fast Tennis Nova Alianca Sul - Ribeirao Preto": "Andressa",
+    "Fast Tennis Orla da Pampulha - Belo Horizonte": "Luan",
+    "Fast Tennis Pampulha - Belo Horizonte": "Andressa",
+    "Fast Tennis Parque Piqueri - Sao Paulo": "Alberto",
+    "Fast Tennis Ponte JK - Brasilia": "Andressa",
+    "Fast Tennis Praia do Canto - Vitoria": "Andressa",
+    "Fast Tennis Praia Grande - Praia Grande": "Luan",
+    "FastTennis Radial Leste - Sao Paulo": "Alberto",
+    "Fast Tennis Recreio - Rio de Janeiro": "Andressa",
+    "Fast Tennis Rio Claro - Sao Paulo": "Luan",
+    "Fast Tennis Salgado Filho - Curitiba": "Andressa",
+    "Fast Tennis Salto - Sao Paulo": "Andressa",
+    "Fast Tennis Santa Lucia - Belo Horizonte": "Luan",
+    "Fast Tennis Santana - Sao Paulo": "Alberto",
+    "Fast Tennis Santa Rosa -  Niteroi": "Luan",
+    "Fast Tennis Santo Amaro": "Alberto",
+    "Fast Tennis Sao Bento - Belo Horizonte": "Luan",
+    "Fast Tennis Sao Caetano - Sao Caetano do Sul": "Alberto",
+    "Fast Tennis Saude - Sao Paulo": "Alberto",
+    "Fast Tennis Saul Macedo - Belo Horizonte": "Andressa",
+    "Fast Tennis Savassi - Belo Horizonte": "Luan",
+    "Fast Tennis Sete Lagoas - Sete Lagoas": "Luan",
+    "Fast Tennis Setor Bueno - Goiania": "Andressa",
+    "Fast Tennis Taquaral - Campinas": "Luan",
+    "Fast Tennis Tirol- Natal": "Andressa",
+    "Fast Tennis Tres Poderes - Sao Paulo": "Alberto",
+    "Fast Tennis Verbo Divino - Sao Paulo": "Alberto",
+    "Fast Tennis Vila Olimpia - Sao Paulo": "Alberto",
+    "Fast Tennis Vila Sonia - Sao Paulo": "Alberto",
+    "Fast Tennis Vilhena - Rondonia": "Luan",
+    "Fast Tennis Ypiranga - Sao Paulo": "Alberto",
+    "Fast Tennis L4 Sul": "Andressa",
 }
 
-QUADRAS_INFANTIS_COBERTAS = {
-    "Fast Tennis Belvedere - Belo Horizonte",
-    "Fast Tennis Brooklin - São Paulo",
-    "Fast Tennis Cidade Nova - Cidade Nova",
-    "Fast Tennis Estrela Sul - Juiz de Fora",
-    "Fast Tennis Jardim Portal da Colina - Sorocaba",
-    "Fast Tennis Jardim Social - Curitiba",
-    "Fast Tennis Ponte JK - Brasília",
-    "Fast Tennis Praia Grande - Praia Grande",
-    "Fast Tennis Santa Lúcia - Belo Horizonte",
-    "Fast Tennis São Bento - Belo Horizonte",
-    "Fast Tennis São Caetano - São Caetano do Sul",
-    "Fast Tennis Vila Olímpia - São Paulo"
+QUADRAS_MAP = {
+    "Fast Tennis Aguas Claras - Brasilia": 3,
+    "Fast Tennis Alphaville - Sao Paulo": 1,
+    "Fast Tennis Alto da Boa Vista - Sao Paulo": 1,
+    "Fast Tennis Alto de Pinheiros - Sao Paulo": 1,
+    "Fast Tennis Alvaro Guimaraes - SBS": 1,
+    "Fast Tennis Alto do Ipiranga - Sao Paulo": 2,
+    "Fast Tennis Anhanguera - Jundiai": 1,
+    "Fast Tennis Bebedouro - Bebedouro": 2,
+    "Fast Tennis Belvedere - Belo Horizonte": 5,
+    "Fast Tennis Boa Viagem - Recife": 2,
+    "Fast Tennis Botafogo - Campinas": 1,
+    "Fast Tennis Brooklin - Sao Paulo": 2,
+    "Fast Tennis Buritis I - Belo Horizonte": 1,
+    "Fast Tennis Buritis II - Belo Horizonte": 2,
+    "Fast Tennis Buritis I e  II - Belo Horizonte": 3,
+    "Fast Tennis Buritis I e II - Belo Horizonte": 3,
+    "Fast Tennis Buritis - Belo Horizonte": 3,
+    "Fast Tennis Calafate - Belo Horizonte": 1,
+    "Fast Tennis Campo Belo - Sao Paulo": 1,
+    "Fast Tennis Cantareira - Sao Paulo": 1,
+    "Fast Tennis Capim Macio - Natal": 2,
+    "Fast Tennis Castelo - Belo Horizonte": 1,
+    "Fast Tennis Centro Sao Bernardo - Sao Bernardo do Campo": 1,
+    "Fast Tennis Chacara Inglesa - Sao Paulo": 1,
+    "Fast Tennis Chacara Santo Antonio - Sao Paulo": 2,
+    "Fast Tennis Cidade Nova - Cidade Nova": 2,
+    "Fast Tennis Contagem - Contagem": 1,
+    "Fast Tennis Estoril - Belo Horizonte": 1,
+    "Fast Tennis Estrela Sul - Juiz de Fora": 2,
+    "Fast Tennis Eusebio - Eusebio": 2,
+    "Fast Tennis General Lecor - Sao Paulo": 1,
+    "Fast Tennis Guararapes - Fortaleza": 3,
+    "Fast Tennis Indaiatuaba - Sao Paulo": 1,
+    "Fast Tennis Interlagos - Sao Paulo": 1,
+    "Fast Tennis Jardim - Sao Paulo": 1,
+    "Fast Tennis Jardim Portal da Colina - Sorocaba": 2,
+    "Fast Tennis Jardim Social - Curitiba": 2,
+    "Fast Tennis L4 Sul": 2,
+    "Fast Tennis Lapa - Sao Paulo": 4,
+    "Fast Tennis Moema - Sao Paulo": 1,
+    "Fast Tennis Monte Pascal - Sao Paulo": 1,
+    "Fast Tennis Mooca - Sao Paulo": 1,
+    "Fast Tennis Morada da Colina - Uberlandia": 1,
+    "Fast Tennis Morumbi - Sao Paulo": 1,
+    "Fast Tennis Nova Alianca Sul - Ribeirao Preto": 2,
+    "Fast Tennis Orla da Pampulha - Belo Horizonte": 4,
+    "Fast Tennis Pampulha - Belo Horizonte": 1,
+    "Fast Tennis Parque Piqueri - Sao Paulo": 1,
+    "Fast Tennis Ponte JK - Brasilia": 3,
+    "Fast Tennis Praia do Canto - Vitoria": 1,
+    "Fast Tennis Praia Grande - Praia Grande": 2,
+    "Fast Tennis Radial Leste - Sao Paulo": 1,
+    "Fast Tennis Recreio - Rio de Janeiro": 1,
+    "Fast Tennis Rio Claro - Sao Paulo": 2,
+    "Fast Tennis Salgado Filho - Curitiba": 1,
+    "Fast Tennis Salto - Sao Paulo": 1,
+    "Fast Tennis Santa Lucia - Belo Horizonte": 2,
+    "Fast Tennis Santana - Sao Paulo": 2,
+    "Fast Tennis Santa Rosa - Niteroi": 1,
+    "Fast Tennis Santo Amaro": 1,
+    "Fast Tennis Sao Bento - Belo Horizonte": 2,
+    "Fast Tennis Sao Caetano - Sao Caetano do Sul": 2,
+    "Fast Tennis Saude - Sao Paulo": 1,
+    "Fast Tennis Saul Macedo - Belo Horizonte": 1,
+    "Fast Tennis Savassi - Belo Horizonte": 1,
+    "Fast Tennis Sete Lagoas - Sete Lagoas": 2,
+    "Fast Tennis Setor Bueno - Goiania": 1,
+    "Fast Tennis Taquaral - Campinas": 1,
+    "Fast Tennis Taubate - Taubate": 1,
+    "Fast Tennis Tirol- Natal": 1,
+    "Fast Tennis Tres Poderes - Sao Paulo": 1,
+    "Fast Tennis Verbo Divino - Sao Paulo": 1,
+    "Fast Tennis Vila Olimpia - Sao Paulo": 2,
+    "Fast Tennis Vila Sonia": 1,
+    "Fast Tennis Vilhena - Rondonia": 1,
+    "Fast Tennis Ypiranga - Sao Paulo": 1,
 }
 
-# ==========================================
-# BANCO DE DADOS COMPLETO E ATUALIZADO
-# ==========================================
-df_existentes_raw = [
-    {"Status": "Operando", "Unidade": "Fast Tennis Aguas Claras - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "Trecho 3 Q 5 - Sul, Brasília - DF, 71936-500", "Quadras": 3, "Renda Média": 20740, "População": 80388, "REGIC": "Metrópole Nacional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.29},
-    {"Status": "Pausada", "Unidade": "Fast Tennis Alphaville - São Paulo", "Cidade": "Barueri", "Estado": "SP", "Endereço": "R. Vicente de Carvalho, 205 - Melville Empresarial II, Barueri - SP, 06485-360", "Quadras": 1, "Renda Média": 27400, "População": 44300, "REGIC": "Grande Metrópole", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 5", "A++": 0.27, "A+": 0.23, "B1": 0.21},
-    {"Status": "Operando", "Unidade": "Fast Tennis Alto da Boa Vista - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Adolfo Pinheiro, 810 – Santo Amaro, São Paulo/SP", "Quadras": 1, "Renda Média": 23654, "População": 85519, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.20, "A+": 0.24, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Alto de Pinheiros - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Avenida São Gualter, 1023 – Alto de Pinheiros São Paulo/SP", "Quadras": 2, "Renda Média": 23900, "População": 82500, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.23, "B1": 0.15},
-    {"Status": "Operando", "Unidade": "Fast Tennis Alto do Ipiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Engenheiro Américo de Carvalho Ramos, nº 97, Vila Gumercindo, São Paulo/SP", "Quadras": 1, "Renda Média": 19775, "População": 177000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.16, "A+": 0.20, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Álvaro Guimarães", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Álvaro Guimarães, 180 – Planalto, SBC/SP", "Quadras": 1, "Renda Média": 10500, "População": 121308, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.05, "A+": 0.09, "B1": 0.19},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Anália Franco", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Álvaro Ramos, 2459 - Quarta Parada, São Paulo - SP, 03331-001", "Quadras": 2, "Renda Média": 15852, "População": 157576, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.11, "A+": 0.17, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Anhanguera - Jundiaí", "Cidade": "Jundiaí", "Estado": "SP", "Endereço": "Rua Aurora Germano de Lemos, 228 – Vila Guarani, Jundiaí/SP", "Quadras": 1, "Renda Média": 11650, "População": 67900, "REGIC": "Capital Regional C", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.06, "A+": 0.10, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Bebedouro - Bebedouro", "Cidade": "Bebedouro", "Estado": "SP", "Endereço": "Av. Osvaldo Perrone 376 - Jardim Progresso, Bebedouro/SP", "Quadras": 2, "Renda Média": 5900, "População": 44900, "REGIC": "Centro Sub-Regional B", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.02, "A+": 0.02, "B1": 0.08},
-    {"Status": "Operando", "Unidade": "Fast Tennis Belvedere - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Professor Sylvio Barbosa, 416, bairro Belvedere, Belo Horizonte - MG", "Quadras": 5, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Boa Viagem - Recife", "Cidade": "Recife", "Estado": "PE", "Endereço": "Rua Copacabana, 279 - Boa Viagem, Recife/PE", "Quadras": 2, "Renda Média": 12214, "População": 102900, "REGIC": "Capital Regional A", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.14, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Botafogo - Campinas", "Cidade": "Campinas", "Estado": "SP", "Endereço": "Rua Culto à Ciência, 229, - Boatafogo, Campinas/SP", "Quadras": 1, "Renda Média": 12300, "População": 96574, "REGIC": "Capital Regional A", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.07, "A+": 0.13, "B1": 0.20},
-    {"Status": "Operando", "Unidade": "Fast Tennis Brooklin - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua California, 470 - Brooklin - São Paulo/SP", "Quadras": 1, "Renda Média": 29400, "População": 162400, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.30, "A+": 0.27, "B1": 0.15},
-    {"Status": "Operando", "Unidade": "Fast Tennis Buritis I - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Av. Engenheiro Carlos Goulart, 971 - Buritis - BH/MG", "Quadras": 3, "Renda Média": 16700, "População": 80900, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.10, "A+": 0.24, "B1": 0.24},
-    {"Status": "Operando", "Unidade": "Fast Tennis Calafate - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Pimentel Barbosa, nº 40, Bairro Clafate, Belo Horizonte/MG", "Quadras": 1, "Renda Média": 13100, "População": 121200, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.05, "A+": 0.20, "B1": 0.23},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Campestre - São Paulo", "Cidade": "Santo André", "Estado": "SP", "Endereço": "Rua Suíça, nº 337 e nº 345, Bairro Parque das Nações, Santo André/SP, CEP: 09210-000", "Quadras": 2, "Renda Média": 10583, "População": 128586, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.05, "A+": 0.09, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Campo Belo - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua João Álvares Soares, nº 709, Bairro Campo Belo, São Paulo/SP", "Quadras": 2, "Renda Média": 27328, "População": 117500, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.27, "A+": 0.25, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Cantareira - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Nova Cantareira 4687 - Tucuruvi, São Paulo/SP - CEP:02341-002", "Quadras": 1, "Renda Média": 11500, "População": 95500, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.06, "A+": 0.12, "B1": 0.14},
-    {"Status": "Operando", "Unidade": "Fast Tennis Capim Macio - Natal", "Cidade": "Natal", "Estado": "RN", "Endereço": "R. Valter Fernandes, 1971 - Capim Macio, Natal - RN, 59082-090", "Quadras": 2, "Renda Média": 14700, "População": 64400, "REGIC": "Capital Regional A", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.04, "A+": 0.28, "B1": 0.22},
-    {"Status": "Operando", "Unidade": "Fast Tennis Castelo - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Castelo de Alenquer, 40 – Castelo, Belo Horizonte/MG", "Quadras": 1, "Renda Média": 10500, "População": 111575, "REGIC": "Metrópole", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.13, "B1": 0.20},
-    {"Status": "Operando", "Unidade": "Fast Tennis Centro São Bernardo - São Bernardo do Campo", "Cidade": "São Bernardo do Campo", "Estado": "SP", "Endereço": "Rua João Pessoa 535 - Centro, São Bernardo do Campo/SP", "Quadras": 1, "Renda Média": 10800, "População": 164300, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.05, "A+": 0.09, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Chacará Inglesa - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Juréia, 1024 - Chácara Inglesa, São Paulo - SP, 04140-110", "Quadras": 1, "Renda Média": 21400, "População": 178712, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.18, "A+": 0.22, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Chacará Santo Antônio - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Antônio das Chagas, 1263 - Chácara Santo Antônio, São Paulo - SP, 04714-002", "Quadras": 2, "Renda Média": 25795, "População": 78250, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.24, "A+": 0.26, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Cidade Nova - Cidade Nova", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "R. Artur de Sá, 389 - União, Belo Horizonte - MG, 31170-710", "Quadras": 2, "Renda Média": 10969, "População": 123470, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.15, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Contagem - Contagem", "Cidade": "Contagem", "Estado": "MG", "Endereço": "R. Joaquim Rocha, 71 - Betania, Contagem - MG, 32017-270", "Quadras": 1, "Renda Média": 7860, "População": 73600, "REGIC": "Capital Regional B", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 1", "A++": 0.03, "A+": 0.06, "B1": 0.13},
-    {"Status": "Operando", "Unidade": "Fast Tennis Dom Pedro - Campinas", "Cidade": "Campinas", "Estado": "SP", "Endereço": "Rua Armando Strazzacappa, 470, Campinas, SP", "Quadras": 1, "Renda Média": 13935, "População": 35800, "REGIC": "Capital Regional A", "Perfil Praça": "Mista", "Tabela Praticada": "Não Decidida", "A++": 0.09, "A+": 0.16, "B1": 0.23},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Enseaba do Suá", "Cidade": "Vitória", "Estado": "ES", "Endereço": "Rua Licínio dos Santos Conte, 54, Vitória, ES", "Quadras": 2, "Renda Média": 14852, "População": 10493, "REGIC": "Metrópole", "Perfil Praça": "Comercial", "Tabela Praticada": "Não Decidida", "A++": 0.14, "A+": 0.13, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Estoril - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Geraldo Vasconcellos - 83 - Estoril, Belo Horizonte/MG", "Quadras": 1, "Renda Média": 12612, "População": 85000, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.06, "A+": 0.17, "B1": 0.20},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Estreito - Florianópolis", "Cidade": "Florianópolis", "Estado": "SC", "Endereço": "Rua Santos Saraiva 516 - Estreito, Florianópolis - SC, Brasil", "Quadras": 2, "Renda Média": 14177, "População": 86594, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.07, "A+": 0.11, "B1": 0.36},
-    {"Status": "Operando", "Unidade": "Fast Tennis Estrela Sul - Juiz de Fora", "Cidade": "Juiz de Fora", "Estado": "MG", "Endereço": "Rua Luz Interior, 402 – Estrela Sul, Juiz de Fora/MG", "Quadras": 2, "Renda Média": 10480, "População": 113000, "REGIC": "Capital Regional B", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.04, "A+": 0.12, "B1": 0.14},
-    {"Status": "Operando", "Unidade": "Fast Tennis Eusébio - Eusébio", "Cidade": "Eusébio", "Estado": "CE", "Endereço": "Av. Eusébio de Queiroz, 2552 - Centro, Eusébio - CE, 61760-000", "Quadras": 2, "Renda Média": 8515, "População": 49972, "REGIC": "Metrópole", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.04, "A+": 0.08, "B1": 0.11},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Formosa - Formosa", "Cidade": "Formosa", "Estado": "GO", "Endereço": "Rua Antônio P. Dutra, 490 - Quadra 105 - Centro, Formosa - GO, 73801-200", "Quadras": 1, "Renda Média": 7266, "População": 51392, "REGIC": "Centro Sub-Regional", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.03, "A+": 0.05, "B1": 0.10},
-    {"Status": "Operando", "Unidade": "Fast Tennis General Lecor", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Gen. Lecor, 641 - Ipiranga, São Paulo - SP, 04213-020", "Quadras": 1, "Renda Média": 12568, "População": 143312, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.08, "A+": 0.13, "B1": 0.13},
-    {"Status": "Operando", "Unidade": "Fast Tennis Guararapes - Fortaleza", "Cidade": "Fortaleza", "Estado": "CE", "Endereço": "Rua Jornalista César Magalhães, 560 – Guararapes Fortaleza/CE", "Quadras": 3, "Renda Média": 12450, "População": 54706, "REGIC": "Capital Regional A", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.16, "B1": 0.13},
-    {"Status": "Operando", "Unidade": "Fast Tennis Indaiatuba - São Paulo", "Cidade": "Indaiatuba", "Estado": "SP", "Endereço": "R. Voluntário João dos Santos, 1140 - Jardim Adriana, Indaiatuba - SP, 13330-230", "Quadras": 1, "Renda Média": 11187, "População": 53898, "REGIC": "Centro Sub-Regional", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.05, "A+": 0.10, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Interlagos - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Atlântica, 4987 - Interlagos, São Paulo - SP, 04772-005", "Quadras": 1, "Renda Média": 10475, "População": 45892, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.06, "A+": 0.09, "B1": 0.14},
-    {"Status": "Operando", "Unidade": "Fast Tennis Jardim - São Paulo", "Cidade": "Santo André", "Estado": "SP", "Endereço": "Av. Dom Pedro II, 835 - Jardim, Santo André - SP, 09120-410", "Quadras": 1, "Renda Média": 14195, "População": 128600, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.09, "A+": 0.13, "B1": 0.20},
-    {"Status": "Operando", "Unidade": "Fast Tennis Jardim Portal da Colina - Sorocaba", "Cidade": "Sorocaba", "Estado": "SP", "Endereço": "R. Paulo Antônio do Nascimento, 46 - Jardim Portal da Colina, Sorocaba - SP, 18047-400", "Quadras": 2, "Renda Média": 11900, "População": 52624, "REGIC": "Capital Regional B", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 3", "A++": 0.06, "A+": 0.11, "B1": 0.20},
-    {"Status": "Operando", "Unidade": "Fast Tennis Jardim Social - Curitiba", "Cidade": "Curitiba", "Estado": "PR", "Endereço": "Av. N. Sra. da Luz, 1359 - Jardim Social, Curitiba - PR, 82520-060", "Quadras": 2, "Renda Média": 18300, "População": 56768, "REGIC": "Metrópole", "Perfil Praça": "Mista Qualificada", "Tabela Praticada": "Tabela 3", "A++": 0.10, "A+": 0.31, "B1": 0.21},
-    {"Status": "Operando", "Unidade": "Fast Tennis Joaquim Tavóra - Fortaleza", "Cidade": "Fortaleza", "Estado": "CE", "Endereço": "Rua Marcondes Pereira S/N - Joaquim Távora, Fortaleza", "Quadras": 2, "Renda Média": 14736, "População": 101794, "REGIC": "Capital Regional A", "Perfil Praça": "Mista", "Tabela Praticada": "Não Decidida", "A++": 0.10, "A+": 0.20, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis L4 Sul - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "St. de Clubes Esportivos Sul parte C CJ. 17 Lt. 1A - Asa Sul, Brasília - DF, 70200-001", "Quadras": 2, "Renda Média": 25392, "População": 96212, "REGIC": "Metrópole Nacional", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 4", "A++": 0.24, "A+": 0.30, "B1": 0.22},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Lagoa Santa - Lagoa Santa", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Avenida Júlio Clóvis Lacerda, 520 - Luiz Toledo, Lagoa Santa - MG", "Quadras": 1, "Renda Média": 11689, "População": 32230, "REGIC": "Metrópole", "Perfil Praça": "Mista", "Tabela Praticada": "Não Decidida", "A++": 0.09, "A+": 0.11, "B1": 0.14},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Lago dos Patos - Guarulhos", "Cidade": "Guarulhos", "Estado": "SP", "Endereço": "Av. São Luíz, 692 - Vila Rosalia, Guarulhos - SP", "Quadras": 1, "Renda Média": 10373, "População": 176408, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.04, "A+": 0.09, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Lapa - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Avenida José Maria de Faria, 324 – Lapa de Baixo São Paulo/SP", "Quadras": 4, "Renda Média": 14200, "População": 107250, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.08, "A+": 0.15, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Moema - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Alameda dos Guaramomis, 1251 - Planalto Paulista, São Paulo - SP, 04076-012", "Quadras": 1, "Renda Média": 28900, "População": 143796, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.30, "A+": 0.25, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Monte Pascal - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Monte Pascal, 32 – City Lapa, São Paulo/SP", "Quadras": 1, "Renda Média": 21446, "População": 90476, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.18, "A+": 0.23, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Mooca - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Siqueira Bueno, 1000 – Belenzinho, São Paulo/SP", "Quadras": 1, "Renda Média": 13400, "População": 147000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.07, "A+": 0.15, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Morada da Colina - Uberlândia", "Cidade": "Uberlândia", "Estado": "MG", "Endereço": "Avenida Liberdade - 1176 - Uberlândia -MG", "Quadras": 1, "Renda Média": 14528, "População": 54900, "REGIC": "Capital Regional B", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.07, "A+": 0.18, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Morumbi - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Giovanni Gronchi, 2735 - Jardim Leonor, São Paulo - SP, 05658-070", "Quadras": 1, "Renda Média": 14200, "População": 165700, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.12, "A+": 0.12, "B1": 0.09},
-    {"Status": "Operando", "Unidade": "Fast Tennis Nova Aliança Sul - Ribeirão Preto", "Cidade": "Ribeirão Preto", "Estado": "SP", "Endereço": "Uberaba, 165 - Jardim Nova Alianca Sul, Ribeirão Preto - SP, Brasil", "Quadras": 2, "Renda Média": 12900, "População": 90800, "REGIC": "Capital Regional A", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 3", "A++": 0.09, "A+": 0.12, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Orla da Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Av. Otacílio Negrão de Lima 7000 - Bandeirantes, Belo Horizonte/MG - CEP: 31365-450", "Quadras": 4, "Renda Média": 9940, "População": 42149, "REGIC": "Metrópole", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.13, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Pampulha - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua José Moura Peçanha 77 - Ouro Preto, Belo Horizonte/MG - CEP: 31330-540", "Quadras": 1, "Renda Média": 11675, "População": 75076, "REGIC": "Metrópole", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 2", "A++": 0.04, "A+": 0.16, "B1": 0.22},
-    {"Status": "Operando", "Unidade": "Fast Tennis Parque Piqueri - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua José Tavares Siqueira, 519 - Parque São Jorge, São Paulo - SP, 03085-030", "Quadras": 1, "Renda Média": 12800, "População": 138700, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.08, "A+": 0.14, "B1": 0.14},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Planalto - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Afonso Mariano Fagundes, 645 - Vila da Saúde - SP", "Quadras": 1, "Renda Média": 21185, "População": 164254, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.18, "A+": 0.22, "B1": 0.19},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Ponta da Praia - Santos", "Cidade": "Santos", "Estado": "SP", "Endereço": "Rua Governador Fernando Costa, nº 565, Ponta da praia / Santos-SP", "Quadras": 1, "Renda Média": 13654, "População": 79281, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.07, "A+": 0.12, "B1": 0.23},
-    {"Status": "Operando", "Unidade": "Fast Tennis Ponte JK - Brasília", "Cidade": "Brasília", "Estado": "DF", "Endereço": "SCES Trecho 2 Beira Lago - Setor de Clubes Esportivos Sul Trecho 2 - Plano Piloto, Brasília - DF, Brasil", "Quadras": 3, "Renda Média": 25400, "População": 95617, "REGIC": "Metrópole Nacional", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 4", "A++": 0.24, "A+": 0.30, "B1": 0.22},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Portão - Curitiba", "Cidade": "Curitiba", "Estado": "PR", "Endereço": "Rua Carlos Dietzsch, 455, Curitiba, PR", "Quadras": 1, "Renda Média": 12534, "População": 107985, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.04, "A+": 0.21, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Praia do Canto - Vitória", "Cidade": "Vitória", "Estado": "ES", "Endereço": "R. José Teixeira, 191 - Praia do Canto, Vitória - ES, 29055-310", "Quadras": 1, "Renda Média": 16840, "População": 83239, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.16, "A+": 0.16, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Praia Grande - Praia Grande", "Cidade": "Praia Grande", "Estado": "SP", "Endereço": "Av. Brasil 400 - Boqueirão, Praia Grande/SP - CEP:11701-090", "Quadras": 2, "Renda Média": 8900, "População": 84400, "REGIC": "Capital Regional B", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.03, "A+": 0.06, "B1": 0.15},
-    {"Status": "Operando", "Unidade": "FastTennis Radial Leste - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Pedro Bellegarde, 127 - Tatuapé, São Paulo - SP, 03317-080", "Quadras": 1, "Renda Média": 15700, "População": 146400, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.11, "A+": 0.16, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Recreio - Rio de Janeiro", "Cidade": "Rio de Janeiro", "Estado": "RJ", "Endereço": "Praça Mozart Firmeza 35 - Recreio dos Bandeirantes, Rio de Janeiro/ RJ - CEP: 22795-365", "Quadras": 1, "Renda Média": 22000, "População": 74360, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.22, "A+": 0.19, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Rio Claro - São Paulo", "Cidade": "Rio Claro", "Estado": "SP", "Endereço": "Avenida 55 - Jardim Kennedy, Rio Claro - SP, Brasil", "Quadras": 2, "Renda Média": 7400, "População": 72800, "REGIC": "Centro Sub-Regional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.03, "A+": 0.05, "B1": 0.11},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Rio Pequeno - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Yosoji Yamaguti, 102, São Paulo, SP", "Quadras": 2, "Renda Média": 11972, "População": 150042, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.07, "A+": 0.12, "B1": 0.15},
-    {"Status": "Operando", "Unidade": "Fast Tennis Salgado Filho - Curitiba", "Cidade": "Curitiba", "Estado": "PR", "Endereço": "Av. Senador Salgado Filho 5067 - Uberaba, Curitiba/PR", "Quadras": 1, "Renda Média": 8900, "População": 64000, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.03, "A+": 0.10, "B1": 0.12},
-    {"Status": "Operando", "Unidade": "Fast Tennis Salto - São Paulo", "Cidade": "Salto", "Estado": "SP", "Endereço": "R. Floriano Peixoto, 2059 - Jardim Sontag, Salto - SP, 13322-150", "Quadras": 1, "Renda Média": 6560, "População": 54900, "REGIC": "Centro Sub-Regional A", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.01, "A+": 0.04, "B1": 0.10},
-    {"Status": "Operando", "Unidade": "Fast Tennis Santa Lúcia - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Halley 1105 - Santa Lúcia, Belo Horizonte/MG - CEP: 30360-330", "Quadras": 2, "Renda Média": 19400, "População": 88597, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.16, "A+": 0.24, "B1": 0.20},
-    {"Status": "Operando", "Unidade": "Fast Tennis Santana - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Dr. José Augusto César, 35 - Santana, São Paulo - SP, 02403-080", "Quadras": 2, "Renda Média": 17700, "População": 153100, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.13, "A+": 0.18, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis Santa Rosa - Niterói", "Cidade": "Niterói", "Estado": "RJ", "Endereço": "Rua Ver. Duque Estrada 100 - Santa Rosa, Niterói/RJ - CEP: 24240-210", "Quadras": 1, "Renda Média": 17400, "População": 178510, "REGIC": "Capital Regional A", "Perfil Praça": "Mista Qualificada", "Tabela Praticada": "Tabela 2", "A++": 0.15, "A+": 0.17, "B1": 0.26},
-    {"Status": "Operando", "Unidade": "Fast Tennis Santo Amaro", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua João Alfredo 320 - Santo Amaro, São Paulo/SP CEP: 04747-000", "Quadras": 1, "Renda Média": 21100, "População": 82400, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 4", "A++": 0.17, "A+": 0.22, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis São Bento - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Cel. Antônio García de Paiva 46 - São Bento, Belo Horizonte/MG - CEP: 30360-010", "Quadras": 2, "Renda Média": 16700, "População": 127317, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.11, "A+": 0.22, "B1": 0.19},
-    {"Status": "Operando", "Unidade": "Fast Tennis São Caetano - São Caetano do Sul", "Cidade": "São Caetano do Sul", "Estado": "SP", "Endereço": "Av. Guido Aliberti 3975 - Mauá, São Caetano do Sul/ SP - CEP: 09521-040", "Quadras": 2, "Renda Média": 10200, "População": 122900, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.04, "A+": 0.08, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Saúde - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Avenida Miguel Estefno nº 731, Saúde, São Paulo/SP", "Quadras": 1, "Renda Média": 17700, "População": 186000, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.13, "A+": 0.19, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Saul Macedo - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Rua Professor Saul Macedo,77, Belvedere, MG - 30.320-490", "Quadras": 1, "Renda Média": 23100, "População": 63400, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.22, "A+": 0.26, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Savassi - Belo Horizonte", "Cidade": "Belo Horizonte", "Estado": "MG", "Endereço": "Av. do Contorno, 6539 - Savassi, Belo Horizonte - MG, 30110-043", "Quadras": 1, "Renda Média": 19685, "População": 192365, "REGIC": "Metrópole", "Perfil Praça": "Mista Qualificada", "Tabela Praticada": "Tabela 4", "A++": 0.15, "A+": 0.27, "B1": 0.22},
-    {"Status": "Operando", "Unidade": "Fast Tennis Sete Lagoas - Sete Lagoas", "Cidade": "Sete Lagoas", "Estado": "MG", "Endereço": "Rua Paulo Frontin 459 - Centro, Sete Lagoas/MG - CEP: 35700-049", "Quadras": 2, "Renda Média": 12514, "População": 50760, "REGIC": "Capital Regional C", "Perfil Praça": "Mista", "Tabela Praticada": "Tabela 1", "A++": 0.09, "A+": 0.14, "B1": 0.12},
-    {"Status": "Operando", "Unidade": "Fast Tennis Setor Bueno - Goiânia", "Cidade": "Goiânia", "Estado": "GO", "Endereço": "R. T-48, 671 - St. Bueno, Goiânia - GO, 74210-190", "Quadras": 1, "Renda Média": 17800, "População": 94500, "REGIC": "Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.09, "A+": 0.28, "B1": 0.22},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Sinop - Sinop", "Cidade": "Sinop", "Estado": "MT", "Endereço": "Avenida Lino Pavesi, Av. Jardim de Monet, 141, Sinop - MT, 78550-178", "Quadras": 2, "Renda Média": 10243, "População": 44084, "REGIC": "Capital Regional C", "Perfil Praça": "Residencial", "Tabela Praticada": "Não Decidida", "A++": 0.05, "A+": 0.05, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Sumaré - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Capital Federal, 260, São Paulo, SP", "Quadras": 1, "Renda Média": 26098, "População": 184563, "REGIC": "Grande Metrópole", "Perfil Praça": "Mista Qualificada", "Tabela Praticada": "Tabela 5", "A++": 0.25, "A+": 0.25, "B1": 0.18},
-    {"Status": "Operando", "Unidade": "Fast Tennis Taquaral - Campinas", "Cidade": "Campinas", "Estado": "SP", "Endereço": "R. Fernão Lopes, 1110 - Taquaral, Campinas - SP, 13087-051", "Quadras": 1, "Renda Média": 12738, "População": 40203, "REGIC": "Capital Regional A", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.08, "A+": 0.14, "B1": 0.20},
-    {"Status": "Operando", "Unidade": "Fast Tennis Taubaté - Taubaté", "Cidade": "Taubaté", "Estado": "SP", "Endereço": "Av. Jorge Salim Mutran, 270 - Esplanada Independência, Taubaté - SP, 12040-870", "Quadras": 1, "Renda Média": 9874, "População": 69113, "REGIC": "Capital Regional B", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 3", "A++": 0.05, "A+": 0.09, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Tirol- Natal", "Cidade": "Natal", "Estado": "RN", "Endereço": "Av. Afonso Pena 863 - Tirol, Natal/RN - CEP: 59020-100", "Quadras": 1, "Renda Média": 15400, "População": 72800, "REGIC": "Capital Regional A", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 2", "A++": 0.08, "A+": 0.23, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Três Poderes - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Hugo Cacuri, 175 - Instituto de Previdencia, São Paulo - SP, 05578-030", "Quadras": 1, "Renda Média": 18100, "População": 587000, "REGIC": "Grande Metrópole", "Perfil Praça": "Comercial", "Tabela Praticada": "Tabela 4", "A++": 0.19, "A+": 0.18, "B1": 0.17},
-    {"Status": "Operando", "Unidade": "Fast Tennis Verbo Divino - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Verbo Divino, 797 - Granja Julieta, São Paulo - SP, 04719-001", "Quadras": 1, "Renda Média": 24800, "População": 77600, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.22, "A+": 0.16, "B1": 0.18},
-    {"Status": "Em Implantação", "Unidade": "Fast Tennis Vicente Rao - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua do Níquel, 126, São Paulo, SP", "Quadras": 1, "Renda Média": 27427, "População": 118185, "REGIC": "Grande Metrópole", "Perfil Praça": "Mista Qualificada", "Tabela Praticada": "Não Decidida", "A++": 0.27, "A+": 0.25, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Vila Olímpia - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Av. Santo Amaro, 1860 - Vila Olímpia, São Paulo - SP, 04506-002", "Quadras": 1, "Renda Média": 30900, "População": 160900, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.33, "A+": 0.27, "B1": 0.15},
-    {"Status": "Operando", "Unidade": "Fast Tennis Vila Sônia", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "R. Domingos Olímpio, 227 - Vila Sonia, São Paulo - SP, 05625-060", "Quadras": 1, "Renda Média": 17315, "População": 115968, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.14, "A+": 0.17, "B1": 0.16},
-    {"Status": "Operando", "Unidade": "Fast Tennis Vilhena - Rondônia", "Cidade": "Vilhena", "Estado": "RO", "Endereço": "Av. Rio de Janeiro, 1023 - Novo Tempo, Vilhena - RO, Brasil", "Quadras": 1, "Renda Média": 6100, "População": 42800, "REGIC": "Centro Sub-Regional", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 1", "A++": 0.03, "A+": 0.03, "B1": 0.08},
-    {"Status": "Operando", "Unidade": "Fast Tennis Ypiranga - São Paulo", "Cidade": "São Paulo", "Estado": "SP", "Endereço": "Rua Azira Assad Jafet, 22 - Ipiranga, São Paulo - SP, Brasil", "Quadras": 1, "Renda Média": 15457, "População": 119952, "REGIC": "Grande Metrópole", "Perfil Praça": "Residencial", "Tabela Praticada": "Tabela 5", "A++": 0.10, "A+": 0.17, "B1": 0.16}
-]
+ORDEM_MESES_MAP = {
+    "abril": 4,
+    "maio": 5,
+    "junho": 6,
+    "julho": 7,
+    "agosto": 8,
+    "setembro": 9,
+    "outubro": 10,
+    "novembro": 11,
+    "dezembro": 12,
+    "atual": 99,
+}
 
-df_existentes = []
-for item in df_existentes_raw:
-    u_nome = item["Unidade"]
-    if u_nome in QUADRAS_INFANTIS_COBERTAS:
-        item["Cobertura"] = "Quadra Adulta + Quadra Infantil Coberta"
-    elif u_nome in QUADRAS_ADULTAS_COBERTAS:
-        item["Cobertura"] = "Quadra Adulta Coberta"
+def normalizar_texto(texto):
+    txt = unicodedata.normalize("NFD", str(texto)).encode("ascii", "ignore").decode("utf-8")
+    txt = txt.replace("\t", " ").replace("\n", " ").replace("-", " ").replace("fasttennis", "fast tennis")
+    return " ".join(txt.lower().split())
+
+def formatar_nome_mes(nome_aba):
+    txt = nome_aba.replace("Mix de Produtos", "").replace("Mix", "").strip()
+    return txt if txt else "Atual"
+
+def obter_ordem_mes(rotulo_mes):
+    norm = normalizar_texto(rotulo_mes)
+    for m_key, val_ord in ORDEM_MESES_MAP.items():
+        if m_key in norm:
+            return val_ord
+    return 50
+
+VARIACOES_OFICIAIS = {
+    # 1x Plus
+    "aulas em grupo 1x na semana plus": "Aulas em Grupo 1x na Semana Plus",
+    "aula em grupo 1x na semana plus": "Aulas em Grupo 1x na Semana Plus",
+    "aula em grupo 1x por semana plus": "Aulas em Grupo 1x na Semana Plus",
+    "aula em grupo 1x na semana plus temporada especial": "Aulas em Grupo 1x na Semana Plus",
+    "aulas em grupo 1x por semana plus": "Aulas em Grupo 1x na Semana Plus",
+
+    # 2x Plus
+    "aulas em grupo 2x na semana plus": "Aulas em Grupo 2x na Semana Plus",
+    "aula em grupo 2x na semana plus": "Aulas em Grupo 2x na Semana Plus",
+    "aula em grupo 2x por semana plus": "Aulas em Grupo 2x na Semana Plus",
+    "aulas em grupo 2x por semana plus": "Aulas em Grupo 2x na Semana Plus",
+
+    # 3x Plus
+    "aula em grupo 3x por semana plus": "Aulas em Grupo 3x na Semana Plus",
+    "aulas em grupo 3x na semana plus": "Aulas em Grupo 3x na Semana Plus",
+
+    # 1x Smart
+    "aulas em grupo 1x na semana smart": "Aulas em Grupo 1x na Semana Smart",
+    "aula em grupo 1x por semana smart": "Aulas em Grupo 1x na Semana Smart",
+    "aula em grupo 1x na semana smart": "Aulas em Grupo 1x na Semana Smart",
+    "aula em grupo 1x na semana smart temporada especial": "Aulas em Grupo 1x na Semana Smart",
+    "aulas em grupo 1x por semana smart": "Aulas em Grupo 1x na Semana Smart",
+
+    # 2x Smart
+    "aulas em grupo 2x na semana smart": "Aulas em Grupo 2x na Semana Smart",
+    "aula em grupo 2x por semana smart": "Aulas em Grupo 2x na Semana Smart",
+    "aula em grupo 2x na semana smart": "Aulas em Grupo 2x na Semana Smart",
+    "aulas em grupo 2x por semana smart": "Aulas em Grupo 2x na Semana Smart",
+
+    # 3x Smart
+    "aula em grupo 3x por semana smart": "Aulas em Grupo 3x na Semana Smart",
+    "aulas em grupo 3x na semana smart": "Aulas em Grupo 3x na Semana Smart",
+
+    # KIDS 1x
+    "aulas em grupo kids 1x na semana": "Aulas em Grupo KIDS 1X na semana",
+    "aula em grupo 1x por semana kids": "Aulas em Grupo KIDS 1X na semana",
+    "aula kids em grupo 1x na semana": "Aulas em Grupo KIDS 1X na semana",
+    "aulas em grupo kids 1x por semana": "Aulas em Grupo KIDS 1X na semana",
+
+    # KIDS 2x
+    "aulas em grupo kids 2x na semana": "Aulas em Grupo KIDS 2X na semana",
+    "aula em grupo 2x por semana kids": "Aulas em Grupo KIDS 2X na semana",
+    "aula kids em grupo 2x na semana": "Aulas em Grupo KIDS 2X na semana",
+    "aulas em grupo kids 2x por semana": "Aulas em Grupo KIDS 2X na semana",
+    "aula em grupo 2x por semana smart kids": "Aulas em Grupo KIDS 2X na semana",
+
+    # KIDS 3x
+    "aula em grupo 3x por semana kids": "Aulas em Grupo KIDS 3X na semana",
+    "aulas em grupo kids 3x na semana": "Aulas em Grupo KIDS 3X na semana",
+
+    # Dupla
+    "aula em dupla 1x semana": "Aula Em Dupla 1x semana",
+    "aula em dupla 1x por semana plus": "Aula Em Dupla 1x semana",
+
+    # Individual
+    "aula individual 1x semana": "Aula Individual 1x semana",
+    "aula individual 1x por semana": "Aula Individual 1x semana",
+    "aula individual 1x na semana": "Aula Individual 1x semana",
+    "aula individual 1x por semana plus": "Aula Individual 1x semana",
+
+    # Locacao Recorrente
+    "locacao recorrente 2 x semana (8 mes)": "Locacao Recorrente",
+    "locacao recorrente 4 locacoes no mes": "Locacao Recorrente",
+    "locacao plus para cliente 1 hora por semana": "Locacao Recorrente",
+    "locacao recorrente 1 x semana (4 mes)": "Locacao Recorrente",
+    "locacao recorrente 1 hora por semana": "Locacao Recorrente",
+    "locacao recorrente 2 horas por semana": "Locacao Recorrente",
+    "locacao recorrente 1x por semana (4 mes)": "Locacao Recorrente",
+    "locacao recorrente 1x na semana (4xmes)": "Locacao Recorrente",
+
+    # Bolsista / Familia / Equipe
+    "bolsista": "Bolsista + familia franqueado",
+    "bolsista / smart aula em grupo 1x por semana": "Bolsista + familia franqueado",
+    "equipe propria plus aula em grupo 2x por semana": "Bolsista + familia franqueado",
+    "familia de franqueado": "Bolsista + familia franqueado",
+    "familia do franqueado": "Bolsista + familia franqueado",
+    "plano bolsista": "Bolsista + familia franqueado",
+
+    # Infinite
+    "plano infinite": "Infinite",
+    "aulas em grupo 6x na semana infinite": "Infinite",
+    "infinite aulas em grupo 6x por semana": "Infinite",
+}
+
+def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
+    p_norm = normalizar_texto(plano_raw)
+
+    if mapa_excel and p_norm in mapa_excel:
+        return mapa_excel[p_norm]
+
+    if p_norm in VARIACOES_OFICIAIS:
+        return VARIACOES_OFICIAIS[p_norm]
+
+    for var_key, cat_val in VARIACOES_OFICIAIS.items():
+        if var_key in p_norm or p_norm in var_key:
+            return cat_val
+
+    return None
+
+def categorizar_plano_v1(plano_raw, mapa_excel=None):
+    cat_ampliada = categorizar_plano_ampliado(plano_raw, mapa_excel)
+    # INCLUSÃO DOS PLANOS 3X NA SEMANA NO MIX PADRÃO CONFORME DIRETRIZ 2026
+    if cat_ampliada in [
+        "Infinite",
+        "Locacao Recorrente",
+        "Bolsista + familia franqueado",
+    ]:
+        return None
+    return cat_ampliada
+
+def formatar_kpi_cor(valor_num):
+    if valor_num is None or pd.isna(valor_num): return "N/A", "#64748B"
+    try:
+        val_float = float(valor_num)
+        pct_val = val_float * 100 if abs(val_float) <= 10.0 else val_float
+        cor = "#DC2626" if pct_val < 80.0 else ("#D97706" if pct_val < 90.0 else "#16A34A")
+        return f"{pct_val:.1f}%", cor
+    except Exception:
+        return str(valor_num), "#64748B"
+
+def formatar_nao_fechamento_cor(valor_num):
+    if valor_num is None or pd.isna(valor_num): return "N/A", "#64748B"
+    try:
+        val_float = float(valor_num)
+        pct_val = val_float * 100 if abs(val_float) <= 10.0 else val_float
+        cor = "#DC2626" if pct_val > 15.0 else ("#D97706" if pct_val >= 10.0 else "#16A34A")
+        return f"{pct_val:.1f}%", cor
+    except Exception:
+        return str(valor_num), "#64748B"
+
+def obter_dados_unidade(nome_unidade):
+    u_norm = normalizar_texto(nome_unidade)
+    gr = "Nao Cadastrado"
+    for k, v in COORDENADORES_MAP.items():
+        k_norm = normalizar_texto(k)
+        if k_norm in u_norm or u_norm in k_norm or ("buritis" in u_norm and "buritis" in k_norm):
+            gr = v
+            break
+    quadras = "N/A"
+    for k, v in QUADRAS_MAP.items():
+        k_norm = normalizar_texto(k)
+        if k_norm in u_norm or u_norm in k_norm or ("buritis" in u_norm and "buritis" in k_norm):
+            quadras = str(v)
+            break
+    return gr, quadras
+
+def obter_comparacao_tkm(tabela_str, tkm_unidade):
+    digits = re.findall(r"\d+", str(tabela_str))
+    if not digits: return ""
+    num_tabela = int(digits[0])
+    tkm_rede = TKM_REDE_REFERENCIA.get(num_tabela)
+    if not tkm_rede or not isinstance(tkm_unidade, (int, float)) or tkm_unidade == 0:
+        return ""
+    diff_pct = ((tkm_unidade - tkm_rede) / tkm_rede) * 100
+    sinal = "+" if diff_pct >= 0 else ""
+    return f"({sinal}{diff_pct:.1f}% em relacao a Tabela {num_tabela} Rede - R$ {tkm_rede})"
+
+def obter_observacao_excel(row_data):
+    for col_name in row_data.index:
+        col_clean = normalizar_texto(col_name)
+        if any(term in col_clean for term in ["observac", "sugestao", "recomendac", "comentario"]):
+            val = str(row_data[col_name]).strip()
+            if val and val.lower() != "nan" and val.lower() != "none":
+                return val
+    return None
+
+def desenhar_grafico_barras_altair(df_input, col_x, col_y, tipo_formato="numero"):
+    df_sorted = df_input.sort_values(by="Ordem").reset_index(drop=True)
+    
+    if tipo_formato == "moeda":
+        df_sorted["Rotulo"] = df_sorted[col_y].apply(lambda x: f"R$ {x:,.2f}")
     else:
-        item["Cobertura"] = "Não coberta / Descoberta"
-    df_existentes.append(item)
+        df_sorted["Rotulo"] = df_sorted[col_y].apply(lambda x: f"{x:,.0f}")
 
-df_base_unidades = pd.DataFrame(df_existentes)
-
-LISTA_GERAL_UNIDADES = ["Selecione..."] + sorted(df_base_unidades["Unidade"].tolist())
-
-df_operando_m3 = df_base_unidades[
-    (df_base_unidades["Status"] == "Operando") & 
-    (df_base_unidades["Tabela Praticada"] != "Não Decidida")
-]
-LISTA_OPERANDO_M3 = ["Selecione..."] + sorted(df_operando_m3["Unidade"].tolist())
-
-TABELAS_OFICIAIS = {
-    1: {"tkm": 338, "plus": 329},
-    2: {"tkm": 411, "plus": 399},
-    3: {"tkm": 470, "plus": 499},
-    4: {"tkm": 570, "plus": 599},
-    5: {"tkm": 690, "plus": 710}
-}
-
-# ==============================================================================
-# MÓDULO 1: SIMULADOR PRECIFICAÇÃO INICIAL
-# ==============================================================================
-if modulo_selecionado == "Simulador Precificação Inicial":
-    
-    def limpar_campos_m1():
-        st.session_state["val_estado"] = "Selecione..."
-        st.session_state["val_cidade"] = ""
-        st.session_state["val_populacao"] = 0
-        st.session_state["val_classe_a_mais_mais"] = 0.0
-        st.session_state["val_classe_a_mais"] = 0.0
-        st.session_state["val_classe_b1"] = 0.0
-        st.session_state["val_renda_media"] = 0.0
-        st.session_state["val_tempo_proxima"] = 0
-        st.session_state["val_sem_unidade_proxima"] = False
-        st.session_state["val_sem_concorrente"] = False
-        st.session_state["val_media_mercado"] = 0.0
-        st.session_state["val_viabilidade_bp"] = "Aguardando simulação..."
-        st.session_state["val_m1_consideracoes"] = ""
-
-    if "val_estado" not in st.session_state:
-        limpar_campos_m1()
-
-    st.title("Simulador Estratégico de Precificação Inicial")
-    st.markdown("Diagnóstico e recomendação para novos pontos comerciais não cadastrados na base.")
-    st.markdown("---")
-    
-    st.subheader("1. Dados da Área de Estudo e Mercado")
-    st.markdown("<p style='font-size:13.5px; color:#5A6578; margin-bottom:15px;'>Insira os dados geográficos e mercadológicos extraídos da ferramenta oficial.</p>", unsafe_allow_html=True)
-
-    with st.container(border=True):
-        col1, col2, col3 = st.columns([1, 1, 1.1])
-        
-        with col1:
-            st.markdown("""
-                <div style="border-right: 1px solid #E2E8F0; padding-right: 15px;">
-                    <p style="color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;">Localização & Demografia</p>
-                </div>
-            """, unsafe_allow_html=True)
-            lista_estados = ["Selecione...", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
-            estado = st.selectbox("Estado (UF):", lista_estados, key="val_estado")
-            cidade = st.text_input("Cidade:", placeholder="Digite a cidade...", key="val_cidade")
-            populacao = st.number_input("População Total (Área):", min_value=0, step=1, key="val_populacao")
-            renda_media = st.number_input("Renda Média (R$):", min_value=0.0, step=100.0, key="val_renda_media")
-
-        with col2:
-            st.markdown("""
-                <div style="border-right: 1px solid #E2E8F0; padding-right: 15px;">
-                    <p style="color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;">Mercado & Concorrência Local</p>
-                </div>
-            """, unsafe_allow_html=True)
-            tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_tempo_proxima")
-            sem_unidade_proxima = st.checkbox("Não possui unidades Fast próximas no raio", key="val_sem_unidade_proxima")
-            
-            st.write("")
-            media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_media_mercado")
-            sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_sem_concorrente")
-
-        with col3:
-            st.markdown("<p style='color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;'>Proporção de Classes de Renda</p>", unsafe_allow_html=True)
-            classe_a_mais_mais = st.number_input("% Classe A++:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais_mais")
-            classe_a_mais = st.number_input("% Classe A+:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_a_mais")
-            classe_b1 = st.number_input("% Classe B1:", min_value=0.0, max_value=1.0, step=0.01, key="val_classe_b1")
-
-            soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
-            calculo_alvo = int(soma_percentuais * populacao)
-            
-            st.markdown(f"""
-                <div class="card-destaque" style="margin-top:8px;">
-                    <span style="color:#6C757D; font-size:10.5px; font-weight:700; text-transform:uppercase;">🎯 Público Alvo (B1 + A+ + A++)</span><br>
-                    <b style="font-size:18px; color:#022D8A;">{calculo_alvo:,} hab.</b> 
-                    <small style="color:#6C757D;">({soma_percentuais*100:.1f}% da área)</small>
-                </div>
-            """, unsafe_allow_html=True)
-
-        st.write("")
-        col_btn1, col_btn2 = st.columns([5, 1.2])
-        with col_btn2:
-            st.button("Limpar Avaliação", on_click=limpar_campos_m1, use_container_width=True)
-
-    dados_preenchidos = (
-        estado != "Selecione..." and cidade.strip() != "" and renda_media > 0 and (sem_concorrente or media_mercado > 0)
+    base = alt.Chart(df_sorted).encode(
+        x=alt.X(f"{col_x}:N", sort=df_sorted[col_x].tolist(), axis=alt.Axis(title=None, labelAngle=0, labelFontWeight="bold")),
+        y=alt.Y(f"{col_y}:Q", axis=None)
     )
 
-    if not dados_preenchidos:
-        st.info("Aguardando dados. Por favor, preencha as informações para gerar o diagnóstico.")
-    else:
-        if estado == "SP":
-            if renda_media <= 8500.00: tab_min, tab_max = 1, 2
-            elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
-            elif renda_media <= 16000.00: tab_min, tab_max = 3, 4
-            elif renda_media <= 22000.00: tab_min, tab_max = 4, 5
-            else: tab_min, tab_max = 5, 5
-        else:
-            if renda_media <= 9500.00: tab_min, tab_max = 1, 2
-            elif renda_media <= 13500.00: tab_min, tab_max = 2, 3
-            elif renda_media <= 18000.00: tab_min, tab_max = 3, 4
-            elif renda_media <= 25000.00: tab_min, tab_max = 4, 5
-            else: tab_min, tab_max = 5, 5
-
-        if populacao < 40000:
-            tab_sugerida_preliminar = tab_min
-        else:
-            if calculo_alvo >= 25000: tab_sugerida_preliminar = tab_max
-            else:
-                if soma_percentuais >= 0.40: tab_sugerida_preliminar = tab_max
-                elif soma_percentuais >= 0.30: tab_sugerida_preliminar = int(np.round((tab_min + tab_max) / 2))
-                else: tab_sugerida_preliminar = tab_min
-
-        precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
-        tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
-
-        preco_preliminar = precos[tab_sugerida_preliminar]
-
-        if not sem_concorrente and media_mercado > 0:
-            diferenca_percentual_preliminar = (preco_preliminar - media_mercado) / media_mercado
-            if diferenca_percentual_preliminar > 0.30:
-                tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
-            else:
-                tabela_sugerida = tab_sugerida_preliminar
-        else:
-            tabela_sugerida = tab_sugerida_preliminar
-
-        preco_sugerido = precos[tabela_sugerida]
-        tkm_sugerido = tkms[tabela_sugerida]
-
-        aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrescrever tabela baseada no comportamento de mercado)", key="chk_excecao")
-
-        st.write("")
-        if not aplicar_excecao:
-            st.markdown(f"""
-                <div class="tabela-sugerida-box">
-                    <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
-                    <h2>Tabela {tabela_sugerida}</h2>
-                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
-                </div>
-            """, unsafe_allow_html=True)
-            tabela_final = tabela_sugerida
-            justificativa_excecao = ""
-        else:
-            st.markdown(f"""
-                <div class="tabela-sugerida-reduzida">
-                    <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Referência):</p>
-                    <h2>Tabela {tabela_sugerida} <span style="font-size:13px; font-weight:normal; color:#4A5568;">(R$ {preco_sugerido},00 | TKM: R$ {tkm_sugerido},00)</span></h2>
-                </div>
-            """, unsafe_allow_html=True)
-
-            col_exc1, col_exc2 = st.columns([1, 2])
-            with col_exc1:
-                tabela_escolhida = st.selectbox("Selecione a Tabela Definitiva:", [1, 2, 3, 4, 5], index=tabela_sugerida - 1, key="val_tabela_excecao")
-            with col_exc2:
-                justificativa_excecao = st.text_input("Justificativa Estratégica (Obrigatório):", placeholder="Ex: Concorrência com forte posicionamento premium...", key="val_justificativa_excecao")
-
-            tabela_final = tabela_escolhida
-            st.markdown(f"""
-                <div class="tabela-excecao-box">
-                    <p style="margin:0; font-size:12px; color:#00A807; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO DEFINITIVA)</p>
-                    <h2>Tabela {tabela_final}</h2>
-                    <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkms[tabela_final]},00</b></p>
-                    {f'<p style="margin:8px 0 0 0; font-size:13px; color:#00A807;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
-                </div>
-            """, unsafe_allow_html=True)
-
-        preco_ref = precos[tabela_final]
-        tkm_ref = tkms[tabela_final]
-
-        if not sem_unidade_proxima and tempo_proxima <= 15 and tempo_proxima > 0:
-            st.markdown('<div class="alerta-fino-executivo">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
-
-        st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
-        
-        if sem_concorrente or media_mercado == 0:
-            diag, status, rec = "Mercado Exclusivo", "Sem Concorrência Direta", "Oportunidade de captura total da demanda sem pressão concorrencial direta."
-            txt_dif = "Sem Concorrente Directo"
-        else:
-            dif_mercado = (preco_ref - media_mercado) / media_mercado
-            txt_dif = f"{dif_mercado*100:+.1f}%"
-            if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-            elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-            else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
-
-        st.write("")
-        st.markdown("##### Relatório de Viabilidade de Mercado")
-        cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
-        with cv1: 
-            st.markdown(f"""
-                <div class="box-relatorio-equilibrado">
-                    <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
-                    <span style="font-size:12px; color:#022D8A; margin-top:3px;"><b>Diretriz:</b> {diag}</span>
-                    <span style="font-size:12px; color:#022D8A; margin-top:1px;"><b>Status:</b> {status}</span>
-                </div>
-            """, unsafe_allow_html=True)
-        with cv2: 
-            st.markdown(f"""
-                <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 3px solid #D69E2E;">
-                    <span style="color:#975A16; font-size:10px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
-                    <span style="font-size:12px; color:#2D3748; margin-top:3px; line-height:1.3;">{rec}</span>
-                </div>
-            """, unsafe_allow_html=True)
-        with cv3:
-            st.markdown(f"""
-                <div class="box-relatorio-equilibrado">
-                    <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                    <span style="font-size:20px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
-                </div>
-            """, unsafe_allow_html=True)
-
-        st.write("")
-        with st.container(border=True):
-            st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
-            cbp1, cb2 = st.columns(2)
-            with cbp1:
-                st.metric(label="TKM para o BP:", value=f"R$ {tkm_ref},00")
-            with cb2:
-                viabilidade_bp = st.selectbox(
-                    "Status de rentabilidade projetada:", 
-                    ["Aguardando simulação...", "Viável (Alinhado às Diretrizes do BP)", "Inviável (Payback projetado superior a 60 meses)", "Margem Líquida abaixo de R$ 10.000,00", "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", "Margem Líquida acima de R$ 20.000,00"],
-                    key="val_viabilidade_bp"
-                )
-
-        st.write("")
-        st.markdown("##### Unidades da Rede com Perfil Similar")
-        
-        linhas_similares_pdf = ""
-        barras_html_pdf = ""
-        if not df_base_unidades.empty:
-            alvo_sp = (estado == "SP")
-            df_filtrado = df_base_unidades[df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp].copy()
-            
-            if not df_filtrado.empty:
-                r_ref = renda_media if renda_media > 0 else 1
-                p_ref = populacao if populacao > 0 else 1
-                a2_ref = classe_a_mais_mais if classe_a_mais_mais > 0 else 1
-                a1_ref = classe_a_mais if classe_a_mais > 0 else 1
-                b1_ref = classe_b1 if classe_b1 > 0 else 1
-                
-                df_filtrado['Distancia'] = np.sqrt(
-                    ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
-                    ((df_filtrado['População'] - populacao) / p_ref)**2 +
-                    ((df_filtrado['A++'] - classe_a_mais_mais) / a2_ref)**2 +
-                    ((df_filtrado['A+'] - classe_a_mais) / a1_ref)**2 +
-                    ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
-                )
-                
-                df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
-                    lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
-                )
-                
-                df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
-                
-                st.dataframe(
-                    df_ranking[["Unidade", "Cidade", "Renda Média", "População", "Tabela Praticada", "% Similaridade"]], 
-                    use_container_width=True, 
-                    hide_index=True
-                )
-
-                for _, r in df_ranking.iterrows():
-                    linhas_similares_pdf += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
-
-                st.write("")
-                st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
-                
-                colunas_grafico = [
-                    {"nome": "Ponto Simulado", "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
-                ]
-                for _, r_u in df_ranking.iterrows():
-                    colunas_grafico.append({
-                        "nome": str(r_u["Unidade"]).replace("Fast Tennis ", "").strip(),
-                        "b1": float(r_u["B1"]) * 100,
-                        "ap": float(r_u["A+"]) * 100,
-                        "app": float(r_u["A++"]) * 100,
-                        "sim": r_u["% Similaridade"]
-                    })
-
-                barras_html_tela = ""
-                rotulos_html_tela = ""
-
-                for item in colunas_grafico:
-                    v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
-                    v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app))
-
-                    h_outras = int((v_outras / 100.0) * 280)
-                    h_b1 = int((v_b1 / 100.0) * 280)
-                    h_ap = int((v_ap / 100.0) * 280)
-                    h_app = int((v_app / 100.0) * 280)
-
-                    txt_b1 = f"{v_b1:.0f}%" if v_b1 >= 1 else ""
-                    txt_ap = f"{v_ap:.0f}%" if v_ap >= 1 else ""
-                    txt_app = f"{v_app:.0f}%" if v_app >= 1 else ""
-
-                    barras_html_tela += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
-                    rotulos_html_tela += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
-                    
-                    barras_html_pdf += f"""
-                    <div style="flex:1; text-align:center; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
-                        <span style="font-size:10px; background:#022D8A !important; color:#0DF205 !important; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px; -webkit-print-color-adjust: exact !important;">{item['sim']}</span>
-                        <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9 !important; border-radius:4px; padding:4px; border: 1px solid #CBD5E0; -webkit-print-color-adjust: exact !important;">
-                            <div style="height:{h_outras*0.5}px; width:26px; background-color:#CBD5E0 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important;"></div>
-                            <div style="height:{h_b1*0.5}px; width:26px; background-color:#053CD8 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_b1*0.5}px; overflow:hidden;">{txt_b1}</div>
-                            <div style="height:{h_ap*0.5}px; width:26px; background-color:#0DF205 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#022D8A; font-size:8px; font-weight:bold; line-height:{h_ap*0.5}px; overflow:hidden;">{txt_ap}</div>
-                            <div style="height:{h_app*0.5}px; width:26px; background-color:#15803D !important; border-radius:2px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_app*0.5}px; overflow:hidden;">{txt_app}</div>
-                        </div>
-                        <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
-                    </div>
-                    """
-
-                st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela}</div><div class="rotulos-container-fixed">{rotulos_html_tela}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
-
-        st.write("")
-        st.markdown("##### Considerações Finais do Comitê")
-        consideracoes_m1 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto comercial, concorrência ou viabilidade...", height=80, key="val_m1_consideracoes")
-
-        st.write("")
-        st.markdown("---")
-        with st.expander("📄 Exportar Relatório Executivo Oficial (PDF)", expanded=False):
-            modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
-            
-            html_relatorio = f"""
-            <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
-                <style>
-                    @media print {{
-                        body {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                        .no-print {{ display: none !important; }}
-                    }}
-                    * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                </style>
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A !important; padding:15px 20px; border-radius:6px; color:#ffffff !important;">
-                    <div>
-                        <h2 style="color:#ffffff !important; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
-                        <small style="color:#0DF205 !important; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
-                    </div>
-                    <span style="font-size:12px; color:#E2E8F0 !important;">Precificação Inicial</span>
-                </div>
-                <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
-                
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px;">
-                    <tr style="background-color:#F8F9FA !important;">
-                        <td style="padding:8px; border:1px solid #ddd;"><b>Praça / Cidade:</b> {cidade} - {estado}</td>
-                        <td style="padding:8px; border:1px solid #ddd;"><b>População Total:</b> {populacao:,} hab.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média Região:</b> R$ {renda_media:,.2f}</td>
-                        <td style="padding:8px; border:1px solid #ddd;"><b>Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
-                    </tr>
-                </table>
-
-                <div style="background-color:#F0FDF4 !important; border-left:6px solid #00A807 !important; padding:15px; border-radius:4px; margin-bottom:15px; border:1px solid #BBF7D0;">
-                    <h3 style="margin:0; color:#022D8A !important; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
-                    <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
-                    <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
-                </div>
-
-                <div style="font-size:12px; line-height:1.5; margin-bottom:15px; background-color:#FFFFFF !important; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
-                    <p style="margin:0 0 4px 0;"><b>Diretriz Regional:</b> {diag}</p>
-                    <p style="margin:0 0 4px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
-                    <p style="margin:0 0 4px 0;"><b>Recomendação:</b> {rec}</p>
-                    <p style="margin:0 0 0 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
-                </div>
-
-                <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
-                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;">
-                    <thead>
-                        <tr style="background-color:#F8F9FA !important; text-align:left; color:#022D8A !important;">
-                            <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
-                            <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
-                            <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {linhas_similares_pdf}
-                    </tbody>
-                </table>
-
-                <div style="page-break-inside: avoid !important;">
-                    <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
-                    <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA !important; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:10px; -webkit-print-color-adjust: exact !important;">
-                        {barras_html_pdf}
-                    </div>
-                    <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
-                        <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
-                        <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
-                        <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
-                        <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
-                    </div>
-                </div>
-
-                {f'''
-                <div style="background-color:#FFFDF5 !important; border-left:4px solid #D69E2E !important; padding:12px; border-radius:4px; margin-bottom:15px; page-break-inside: avoid !important;">
-                    <h4 style="margin:0 0 4px 0; color:#975A16 !important; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
-                    <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m1}</p>
-                </div>
-                ''' if consideracoes_m1 else ''}
-
-                <button onclick="window.print()" class="no-print" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
-            </div>
-            """
-            st.components.v1.html(html_relatorio, height=720, scrolling=True)
-
-# ==============================================================================
-# MÓDULO 2: SIMULADOR PONTOS PRÉ-DEFINIDOS (COM CABEÇALHO COMPLETO NO PDF)
-# ==============================================================================
-elif modulo_selecionado == "Simulador Pontos Pré-Definidos":
-    st.title("Simulador Estratégico para Pontos Pré-Definidos")
-    st.markdown("Simulação e definição de tabela para unidades mapeadas com dados demográficos e endereço cadastrados.")
-    st.markdown("---")
-
-    def limpar_campos_m1_pre():
-        st.session_state["val_pre_unidade"] = "Selecione..."
-        st.session_state["val_pre_tempo_proxima"] = 0
-        st.session_state["val_pre_sem_unidade_proxima"] = False
-        st.session_state["val_pre_sem_concorrente"] = False
-        st.session_state["val_pre_media_mercado"] = 0.0
-        st.session_state["val_pre_viabilidade_bp"] = "Aguardando simulação..."
-        st.session_state["val_m2_consideracoes"] = ""
-
-    if "val_pre_unidade" not in st.session_state:
-        limpar_campos_m1_pre()
-
-    st.subheader("1. Seleção da Unidade Mapeada")
-    nome_u_pre = st.selectbox("Selecione a Unidade Mapeada:", LISTA_GERAL_UNIDADES, key="val_pre_unidade")
-
-    if nome_u_pre != "Selecione...":
-        dados_u_pre = df_base_unidades[df_base_unidades["Unidade"] == nome_u_pre].iloc[0]
-        
-        estado = dados_u_pre["Estado"]
-        cidade = dados_u_pre["Cidade"]
-        endereco_pre = dados_u_pre["Endereço"]
-        num_quadras_pre = int(dados_u_pre["Quadras"])
-        cobertura_pre = dados_u_pre["Cobertura"]
-        populacao = int(dados_u_pre["População"])
-        renda_media = float(dados_u_pre["Renda Média"])
-        regic = dados_u_pre["REGIC"]
-        tipo_praca = dados_u_pre["Perfil Praça"]
-        status_u = dados_u_pre["Status"]
-
-        classe_a_mais_mais = float(dados_u_pre["A++"])
-        classe_a_mais = float(dados_u_pre["A+"])
-        classe_b1 = float(dados_u_pre["B1"])
-        
-        soma_percentuais = classe_b1 + classe_a_mais + classe_a_mais_mais
-        calculo_alvo = int(soma_percentuais * populacao)
-
-        html_card_unidade = f"""
-            <div class="card-resumo-unidade">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <h3 style="margin:0; color:#022D8A;">{dados_u_pre['Unidade']} ({cidade} - {estado})</h3>
-                    <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:12px;">Status: {status_u} | Quadras: {num_quadras_pre}</span>
-                </div>
-                <p style="margin:0 0 6px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_pre}</p>
-                <p style="margin:0 0 10px 0; font-size:13px; color:#00A807;"><b>Infraestrutura de Quadra:</b> {cobertura_pre}</p>
-                <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
-                    <div><b>População Área:</b> {populacao:,} hab.</div>
-                    <div><b>Renda Média:</b> R$ {renda_media:,.2f}</div>
-                    <div><b>🎯 Público Alvo (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</div>
-                </div>
-            </div>
-        """
-        st.markdown(html_card_unidade, unsafe_allow_html=True)
-
-        st.subheader("2. Concorrência & Entorno Local")
-        with st.container(border=True):
-            col_pre1, col_pre2 = st.columns(2)
-            with col_pre1:
-                tempo_proxima = st.number_input("Tempo até unidade próxima (min):", min_value=0, step=1, key="val_pre_tempo_proxima")
-                sem_unidade_proxima = st.checkbox("Não possui unidades Fast próximas no raio", key="val_pre_sem_unidade_proxima")
-            with col_pre2:
-                media_mercado = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="val_pre_media_mercado")
-                sem_concorrente = st.checkbox("Não possui concorrentes na área de estudo", key="val_pre_sem_concorrente")
-
-            st.write("")
-            col_btn_p1, col_btn_p2 = st.columns([5, 1.2])
-            with col_btn_p2:
-                st.button("Limpar Avaliação", on_click=limpar_campos_m1_pre, use_container_width=True)
-
-        if sem_concorrente or media_mercado > 0:
-            if estado == "SP":
-                if renda_media <= 8500.00: tab_min, tab_max = 1, 2
-                elif renda_media <= 11500.00: tab_min, tab_max = 2, 3
-                elif renda_media <= 16000.00: tab_min, tab_max = 3, 4
-                elif renda_media <= 22000.00: tab_min, tab_max = 4, 5
-                else: tab_min, tab_max = 5, 5
-            else:
-                if renda_media <= 9500.00: tab_min, tab_max = 1, 2
-                elif renda_media <= 13500.00: tab_min, tab_max = 2, 3
-                elif renda_media <= 18000.00: tab_min, tab_max = 3, 4
-                elif renda_media <= 25000.00: tab_min, tab_max = 4, 5
-                else: tab_min, tab_max = 5, 5
-
-            if populacao < 40000:
-                tab_sugerida_preliminar = tab_min
-            else:
-                if calculo_alvo >= 25000: tab_sugerida_preliminar = tab_max
-                else:
-                    if soma_percentuais >= 0.40: tab_sugerida_preliminar = tab_max
-                    elif soma_percentuais >= 0.30: tab_sugerida_preliminar = int(np.round((tab_min + tab_max) / 2))
-                    else: tab_sugerida_preliminar = tab_min
-
-            precos = {1: 329, 2: 399, 3: 499, 4: 599, 5: 710}
-            tkms = {1: 338, 2: 411, 3: 470, 4: 580, 5: 690}
-
-            preco_preliminar_pre = precos[tab_sugerida_preliminar]
-
-            if not sem_concorrente and media_mercado > 0:
-                diferenca_percentual_pre = (preco_preliminar_pre - media_mercado) / media_mercado
-                if diferenca_percentual_pre > 0.30:
-                    tabela_sugerida = max(tab_min, tab_sugerida_preliminar - 1)
-                else:
-                    tabela_sugerida = tab_sugerida_preliminar
-            else:
-                tabela_sugerida = tab_sugerida_preliminar
-
-            preco_sugerido = precos[tabela_sugerida]
-            tkm_sugerido = tkms[tabela_sugerida]
-
-            aplicar_excecao = st.checkbox("Ativar exceção técnica (Sobrescrever tabela baseada no comportamento de mercado)", key="chk_excecao_pre")
-
-            st.write("")
-            if not aplicar_excecao:
-                st.markdown(f"""
-                    <div class="tabela-sugerida-box">
-                        <p style="margin:0; font-size:12px; color:#6C757D; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA SUGERIDA PELO ALGORITMO (PERFIL ECONÔMICO)</p>
-                        <h2>Tabela {tabela_sugerida}</h2>
-                        <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_sugerido},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkm_sugerido},00</b></p>
-                    </div>
-                """, unsafe_allow_html=True)
-                tabela_final = tabela_sugerida
-                justificativa_excecao = ""
-            else:
-                st.markdown(f"""
-                    <div class="tabela-sugerida-reduzida">
-                        <p style="margin:0; font-size:11px; color:#6C757D; font-weight:bold; text-transform:uppercase;">Tabela Sugerida pelo Algoritmo (Referência):</p>
-                        <h2>Tabela {tabela_sugerida} <span style="font-size:13px; font-weight:normal; color:#4A5568;">(R$ {preco_sugerido},00 | TKM: R$ {tkm_sugerido},00)</span></h2>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                col_exc1, col_exc2 = st.columns([1, 2])
-                with col_exc1:
-                    tabela_escolhida = st.selectbox("Selecione a Tabela Definitiva:", [1, 2, 3, 4, 5], index=tabela_sugerida - 1, key="val_tabela_excecao_pre")
-                with col_exc2:
-                    justificativa_excecao = st.text_input("Justificativa Estratégica (Obrigatório):", placeholder="Ex: Concorrência com forte posicionamento premium...", key="val_justificativa_excecao_pre")
-
-                tabela_final = tabela_escolhida
-                st.markdown(f"""
-                    <div class="tabela-excecao-box">
-                        <p style="margin:0; font-size:12px; color:#00A807; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">TABELA ESCOLHIDA POR DECISÃO TÉCNICA (EXCEÇÃO DEFINITIVA)</p>
-                        <h2>Tabela {tabela_final}</h2>
-                        <p style="margin:0; font-size:15px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {precos[tabela_final]},00</b> &nbsp;|&nbsp; TKM: <b>R$ {tkms[tabela_final]},00</b></p>
-                        {f'<p style="margin:8px 0 0 0; font-size:13px; color:#00A807;"><b>Justificativa:</b> {justificativa_excecao}</p>' if justificativa_excecao else ''}
-                    </div>
-                """, unsafe_allow_html=True)
-
-            preco_ref = precos[tabela_final]
-            tkm_ref = tkms[tabela_final]
-
-            if not sem_unidade_proxima and tempo_proxima <= 15 and tempo_proxima > 0:
-                st.markdown('<div class="alerta-fino-executivo">Proteção de Rede: Existe unidade próxima em raio inferior a 15 min. Verificar canibalização.</div>', unsafe_allow_html=True)
-
-            st.markdown(f"<small style='color:#6C757D;'>Intervalo de tabelas calculadas (Algoritmo):</small> <b>Tab {tab_min} a {tab_max}</b>", unsafe_allow_html=True)
-            
-            if sem_concorrente or media_mercado == 0:
-                diag, status, rec = "Mercado Exclusivo", "Sem Concorrência Direta", "Oportunidade de captura total da demanda sem pressão concorrencial direta."
-                txt_dif = "Sem Concorrente Directo"
-                txt_conc_pdf = "Sem Concorrente Directo"
-            else:
-                dif_mercado = (preco_ref - media_mercado) / media_mercado
-                txt_dif = f"{dif_mercado*100:+.1f}%"
-                txt_conc_pdf = f"R$ {media_mercado:,.2f}"
-                if dif_mercado < -0.10: diag, status, rec = "Abaixo da Média Regional", "Preço Abaixo do Mercado", "Avaliar margem para reposicionamento."
-                elif dif_mercado <= 0.20: diag, status, rec = "Compatível com o Cenário", "Preço Aderente", "Posicionamento adequado ao mercado."
-                else: diag, status, rec = "Muito Acima da Concorrência", "Descolamento de Preço", "Revisão mandatória em Comitê."
-
-            st.write("")
-            st.markdown("##### Relatório de Viabilidade de Mercado")
-            cv1, cv2, cv3 = st.columns([1.2, 1.2, 1])
-            with cv1: 
-                st.markdown(f"""
-                    <div class="box-relatorio-equilibrado">
-                        <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIRETRIZ E STATUS</span>
-                        <span style="font-size:12px; color:#022D8A; margin-top:3px;"><b>Diretriz:</b> {diag}</span>
-                        <span style="font-size:12px; color:#022D8A; margin-top:1px;"><b>Status:</b> {status}</span>
-                    </div>
-                """, unsafe_allow_html=True)
-            with cv2: 
-                st.markdown(f"""
-                    <div class="box-relatorio-equilibrado" style="background-color: #FFFDF5; border-left: 3px solid #D69E2E;">
-                        <span style="color:#975A16; font-size:10px; font-weight:700; text-transform:uppercase;">RECOMENDAÇÃO</span>
-                        <span style="font-size:12px; color:#2D3748; margin-top:3px; line-height:1.3;">{rec}</span>
-                    </div>
-                """, unsafe_allow_html=True)
-            with cv3:
-                st.markdown(f"""
-                    <div class="box-relatorio-equilibrado">
-                        <span style="color:#6C757D; font-size:10px; font-weight:700; text-transform:uppercase;">DIFERENÇA MERCADO X FAST</span>
-                        <span style="font-size:20px; font-weight:800; color:#022D8A; margin-top:2px;">{txt_dif}</span>
-                    </div>
-                """, unsafe_allow_html=True)
-
-            st.write("")
-            with st.container(border=True):
-                st.markdown("##### Viabilidade de Rentabilidade do Business Plan (BP)")
-                cbp1, cb2 = st.columns(2)
-                with cbp1:
-                    st.metric(label="TKM para o BP:", value=f"R$ {tkm_ref},00")
-                with cb2:
-                    viabilidade_bp = st.selectbox(
-                        "Status de rentabilidade projetada:", 
-                        ["Aguardando simulação...", "Viável (Alinhado às Diretrizes do BP)", "Inviável (Payback projetado superior a 60 meses)", "Margem Líquida abaixo de R$ 10.000,00", "Margem Líquida entre R$ 10.000,00 e R$ 15.000,00", "Margem Líquida entre R$ 15.000,00 e R$ 20.000,00", "Margem Líquida acima de R$ 20.000,00"],
-                        key="val_pre_viabilidade_bp"
-                    )
-
-            st.write("")
-            st.markdown("##### Unidades da Rede com Perfil Similar")
-            
-            linhas_similares_pdf_pre = ""
-            barras_html_pdf_pre = ""
-            if not df_base_unidades.empty:
-                alvo_sp = (estado == "SP")
-                df_filtrado = df_base_unidades[(df_base_unidades['Estado'].apply(lambda x: x == "SP") == alvo_sp) & (df_base_unidades['Unidade'] != nome_u_pre)].copy()
-                
-                if not df_filtrado.empty:
-                    r_ref = renda_media if renda_media > 0 else 1
-                    p_ref = populacao if populacao > 0 else 1
-                    a2_ref = classe_a_mais_mais if classe_a_mais_mais > 0 else 1
-                    a1_ref = classe_a_mais if classe_a_mais > 0 else 1
-                    b1_ref = classe_b1 if classe_b1 > 0 else 1
-                    
-                    df_filtrado['Distancia'] = np.sqrt(
-                        ((df_filtrado['Renda Média'] - renda_media) / r_ref)**2 + 
-                        ((df_filtrado['População'] - populacao) / p_ref)**2 +
-                        ((df_filtrado['A++'] - classe_a_mais_mais) / a2_ref)**2 +
-                        ((df_filtrado['A+'] - classe_a_mais) / a1_ref)**2 +
-                        ((df_filtrado['B1'] - classe_b1) / b1_ref)**2
-                    )
-                    
-                    df_filtrado['% Similaridade'] = df_filtrado['Distancia'].apply(
-                        lambda d: f"{max(0.0, min(100.0, (1 - d/(d+1.5)) * 100)):.1f}%"
-                    )
-                    
-                    df_ranking = df_filtrado.sort_values(by='Distancia').head(3)
-                    
-                    st.dataframe(
-                        df_ranking[["Unidade", "Cidade", "Renda Média", "População", "Tabela Praticada", "% Similaridade"]], 
-                        use_container_width=True, 
-                        hide_index=True
-                    )
-
-                    for _, r in df_ranking.iterrows():
-                        linhas_similares_pdf_pre += f"<tr><td style='padding:6px; border:1px solid #ddd;'><b>{r['Unidade']}</b></td><td style='padding:6px; border:1px solid #ddd;'>{r['Tabela Praticada']}</td><td style='padding:6px; border:1px solid #ddd;'>{r['% Similaridade']}</td></tr>"
-
-                    st.write("")
-                    st.markdown("**Perfil da Renda e Distribuição Social (Soma de 100% da População)**")
-                    
-                    colunas_grafico_pre = [
-                        {"nome": str(dados_u_pre['Unidade']).replace("Fast Tennis ", "").strip(), "b1": classe_b1 * 100, "ap": classe_a_mais * 100, "app": classe_a_mais_mais * 100, "sim": "Alvo"}
-                    ]
-                    for _, r_u in df_ranking.iterrows():
-                        colunas_grafico_pre.append({
-                            "nome": str(r_u["Unidade"]).replace("Fast Tennis ", "").strip(),
-                            "b1": float(r_u["B1"]) * 100,
-                            "ap": float(r_u["A+"]) * 100,
-                            "app": float(r_u["A++"]) * 100,
-                            "sim": r_u["% Similaridade"]
-                        })
-
-                    barras_html_tela_pre = ""
-                    rotulos_html_tela_pre = ""
-
-                    for item in colunas_grafico_pre:
-                        v_b1, v_ap, v_app = item["b1"], item["ap"], item["app"]
-                        v_outras = max(0.0, 100.0 - (v_b1 + v_ap + v_app))
-
-                        h_outras = int((v_outras / 100.0) * 280)
-                        h_b1 = int((v_b1 / 100.0) * 280)
-                        h_ap = int((v_ap / 100.0) * 280)
-                        h_app = int((v_app / 100.0) * 280)
-
-                        txt_b1 = f"{v_b1:.0f}%" if v_b1 >= 1 else ""
-                        txt_ap = f"{v_ap:.0f}%" if v_ap >= 1 else ""
-                        txt_app = f"{v_app:.0f}%" if v_app >= 1 else ""
-
-                        barras_html_tela_pre += f"""<div class="barra-coluna-wrapper"><span class="tag-similaridade">{item['sim']}</span><div class="barra-empilhada-box"><div class="segmento-classe" style="height:{h_outras}px; background-color:#CBD5E0;" title="Outras (C/D/E): {v_outras:.1f}%"></div><div class="segmento-classe" style="height:{h_b1}px; background-color:#053CD8;" title="Classe B1: {v_b1:.1f}%">{txt_b1}</div><div class="segmento-classe" style="height:{h_ap}px; background-color:#0DF205; color:#022D8A;" title="Classe A+: {v_ap:.1f}%">{txt_ap}</div><div class="segmento-classe" style="height:{h_app}px; background-color:#15803D;" title="Classe A++: {v_app:.1f}%">{txt_app}</div></div></div>"""
-                        rotulos_html_tela_pre += f"""<div class="rotulo-unidade-box">{item['nome']}</div>"""
-                        
-                        barras_html_pdf_pre += f"""
-                        <div style="flex:1; text-align:center; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
-                            <span style="font-size:10px; background:#022D8A !important; color:#0DF205 !important; font-weight:bold; padding:2px 6px; border-radius:8px; display:inline-block; margin-bottom:4px; -webkit-print-color-adjust: exact !important;">{item['sim']}</span>
-                            <div style="height:140px; display:flex; flex-direction:column-reverse; justify-content:flex-start; align-items:center; background:#F1F5F9 !important; border-radius:4px; padding:4px; border: 1px solid #CBD5E0; -webkit-print-color-adjust: exact !important;">
-                                <div style="height:{h_outras*0.5}px; width:26px; background-color:#CBD5E0 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important;"></div>
-                                <div style="height:{h_b1*0.5}px; width:26px; background-color:#053CD8 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_b1*0.5}px; overflow:hidden;">{txt_b1}</div>
-                                <div style="height:{h_ap*0.5}px; width:26px; background-color:#0DF205 !important; border-radius:2px; margin-bottom:1px; -webkit-print-color-adjust: exact !important; color:#022D8A; font-size:8px; font-weight:bold; line-height:{h_ap*0.5}px; overflow:hidden;">{txt_ap}</div>
-                                <div style="height:{h_app*0.5}px; width:26px; background-color:#15803D !important; border-radius:2px; -webkit-print-color-adjust: exact !important; color:#ffffff; font-size:8px; font-weight:bold; line-height:{h_app*0.5}px; overflow:hidden;">{txt_app}</div>
-                            </div>
-                            <span style="font-size:10px; color:#2D3748; font-weight:bold; display:block; margin-top:6px;">{item['nome']}</span>
-                        </div>
-                        """
-
-                    st.markdown(f"""<div class="grafico-executivo-container"><p style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#022D8A; text-transform:uppercase;">Perfil da Renda e Distribuição Social (Soma de 100% da População)</p><div class="linha-grafico-flex">{barras_html_tela_pre}</div><div class="rotulos-container-fixed">{rotulos_html_tela_pre}</div><div style="text-align:center; font-size:11px; color:#6C757D; margin-top:15px;"><span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span></div></div>""", unsafe_allow_html=True)
-
-            st.write("")
-            st.markdown("##### Considerações Finais do Comitê")
-            consideracoes_m2 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários sobre o ponto pré-definido...", height=80, key="val_m2_consideracoes")
-
-            st.write("")
-            st.markdown("---")
-            with st.expander("📄 Exportar Relatório Oficial (PDF)", expanded=False):
-                modo_definicao = f"Exceção Técnica ({justificativa_excecao})" if aplicar_excecao else "Análise de Dados do Algoritmo"
-                
-                # CABEÇALHO COMPLETO NO PDF DO MÓDULO 2
-                html_relatorio = f"""
-                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
-                    <style>
-                        @media print {{
-                            body {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                            .no-print {{ display: none !important; }}
-                        }}
-                        * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                    </style>
-
-                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A !important; padding:15px 20px; border-radius:6px; color:#ffffff !important;">
-                        <div>
-                            <h2 style="color:#ffffff !important; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Precificação Estratégica</h2>
-                            <small style="color:#0DF205 !important; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
-                        </div>
-                        <span style="font-size:12px; color:#E2E8F0 !important;">Pontos Pré-Definidos</span>
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
-                    
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 15px;">
-                        <tr style="background-color:#F8F9FA !important;">
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Unidade / Praça:</b> {dados_u_pre['Unidade']} ({cidade} - {estado})</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>População Área de Estudo:</b> {populacao:,} hab.</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Endereço Cadastrado:</b> {endereco_pre}</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Público-Alvo Calculado (B1+A+ A++):</b> {calculo_alvo:,} hab. ({soma_percentuais*100:.1f}%)</td>
-                        </tr>
-                        <tr style="background-color:#F8F9FA !important;">
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Estrutura / Quadras:</b> {num_quadras_pre} quadra(s) | {cobertura_pre}</td>
-                            <td style="padding:8px; border:1px solid #ddd;"><b>Renda Média Região:</b> R$ {renda_media:,.2f}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:8px; border:1px solid #ddd;" colspan="2"><b>Preço Médio Concorrentes Locais (Plus 1x):</b> {txt_conc_pdf}</td>
-                        </tr>
-                    </table>
-
-                    <div style="background-color:#F0FDF4 !important; border-left:6px solid #00A807 !important; padding:15px; border-radius:4px; margin-bottom:15px; border:1px solid #BBF7D0;">
-                        <h3 style="margin:0; color:#022D8A !important; font-size:18px;">TABELA SELECIONADA: TABELA {tabela_final}</h3>
-                        <p style="margin:4px 0 0 0; font-size:13px; color:#2D3748;">Preço Ref. Plano Plus 1x: <b>R$ {preco_ref},00</b> | TKM: <b>R$ {tkm_ref},00</b></p>
-                        <p style="margin:4px 0 0 0; font-size:11px; color:#6C757D;">Modo de Definição: <b>{modo_definicao}</b></p>
-                    </div>
-
-                    <div style="font-size:12px; line-height:1.5; margin-bottom:15px; background-color:#FFFFFF !important; padding:12px; border:1px solid #E2E8F0; border-radius:4px;">
-                        <p style="margin:0 0 4px 0;"><b>Diretriz Regional:</b> {diag}</p>
-                        <p style="margin:0 0 4px 0;"><b>Status de Mercado:</b> {status} (Diferença: {txt_dif})</p>
-                        <p style="margin:0 0 4px 0;"><b>Recomendação:</b> {rec}</p>
-                        <p style="margin:0 0 0 0;"><b>Status de Rentabilidade Projetada (BP):</b> {viabilidade_bp}</p>
-                    </div>
-
-                    <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Unidades da Rede com Perfil Similar:</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;">
-                        <thead>
-                            <tr style="background-color:#F8F9FA !important; text-align:left; color:#022D8A !important;">
-                                <th style="padding:6px; border:1px solid #ddd;">Unidade</th>
-                                <th style="padding:6px; border:1px solid #ddd;">Tabela Praticada</th>
-                                <th style="padding:6px; border:1px solid #ddd;">% Similaridade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {linhas_similares_pdf_pre}
-                        </tbody>
-                    </table>
-
-                    <div style="page-break-inside: avoid !important;">
-                        <h4 style="color:#022D8A !important; margin:12px 0 6px 0; font-size:12px; text-transform:uppercase;">Distribuição Social de Renda (%) e Similaridade:</h4>
-                        <div style="display:flex; justify-content:space-around; align-items:flex-end; background:#F8F9FA !important; padding:15px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:10px; -webkit-print-color-adjust: exact !important;">
-                            {barras_html_pdf_pre}
-                        </div>
-                        <div style="text-align:center; font-size:10px; color:#6C757D; margin-bottom:15px;">
-                            <span style="color:#CBD5E0; font-weight:bold;">■ Outras Classes (C/D/E)</span> &nbsp;&nbsp;
-                            <span style="color:#053CD8; font-weight:bold;">■ Classe B1 (Base)</span> &nbsp;&nbsp; 
-                            <span style="color:#0DF205; font-weight:bold;">■ Classe A+ (Elevada)</span> &nbsp;&nbsp; 
-                            <span style="color:#15803D; font-weight:bold;">■ Classe A++ (Mais Elevada)</span>
-                        </div>
-                    </div>
-
-                    {f'''
-                    <div style="background-color:#FFFDF5 !important; border-left:4px solid #D69E2E !important; padding:12px; border-radius:4px; margin-bottom:15px; page-break-inside: avoid !important;">
-                        <h4 style="margin:0 0 4px 0; color:#975A16 !important; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
-                        <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m2}</p>
-                    </div>
-                    ''' if consideracoes_m2 else ''}
-
-                    <button onclick="window.print()" class="no-print" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
-                </div>
-                """
-                st.components.v1.html(html_relatorio, height=720, scrolling=True)
-    else:
-        st.info("Aguardando a seleção de uma unidade mapeada acima para realizar a simulação.")
-
-# ==============================================================================
-# MÓDULO 3: REAVALIAÇÃO E REPRECIFICAÇÃO (EXCLUSIVAMENTE UNIDADES EM OPERAÇÃO)
-# ==============================================================================
-else:
-    st.title("Reavaliação Estratégica de Unidades Ativas")
-    st.markdown("Matriz de diagnóstico com carregamento automático dos dados demográficos e de mercado da unidade.")
-    st.markdown("---")
-
-    def limpar_campos_m2():
-        st.session_state["m2_nome_u"] = "Selecione..."
-        st.session_state["val_m3_consideracoes"] = ""
-        for key in ["m2_mix", "m2_cres_base", "m2_vendedor"]:
-            st.session_state[key] = "Selecione..."
-        for key in ["m2_tkm_real", "m2_objecoes", "m2_conv_u", "m2_lead_u", "m2_churn_u", "m2_conc_p", "m2_ll_manual", "m2_fat_manual"]:
-            st.session_state[key] = 0.0
-
-    if "m2_nome_u" not in st.session_state:
-        st.session_state["m2_med_conv"] = 0.0
-        st.session_state["m2_med_lead"] = 0.0
-        st.session_state["m2_med_churn"] = 0.0
-        limpar_campos_m2()
-
-    st.subheader("1. Parâmetros Médios Atuais da Rede")
-    with st.container(border=True):
-        mr1, mr2, mr3 = st.columns(3)
-        with mr1:
-            media_rede_conversao = st.number_input("% Conversão Médio Rede:", min_value=0.0, step=0.5, key="m2_med_conv")
-        with mr2:
-            media_rede_lead_conect = st.number_input("% Lead Conectado Médio Rede:", min_value=0.0, step=0.5, key="m2_med_lead")
-        with mr3:
-            media_rede_churn = st.number_input("% Churn Médio Rede:", min_value=0.0, step=0.1, key="m2_med_churn")
-
-    st.write("")
+    bars = base.mark_bar(color=HEX_BLUE, cornerRadiusTopLeft=4, cornerRadiusTopRight=4, size=38)
     
-    st.subheader("2. Seleção de Unidade & Diagnóstico Operacional")
-    nome_unidade_sel = st.selectbox("Selecione a Unidade para Reavaliação:", LISTA_OPERANDO_M3, key="m2_nome_u")
+    text = base.mark_text(
+        align='center',
+        baseline='bottom',
+        dy=-5,
+        fontWeight='bold',
+        color=HEX_NAVY,
+        fontSize=12
+    ).encode(
+        text='Rotulo:N'
+    )
 
-    if nome_unidade_sel != "Selecione...":
-        dados_u = df_operando_m3[df_operando_m3["Unidade"] == nome_unidade_sel].iloc[0]
-        
-        tab_praticada_str = str(dados_u["Tabela Praticada"])
+    chart = (bars + text).properties(height=210).configure_view(strokeWidth=0)
+    st.altair_chart(chart, use_container_width=True)
+
+# ==============================================================================
+# 4. GESTÃO DE DADOS & PERSISTÊNCIA VIA GITHUB API (COM CACHE)
+# ==============================================================================
+GITHUB_TOKEN = st.secrets.get("GITHUB_TOKEN", "").strip()
+REPO_NAME = st.secrets.get("REPO_NAME", "").strip()
+EXCEL_FILE = "Planejamento Reajuste.xlsx"
+DECISOES_FILE = "decisoes_comite.json"
+
+def obter_cliente_github():
+    if not GITHUB_TOKEN: return None
+    return Github(auth=Auth.Token(GITHUB_TOKEN))
+
+@st.cache_data(ttl=10)
+def carregar_decisoes_salvas():
+    if not GITHUB_TOKEN or not REPO_NAME: return {}
+    try:
+        g = obter_cliente_github()
+        repo = g.get_repo(REPO_NAME)
+        file_content = repo.get_contents(DECISOES_FILE)
+        return json.loads(file_content.decoded_content.decode("utf-8"))
+    except Exception:
+        return {}
+
+def salvar_decisoes_github(novas_decisoes):
+    if not GITHUB_TOKEN or not REPO_NAME:
+        st.error("Secrets GITHUB_TOKEN ou REPO_NAME nao configuradas.")
+        return False
+    try:
+        g = obter_cliente_github()
+        repo = g.get_repo(REPO_NAME)
+        content = json.dumps(novas_decisoes, indent=4, ensure_ascii=False)
         try:
-            tab_praticada_u = int(tab_praticada_str.replace("Tabela", "").strip())
-        except ValueError:
-            tab_praticada_u = 3
-        
-        populacao_u = int(dados_u["População"])
-        renda_u = float(dados_u["Renda Média"])
-        num_quadras_re = int(dados_u["Quadras"])
-        cobertura_re = dados_u["Cobertura"]
-        endereco_re = dados_u["Endereço"]
-        pct_alvo_u = float(dados_u["A++"] + dados_u["A+"] + dados_u["B1"])
-        num_alvo_u = int(pct_alvo_u * populacao_u)
-        
-        info_tab = TABELAS_OFICIAIS.get(tab_praticada_u, {"tkm": 470, "plus": 499})
-        tkm_esperado_rede = info_tab["tkm"]
-        preco_plus_esperado = info_tab["plus"]
+            file_content = repo.get_contents(DECISOES_FILE)
+            repo.update_file(path=DECISOES_FILE, message="Atualizacao de decisoes do Comite Fast Tennis", content=content, sha=file_content.sha)
+        except GithubException:
+            repo.create_file(path=DECISOES_FILE, message="Inicializacao de decisoes do Comite Fast Tennis", content=content)
+        st.cache_data.clear()
+        return True
+    except Exception as e:
+        st.error(f"Erro na comunicacao com o repositorio: {e}")
+        return False
 
-        unidade_no_relatorio = nome_unidade_sel in FINANCEIRO_REALIZADO
+def formatar_data_br(data_val):
+    if pd.isna(data_val): return "N/A"
+    try:
+        dt = pd.to_datetime(data_val, dayfirst=True, errors="coerce")
+        return str(data_val) if pd.isna(dt) else dt.strftime("%d/%m/%Y")
+    except:
+        return str(data_val)
 
-        if unidade_no_relatorio:
-            dados_fin = FINANCEIRO_REALIZADO[nome_unidade_sel]
-            atingimento_fat_val = dados_fin["fat"]
-            atingimento_ll_val = dados_fin["ll"]
+def calcular_meses_operacao(data_val):
+    try:
+        dt = pd.to_datetime(data_val, dayfirst=True, errors="coerce")
+        if pd.isna(dt): return 0
+        hoje = datetime.now()
+        return max(0, (hoje.year - dt.year) * 12 + (hoje.month - dt.month))
+    except:
+        return 0
+
+def sanitizar_recomendacao(texto):
+    if not isinstance(texto, str) or not texto.strip(): return "Sem sugestao previa cadastrada."
+    txt = " ".join(texto.strip().split()).replace(" ( ", " (").replace(" ,", ",").replace(" ,)", ")")
+    txt = txt.replace("clienets", "clientes").replace("atabela", "a tabela")
+    return txt[0].upper() + txt[1:]
+
+def converter_para_numero(valor):
+    if pd.isna(valor): return 0.0
+    val_str = str(valor).replace("R$", "").replace("r$", "").replace(" ", "").replace(".", "").replace(",", ".").strip()
+    try:
+        return float(val_str)
+    except:
+        return 0.0
+
+@st.cache_data(ttl=300)
+def carregar_dados_planilha(caminho_ou_file):
+    try:
+        xls = pd.ExcelFile(caminho_ou_file)
+        
+        df_m = pd.read_excel(xls, sheet_name=0)
+        df_m.columns = df_m.columns.astype(str).str.strip()
+
+        dict_mix_historico = {}
+        for nome_aba in xls.sheet_names:
+            col_aba_norm = normalizar_texto(nome_aba)
+            if "mix" in col_aba_norm:
+                if any(m in col_aba_norm for m in ["janeiro", "fevereiro", "marco"]):
+                    continue
+                df_temp = pd.read_excel(xls, sheet_name=nome_aba)
+                df_temp.columns = df_temp.columns.astype(str).str.strip()
+                dict_mix_historico[nome_aba] = df_temp
+
+        if not dict_mix_historico:
+            if "Mix de Produtos Atual" in xls.sheet_names:
+                df_temp = pd.read_excel(xls, sheet_name="Mix de Produtos Atual")
+                df_temp.columns = df_temp.columns.astype(str).str.strip()
+                dict_mix_historico["Mix de Produtos Atual"] = df_temp
+            else:
+                dict_mix_historico["Mix de Produtos Atual"] = pd.DataFrame()
+
+        df_ft = pd.read_excel(xls, sheet_name="Faturamento e LL") if "Faturamento e LL" in xls.sheet_names else None
+        if df_ft is not None: df_ft.columns = df_ft.columns.astype(str).str.strip()
+
+        mapa_excel = {}
+        if "Variacoes de Plano" in xls.sheet_names:
+            df_vp = pd.read_excel(xls, sheet_name="Variacoes de Plano")
+            if len(df_vp.columns) >= 2:
+                col_de = df_vp.columns[0]
+                col_para = df_vp.columns[1]
+                for _, r_vp in df_vp.iterrows():
+                    val_de = normalizar_texto(r_vp[col_de])
+                    val_para = str(r_vp[col_para]).strip()
+                    if val_de and val_para:
+                        mapa_excel[val_de] = val_para
+
+        tabela_precos = TABELA_PRECOS_FALLBACK.copy()
+        if "Tabelas Praticadas" in xls.sheet_names:
+            df_tp = pd.read_excel(xls, sheet_name="Tabelas Praticadas")
+            if not df_tp.empty and len(df_tp.columns) >= 2:
+                col_plano = df_tp.columns[0]
+                for _, row_tp in df_tp.iterrows():
+                    plano_cat = str(row_tp[col_plano]).strip()
+                    if plano_cat in tabela_precos:
+                        for idx_t in range(1, 6):
+                            col_t_found = next((c for c in df_tp.columns if f"tabela {idx_t}" in normalizar_texto(c) or f"tabela{idx_t}" in normalizar_texto(c)), None)
+                            if col_t_found:
+                                tabela_precos[plano_cat][idx_t] = converter_para_numero(row_tp[col_t_found])
+
+        return df_m, dict_mix_historico, df_ft, mapa_excel, tabela_precos
+    except Exception as e:
+        st.error(f"Erro no carregamento das abas: {e}")
+        return None, {}, None, {}, TABELA_PRECOS_FALLBACK
+
+st.sidebar.markdown("### Base de Dados")
+uploaded_file = st.sidebar.file_uploader("Carregar Planilha (.xlsx)", type=["xlsx", "csv"])
+
+if uploaded_file is not None:
+    df, dict_mix_historico, df_fat, mapa_excel_carregado, tabela_precos_carregada = carregar_dados_planilha(uploaded_file)
+else:
+    df, dict_mix_historico, df_fat, mapa_excel_carregado, tabela_precos_carregada = carregar_dados_planilha(EXCEL_FILE)
+
+if df is None: st.stop()
+
+col_unidade_df = next((c for c in df.columns if normalizar_texto(c) in ["unidade", "unidades"]), df.columns[0])
+col_tabela_df = next((c for c in df.columns if "tabela praticada" in normalizar_texto(c) or "tabela" in normalizar_texto(c)), None)
+col_uf_df = next((c for c in df.columns if normalizar_texto(c) == "uf"), None)
+
+if "Inicio da Operacao" in df.columns or "Início da Operação" in df.columns:
+    col_ini = "Início da Operação" if "Início da Operação" in df.columns else "Inicio da Operacao"
+    df["Tempo de Operacao (Meses)"] = df[col_ini].apply(calcular_meses_operacao)
+
+df["GR Responsavel"] = df[col_unidade_df].apply(lambda u: obter_dados_unidade(u)[0])
+
+decisoes_salvas = carregar_decisoes_salvas()
+
+def calcular_alunos_mix_unidade_df(df_mix_ref, nome_unidade):
+    if df_mix_ref is None or df_mix_ref.empty: return None
+    col_u_mix = next((c for c in df_mix_ref.columns if "unid" in str(c).lower()), None)
+    col_p_mix = next((c for c in df_mix_ref.columns if "plano" in str(c).lower() or "produto" in str(c).lower()), None)
+    if not col_u_mix or not col_p_mix: return None
+
+    u_main_norm = normalizar_texto(nome_unidade)
+    def pertence_unidade(u_mix_val):
+        u_mix_norm = normalizar_texto(u_mix_val)
+        return u_mix_norm in u_main_norm or u_main_norm in u_mix_norm or ("buritis" in u_mix_norm and "buritis" in u_main_norm) or ("orla" in u_mix_norm and "orla" in u_main_norm)
+
+    df_mix_u = df_mix_ref[df_mix_ref[col_u_mix].apply(pertence_unidade)].copy()
+    if df_mix_u.empty: return None
+    df_mix_u["Plano_Cat"] = df_mix_u[col_p_mix].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+    val_count = df_mix_u["Plano_Cat"].notnull().sum()
+    return val_count if val_count > 0 else None
+
+# EXPORTACAO EXCEL COMPLETA, SEM ACENTOS E SEM EMOJIS
+st.sidebar.markdown("---")
+st.sidebar.markdown("### Exportar Resultados")
+
+def gerar_excel_limpo_comite(df_orig, decisoes):
+    lista_linhas = []
+    for _, r in df_orig.iterrows():
+        u_nome = r[col_unidade_df]
+        gr_resp = obter_dados_unidade(u_nome)[0]
+        tab_praticada = r.get(col_tabela_df, "N/A") if col_tabela_df else "N/A"
+        
+        dec_info = decisoes.get(u_nome, {})
+        dec_atuais = dec_info.get("decisao_atuais", "Pendente")
+        dec_novos = dec_info.get("decisao_novos", "Pendente")
+        tab_vigentes = ", ".join(dec_info.get("tabelas_vigentes", [])) if dec_info.get("tabelas_vigentes") else "Pendente"
+        conceito_txt = dec_info.get("observacoes_comite", "")
+
+        lista_linhas.append({
+            "Unidade": u_nome,
+            "Tabela Praticada": tab_praticada,
+            "Decisao - Clientes Atuais": dec_atuais,
+            "Decisao - Novos Clientes": dec_novos,
+            "Tabelas Vigentes": tab_vigentes,
+            "GR Responsavel": gr_resp,
+            "Conceito": conceito_txt
+        })
+    
+    df_exp = pd.DataFrame(lista_linhas)
+    
+    for col in df_exp.columns:
+        df_exp[col] = df_exp[col].astype(str).apply(lambda x: unicodedata.normalize("NFD", x).encode("ascii", "ignore").decode("utf-8"))
+
+    buffer = io.BytesIO()
+    try:
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df_exp.to_excel(writer, index=False, sheet_name="Decisoes Comite")
+            worksheet = writer.sheets["Decisoes Comite"]
+            for i, col in enumerate(df_exp.columns):
+                max_len = max(df_exp[col].astype(str).map(len).max(), len(col)) + 3
+                worksheet.set_column(i, i, max_len)
+    except Exception:
+        with pd.ExcelWriter(buffer) as writer:
+            df_exp.to_excel(writer, index=False, sheet_name="Decisoes Comite")
+
+    return buffer.getvalue()
+
+excel_bytes = gerar_excel_limpo_comite(df, decisoes_salvas)
+
+st.sidebar.download_button(
+    label="Baixar Resumo Executivo (Excel)",
+    data=excel_bytes,
+    file_name=f"decisoes_comite_fasttennis_{datetime.now().strftime('%Y%m%d')}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+)
+
+st.markdown(
+    f"""
+    <div class='header-box'>
+        <div>
+            <span class='header-subtitle'>Programacao Reajuste Rede 2026</span>
+            <h1 class='header-title'>Analise e Decisao de Reajustes Fast Tennis</h1>
+        </div>
+        <div>
+            <span style='background-color: rgba(255,255,255,0.12); color: #FFFFFF; font-size: 0.78rem; font-weight: 700; padding: 6px 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);'>Comite Executivo</span>
+        </div>
+    </div>
+""",
+    unsafe_allow_html=True,
+)
+
+tab_visao_geral, tab_analise_decisao = st.tabs(["Visao Geral Consolidada", "Analise e Decisao por Unidade"])
+
+# ==============================================================================
+# TAB 1: VISÃO GERAL CONSOLIDADA
+# ==============================================================================
+with tab_visao_geral:
+    col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+
+    with col_f1:
+        if col_tabela_df:
+            opcoes_tabela = ["Todas"] + sorted([str(t) for t in df[col_tabela_df].dropna().unique() if str(t).strip() != ""])
         else:
-            atingimento_fat_val = 0.0
-            atingimento_ll_val = 0.0
+            opcoes_tabela = ["Todas"]
+        tabela_filtro = st.selectbox("Tabela Praticada:", opcoes_tabela, index=0)
 
-        html_card_reav = f"""
-            <div class="card-resumo-unidade">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0; color:#022D8A;">{dados_u['Unidade']} ({dados_u['Cidade']})</h3>
-                    <span style="background-color:#022D8A; color:#0DF205; padding:4px 12px; border-radius:15px; font-weight:800; font-size:13px;">Tabela Praticada: Tabela {tab_praticada_u} | Quadras: {num_quadras_re}</span>
-                </div>
-                <p style="margin:0 0 8px 0; font-size:13px; color:#022D8A;"><b>Endereço Cadastrado:</b> {endereco_re}</p>
-                <p style="margin:0 0 10px 0; font-size:13px; color:#00A807;"><b>Infraestrutura de Quadra:</b> {cobertura_re}</p>
-                <div style="display:flex; justify-content:space-between; font-size:13px; color:#2D3748; flex-wrap:wrap; gap:10px;">
-                    <div><b>População Residente:</b> {populacao_u:,} hab.</div>
-                    <div><b>🎯 Público Alvo (B1+A+ A++):</b> {num_alvo_u:,} hab. ({pct_alvo_u*100:.1f}%)</div>
-                    <div><b>Renda Média:</b> R$ {renda_u:,.2f}</div>
-                    <div><b>TKM Esperado:</b> R$ {tkm_esperado_rede},00 | <b>Plano Plus 1x:</b> R$ {preco_plus_esperado},00</div>
+    with col_f2:
+        if col_uf_df:
+            opcoes_uf = ["Todos"] + sorted([str(u) for u in df[col_uf_df].dropna().unique() if str(u).strip() != ""])
+        else:
+            opcoes_uf = ["Todos"]
+        uf_filtro = st.selectbox("Estado (UF):", opcoes_uf, index=0)
+
+    with col_f3:
+        grs_unicos = sorted([str(g) for g in df["GR Responsavel"].dropna().unique() if str(g).strip() != ""])
+        opcoes_gr = ["Todos"] + grs_unicos
+        gr_filtro = st.selectbox("Gerente de Resultados (GR):", opcoes_gr, index=0)
+
+    with col_f4:
+        dict_meses_rotulados = {formatar_nome_mes(k): k for k in dict_mix_historico.keys()}
+        opcoes_rotulos_mes = list(dict_meses_rotulados.keys())
+        idx_default_mes = next((i for i, m in enumerate(opcoes_rotulos_mes) if "atual" in normalizar_texto(m)), len(opcoes_rotulos_mes) - 1)
+        rotulo_mes_selecionado = st.selectbox("Mes de Referencia:", opcoes_rotulos_mes, index=max(0, idx_default_mes))
+        mes_mix_chave_real = dict_meses_rotulados[rotulo_mes_selecionado]
+
+    df_mix_atual = dict_mix_historico.get(mes_mix_chave_real, pd.DataFrame())
+
+    df_filtrado = df.copy()
+    if tabela_filtro != "Todas" and col_tabela_df:
+        df_filtrado = df_filtrado[df_filtrado[col_tabela_df].astype(str) == tabela_filtro]
+    if uf_filtro != "Todos" and col_uf_df:
+        df_filtrado = df_filtrado[df_filtrado[col_uf_df].astype(str) == uf_filtro]
+    if gr_filtro != "Todos":
+        df_filtrado = df_filtrado[df_filtrado["GR Responsavel"].astype(str) == gr_filtro]
+
+    total_unidades = len(df_filtrado)
+    analisadas = sum(1 for u in df_filtrado[col_unidade_df].unique() if u in decisoes_salvas)
+    pendentes = total_unidades - analisadas
+    pct_concluido = (analisadas / total_unidades * 100) if total_unidades > 0 else 0
+
+    if df_mix_atual is not None and not df_mix_atual.empty:
+        col_u_mix_gen = next((c for c in df_mix_atual.columns if "unid" in str(c).lower()), None)
+        col_p_mix_gen = next((c for c in df_mix_atual.columns if "plano" in str(c).lower() or "produto" in str(c).lower()), None)
+        if col_u_mix_gen and col_p_mix_gen:
+            unidades_permitidas_norm = [normalizar_texto(u) for u in df_filtrado[col_unidade_df].unique()]
+            def pertence_selecao(u_mix_val):
+                u_mix_norm = normalizar_texto(u_mix_val)
+                for u_perm in unidades_permitidas_norm:
+                    if u_mix_norm in u_perm or u_perm in u_mix_norm or ("buritis" in u_mix_norm and "buritis" in u_perm) or ("orla" in u_mix_norm and "orla" in u_perm):
+                        return True
+                return False
+
+            df_mix_filt_total = df_mix_atual[df_mix_atual[col_u_mix_gen].apply(pertence_selecao)].copy()
+            df_mix_filt_total["Cat_Total"] = df_mix_filt_total[col_p_mix_gen].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+            total_alunos = df_mix_filt_total["Cat_Total"].notnull().sum()
+        else:
+            total_alunos = sum([df_filtrado[df_filtrado[col_unidade_df] == u]["Clientes Recorrentes"].values[0] for u in df_filtrado[col_unidade_df].unique() if "Clientes Recorrentes" in df_filtrado.columns and len(df_filtrado[df_filtrado[col_unidade_df] == u]) > 0])
+    else:
+        total_alunos = sum([df_filtrado[df_filtrado[col_unidade_df] == u]["Clientes Recorrentes"].values[0] for u in df_filtrado[col_unidade_df].unique() if "Clientes Recorrentes" in df_filtrado.columns and len(df_filtrado[df_filtrado[col_unidade_df] == u]) > 0])
+
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(f"""
+            <div class='kpi-card'>
+                <div class='kpi-card-bar' style='background-color: {HEX_NAVY};'></div>
+                <div class='kpi-title'>Total de Unidades</div>
+                <div class='kpi-value'>{total_unidades}</div>
+                <div class='kpi-sub'>Unidades na selecao</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+            <div class='kpi-card'>
+                <div class='kpi-card-bar' style='background-color: {HEX_BLUE};'></div>
+                <div class='kpi-title'>Decisoes Concluidas</div>
+                <div class='kpi-value' style='color: {HEX_BLUE};'>{analisadas}</div>
+                <div class='kpi-sub'>{pct_concluido:.1f}% do total concluido</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown(f"""
+            <div class='kpi-card'>
+                <div class='kpi-card-bar' style='background-color: #D97706;'></div>
+                <div class='kpi-title'>Unidades Pendentes</div>
+                <div class='kpi-value' style='color: #D97706;'>{pendentes}</div>
+                <div class='kpi-sub'>Aguardando decisao do comite</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with c4:
+        st.markdown(f"""
+            <div class='kpi-card'>
+                <div class='kpi-card-bar' style='background-color: {HEX_BLUE};'></div>
+                <div class='kpi-title'>BASE TOTAL DE CLIENTES</div>
+                <div class='kpi-value' style='color: {HEX_NAVY};'>{total_alunos:,}</div>
+                <div class='kpi-sub'>Clientes em {rotulo_mes_selecionado}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown(f"<h3 style='font-size:1.1rem; color:{HEX_NAVY}; margin-bottom: 10px;'>Acompanhamento de Governanca por Unidade</h3>", unsafe_allow_html=True)
+
+    df_status = df_filtrado.copy()
+    df_status["Clientes Recorrentes"] = df_status[col_unidade_df].apply(lambda u: calcular_alunos_mix_unidade_df(df_mix_atual, u) or (df_status[df_status[col_unidade_df] == u]["Clientes Recorrentes"].values[0] if len(df_status[df_status[col_unidade_df] == u]) > 0 else 0))
+    df_status["Status Decisao"] = df_status[col_unidade_df].apply(lambda u: "Concluido" if u in decisoes_salvas else "Pendente")
+    df_status["Decisao Clientes Atuais"] = df_status[col_unidade_df].apply(lambda u: decisoes_salvas.get(u, {}).get("decisao_atuais", "Pendente"))
+    df_status["Decisao Novos Clientes"] = df_status[col_unidade_df].apply(lambda u: decisoes_salvas.get(u, {}).get("decisao_novos", "Pendente"))
+    df_status["Tabelas Vigentes apos Reajuste (Governanca)"] = df_status[col_unidade_df].apply(lambda u: ", ".join(decisoes_salvas.get(u, {}).get("tabelas_vigentes", [])))
+
+    cols_exibir = [c for c in [col_unidade_df, "Cidade", "UF", "Tabela Praticada", "Tabelas na Unidade", "Clientes Recorrentes", "Tempo de Operacao (Meses)", "Status Decisao", "Decisao Clientes Atuais", "Decisao Novos Clientes", "Tabelas Vigentes apos Reajuste (Governanca)"] if c in df_status.columns]
+    
+    st.dataframe(
+        df_status[cols_exibir],
+        use_container_width=True,
+        height=380,
+        hide_index=True,
+        column_config={
+            "Status Decisao": st.column_config.SelectboxColumn(
+                "Status Decisao",
+                options=["Concluido", "Pendente"],
+                required=True,
+            ),
+            "Clientes Recorrentes": st.column_config.NumberColumn(
+                f"Clientes ({rotulo_mes_selecionado})",
+                format="%d",
+            ),
+            "Tempo de Operacao (Meses)": st.column_config.NumberColumn(
+                "Tempo Operacao (Meses)",
+                format="%d m",
+            )
+        }
+    )
+
+    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+
+    st.markdown(f"<h3 style='font-size:1.15rem; color:{HEX_NAVY}; margin-bottom: 12px;'>Mix de Produtos Consolidado ({rotulo_mes_selecionado})</h3>", unsafe_allow_html=True)
+
+    if df_mix_atual is not None and not df_mix_atual.empty:
+        col_u_mix_gen = next((c for c in df_mix_atual.columns if "unid" in str(c).lower()), None)
+        col_p_mix_gen = next((c for c in df_mix_atual.columns if "plano" in str(c).lower() or "produto" in str(c).lower()), None)
+
+        if col_u_mix_gen and col_p_mix_gen:
+            unidades_permitidas_norm = [normalizar_texto(u) for u in df_filtrado[col_unidade_df].unique()]
+            def pertence_selecao(u_mix_val):
+                u_mix_norm = normalizar_texto(u_mix_val)
+                for u_perm in unidades_permitidas_norm:
+                    if u_mix_norm in u_perm or u_perm in u_mix_norm or ("buritis" in u_mix_norm and "buritis" in u_perm) or ("orla" in u_mix_norm and "orla" in u_perm):
+                        return True
+                return False
+
+            df_mix_filt = df_mix_atual[df_mix_atual[col_u_mix_gen].apply(pertence_selecao)].copy()
+
+            if not df_mix_filt.empty:
+                col_m1, col_m2 = st.columns(2)
+
+                with col_m1:
+                    with st.container(border=True):
+                        st.markdown("""
+                            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;'>
+                                <h4 style='font-size:0.95rem; color:#022D8A; margin:0;'>Mix Padrao (Planos 1x, 2x e 3x na Semana)</h4>
+                                <span style='background-color:rgba(5, 60, 216, 0.08); color:#053CD8; font-size:0.72rem; font-weight:700; padding:3px 7px; border-radius:4px;'>Core 11 Planos</span>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        df_v1 = df_mix_filt.copy()
+                        df_v1["Cat_V1"] = df_v1[col_p_mix_gen].apply(lambda p: categorizar_plano_v1(p, mapa_excel_carregado))
+                        df_v1_valid = df_v1[df_v1["Cat_V1"].notnull()]
+
+                        if not df_v1_valid.empty:
+                            counts_v1 = df_v1_valid["Cat_V1"].value_counts()
+                            tot_v1 = counts_v1.sum()
+                            pcts_v1 = (counts_v1 / tot_v1 * 100).round(1)
+
+                            for plano_name, pct_val in pcts_v1.items():
+                                st.markdown(f"""
+                                    <div class="mix-bar-container">
+                                        <div class="mix-label"><span>{plano_name}</span><span>{pct_val:.1f}% ({counts_v1[plano_name]:,} alunos)</span></div>
+                                        <div class="mix-bar-bg"><div class="mix-bar-fill" style="width: {pct_val}%;"></div></div>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            st.markdown(f"<p style='font-size:0.83rem; color:{HEX_NAVY}; font-weight:700; margin-top:12px; border-top:1px solid #E2E8F0; padding-top:8px;'>Total Alunos (Mix Padrao): {tot_v1:,}</p>", unsafe_allow_html=True)
+
+                    # EVOLUÇÃO GLOBAL DA BASE ENCAIXADA LOGO ABAIXO DO MIX PADRÃO
+                    st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
+                    with st.expander("Evolucao Global da Base de Clientes da Rede", expanded=True):
+                        dados_rede_hist = []
+                        for key_aba_m, df_m_hist in dict_mix_historico.items():
+                            lbl_m = formatar_nome_mes(key_aba_m)
+                            if df_m_hist is not None and not df_m_hist.empty:
+                                col_p_temp = next((c for c in df_m_hist.columns if "plano" in str(c).lower() or "produto" in str(c).lower()), None)
+                                if col_p_temp:
+                                    df_temp_cat = df_m_hist[col_p_temp].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+                                    tot_rede_m = df_temp_cat.notnull().sum()
+                                    ord_m = obter_ordem_mes(lbl_m)
+                                    dados_rede_hist.append({"Mes": lbl_m, "Base Total Rede": tot_rede_m, "Ordem": ord_m})
+
+                        if dados_rede_hist:
+                            df_rede_cron = pd.DataFrame(dados_rede_hist).sort_values(by="Ordem").reset_index(drop=True)
+                            df_rede_cron["Crescimento %"] = df_rede_cron["Base Total Rede"].pct_change() * 100
+                            df_rede_cron["Crescimento %"] = df_rede_cron["Crescimento %"].fillna(0.0)
+
+                            df_rede_display = df_rede_cron.sort_values(by="Ordem", ascending=False).reset_index(drop=True)
+
+                            desenhar_grafico_barras_altair(df_rede_cron, "Mes", "Base Total Rede", "numero")
+                            
+                            st.dataframe(
+                                df_rede_display[["Mes", "Base Total Rede", "Crescimento %"]],
+                                use_container_width=True,
+                                hide_index=True,
+                                column_config={
+                                    "Base Total Rede": st.column_config.NumberColumn("Base Total", format="%d"),
+                                    "Crescimento %": st.column_config.NumberColumn("Crescimento %", format="%+.1f%%")
+                                }
+                            )
+
+                    # SIMULADOR E EVOLUÇÃO DO TKM ENCAIXADO LOGO ABAIXO DA EVOLUÇÃO DA BASE
+                    st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
+                    with st.expander("Simulador e Evolucao do TKM PONDERADO por Tabela de Preco", expanded=False):
+                        st.markdown("<p style='font-size:0.85rem; color:#475569; margin-bottom:15px;'>Selecione a tabela de preco para calcular o Ticket Medio Ponderado considerando apenas a aderencia das unidades que praticam estritamente a tabela selecionada no mes de referencia.</p>", unsafe_allow_html=True)
+                        
+                        num_tabela_sim = st.selectbox(
+                            "Simular para Tabela:",
+                            options=[1, 2, 3, 4, 5],
+                            format_func=lambda x: f"Tabela {x}",
+                            index=0
+                        )
+
+                        if col_tabela_df:
+                            unidades_da_tabela = df[df[col_tabela_df].astype(str).str.contains(str(num_tabela_sim), na=False)][col_unidade_df].unique()
+                        else:
+                            unidades_da_tabela = df[col_unidade_df].unique()
+
+                        unidades_tab_norm = [normalizar_texto(u) for u in unidades_da_tabela]
+
+                        def pertence_tabela_estrita(u_mix_val):
+                            u_mix_norm = normalizar_texto(u_mix_val)
+                            for u_perm in unidades_tab_norm:
+                                if u_mix_norm in u_perm or u_perm in u_mix_norm or ("buritis" in u_mix_norm and "buritis" in u_perm) or ("orla" in u_mix_norm and "orla" in u_perm):
+                                    return True
+                            return False
+
+                        df_mix_sim = df_mix_atual[df_mix_atual[col_u_mix_gen].apply(pertence_tabela_estrita)].copy() if not df_mix_atual.empty else pd.DataFrame()
+
+                        faturamento_v1 = 0.0
+                        tot_v1_sim = 0
+                        if not df_mix_sim.empty:
+                            df_sim_v1 = df_mix_sim.copy()
+                            df_sim_v1["Cat_V1"] = df_sim_v1[col_p_mix_gen].apply(lambda p: categorizar_plano_v1(p, mapa_excel_carregado))
+                            df_sim_v1_valid = df_sim_v1[df_sim_v1["Cat_V1"].notnull()]
+                            
+                            if not df_sim_v1_valid.empty:
+                                tot_v1_sim = len(df_sim_v1_valid)
+                                for cat_p, q_p in df_sim_v1_valid["Cat_V1"].value_counts().items():
+                                    preco_p = tabela_precos_carregada.get(cat_p, {}).get(num_tabela_sim, 0.0)
+                                    faturamento_v1 += q_p * preco_p
+
+                        tkm_v1_ponderado = (faturamento_v1 / tot_v1_sim) if tot_v1_sim > 0 else 0.0
+
+                        faturamento_v2 = 0.0
+                        tot_v2_sim = 0
+                        if not df_mix_sim.empty:
+                            df_sim_v2 = df_mix_sim.copy()
+                            df_sim_v2["Cat_V2"] = df_sim_v2[col_p_mix_gen].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+                            df_sim_v2_valid = df_sim_v2[df_sim_v2["Cat_V2"].notnull()]
+                            
+                            if not df_sim_v2_valid.empty:
+                                tot_v2_sim = len(df_sim_v2_valid)
+                                for cat_p, q_p in df_sim_v2_valid["Cat_V2"].value_counts().items():
+                                    preco_p = tabela_precos_carregada.get(cat_p, {}).get(num_tabela_sim, 0.0)
+                                    faturamento_v2 += q_p * preco_p
+
+                        tkm_v2_ponderado = (faturamento_v2 / tot_v2_sim) if tot_v2_sim > 0 else 0.0
+                        tkm_oficial_rede = TKM_REDE_REFERENCIA.get(num_tabela_sim, 0.0)
+
+                        cs1, cs2, cs3 = st.columns(3)
+                        with cs1:
+                            st.markdown(f"""
+                                <div class='sim-card'>
+                                    <span style='font-size:0.72rem; font-weight:700; color:#64748B; text-transform:uppercase;'>TKM (Mix Padrao)</span>
+                                    <h3 style='margin:4px 0 0 0; color:{HEX_BLUE} !important; font-size:1.3rem;'>R$ {tkm_v1_ponderado:,.2f}</h3>
+                                    <span style='font-size:0.7rem; color:#94A3B8;'>{tot_v1_sim:,} alunos</span>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        with cs2:
+                            st.markdown(f"""
+                                <div class='sim-card'>
+                                    <span style='font-size:0.72rem; font-weight:700; color:#64748B; text-transform:uppercase;'>TKM (Mix Ampliado)</span>
+                                    <h3 style='margin:4px 0 0 0; color:{HEX_NAVY} !important; font-size:1.3rem;'>R$ {tkm_v2_ponderado:,.2f}</h3>
+                                    <span style='font-size:0.7rem; color:#94A3B8;'>{tot_v2_sim:,} alunos</span>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        with cs3:
+                            st.markdown(f"""
+                                <div class='sim-card' style='background-color:#F8FAFC;'>
+                                    <span style='font-size:0.72rem; font-weight:700; color:#64748B; text-transform:uppercase;'>TKM Rede</span>
+                                    <h3 style='margin:4px 0 0 0; color:#334155 !important; font-size:1.3rem;'>R$ {tkm_oficial_rede:,.2f}</h3>
+                                    <span style='font-size:0.7rem; color:#94A3B8;'>Tabela {num_tabela_sim}</span>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                        # GRÁFICO EM BARRAS DO TKM HISTÓRICO ALTAIR
+                        st.markdown("<hr style='margin:12px 0;'>", unsafe_allow_html=True)
+                        st.markdown(f"<h4 style='font-size:0.88rem; color:{HEX_NAVY}; margin-bottom:8px;'>Evolucao Historica do TKM - Tabela {num_tabela_sim}</h4>", unsafe_allow_html=True)
+                        
+                        dados_tkm_hist = []
+                        for key_aba_m, df_m_hist in dict_mix_historico.items():
+                            lbl_m = formatar_nome_mes(key_aba_m)
+                            ord_m = obter_ordem_mes(lbl_m)
+                            if df_m_hist is not None and not df_m_hist.empty:
+                                col_u_temp = next((c for c in df_m_hist.columns if "unid" in str(c).lower()), None)
+                                col_p_temp = next((c for c in df_m_hist.columns if "plano" in str(c).lower() or "produto" in str(c).lower()), None)
+                                
+                                if col_u_temp and col_p_temp:
+                                    df_m_sim = df_m_hist[df_m_hist[col_u_temp].apply(pertence_tabela_estrita)].copy()
+                                    df_m_sim["Cat_V2"] = df_m_sim[col_p_temp].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+                                    df_m_sim_val = df_m_sim[df_m_sim["Cat_V2"].notnull()]
+                                    
+                                    tot_al = len(df_m_sim_val)
+                                    if tot_al > 0:
+                                        fat_m = sum([q_p * tabela_precos_carregada.get(cat_p, {}).get(num_tabela_sim, 0.0) for cat_p, q_p in df_m_sim_val["Cat_V2"].value_counts().items()])
+                                        tkm_calc = fat_m / tot_al
+                                        dados_tkm_hist.append({"Mes": lbl_m, "TKM Ponderado": round(tkm_calc, 2), "Base Alunos": tot_al, "Ordem": ord_m})
+
+                        if dados_tkm_hist:
+                            df_tkm_cron = pd.DataFrame(dados_tkm_hist).sort_values(by="Ordem").reset_index(drop=True)
+                            df_tkm_cron["Crescimento %"] = df_tkm_cron["TKM Ponderado"].pct_change() * 100
+                            df_tkm_cron["Crescimento %"] = df_tkm_cron["Crescimento %"].fillna(0.0)
+
+                            df_tkm_display = df_tkm_cron.sort_values(by="Ordem", ascending=False).reset_index(drop=True)
+
+                            desenhar_grafico_barras_altair(df_tkm_cron, "Mes", "TKM Ponderado", "moeda")
+                            
+                            st.dataframe(
+                                df_tkm_display[["Mes", "TKM Ponderado", "Crescimento %"]],
+                                use_container_width=True,
+                                hide_index=True,
+                                column_config={
+                                    "TKM Ponderado": st.column_config.NumberColumn("TKM Ponderado", format="R$ %.2f"),
+                                    "Crescimento %": st.column_config.NumberColumn("Crescimento %", format="%+.1f%%")
+                                }
+                            )
+
+                with col_m2:
+                    with st.container(border=True):
+                        st.markdown("""
+                            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;'>
+                                <h4 style='font-size:0.95rem; color:#022D8A; margin:0;'>Mix Ampliado (Base Completa Mapeada)</h4>
+                                <span style='background-color:rgba(13, 242, 5, 0.12); color:#16A34A; font-size:0.72rem; font-weight:700; padding:3px 7px; border-radius:4px;'>12 Categorias</span>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        df_v2 = df_mix_filt.copy()
+                        df_v2["Cat_V2"] = df_v2[col_p_mix_gen].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+                        df_v2_valid = df_v2[df_v2["Cat_V2"].notnull()]
+
+                        if not df_v2_valid.empty:
+                            counts_v2 = df_v2_valid["Cat_V2"].value_counts()
+                            tot_v2 = counts_v2.sum()
+                            pcts_v2 = (counts_v2 / tot_v2 * 100).round(1)
+
+                            for plano_name, pct_val in pcts_v2.items():
+                                st.markdown(f"""
+                                    <div class="mix-bar-container">
+                                        <div class="mix-label"><span>{plano_name}</span><span>{pct_val:.1f}% ({counts_v2[plano_name]:,} alunos)</span></div>
+                                        <div class="mix-bar-bg"><div class="mix-bar-fill" style="width: {pct_val}%;"></div></div>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            st.markdown(f"<p style='font-size:0.83rem; color:{HEX_NAVY}; font-weight:700; margin-top:12px; border-top:1px solid #E2E8F0; padding-top:8px;'>Total Alunos (Mix Ampliado): {tot_v2:,}</p>", unsafe_allow_html=True)
+
+# ==============================================================================
+# TAB 2: ANÁLISE E DECISÃO POR UNIDADE
+# ==============================================================================
+with tab_analise_decisao:
+    opcoes_atuais = ["Sem reajuste", "Ajuste IPCA para tabela vigente", "Aplicar nova tabela (atualizada)", "Migrar toda base para tabela vigente atualmente na unidade"]
+    opcoes_novos = ["Sem reajuste", "Ajuste IPCA para tabela vigente", "Aplicar nova tabela (atualizada)"]
+    opcoes_tabelas_governanca = [f"Tabela {t} - {v}" for t in range(1, 6) for v in ["Antiga", "IPCA", "Nova"]]
+
+    unidade_sel = st.selectbox("Selecione a Unidade para Analise:", df[col_unidade_df].unique(), index=0)
+    row = df[df[col_unidade_df] == unidade_sel].iloc[0]
+    decisao_previa = decisoes_salvas.get(unidade_sel, {})
+    gr_responsavel, qtd_quadras = obter_dados_unidade(row[col_unidade_df])
+
+    col_main, col_sidebar_estado = st.columns([3.2, 1.1])
+
+    with col_main:
+        st.markdown(f"""
+            <div class='sticky-unit-header'>
+                <div style='display: flex; justify-content: space-between; align-items: center; width: 100%;'>
+                    <div><h2 style='font-size: 1.85rem !important; margin: 0; color: {HEX_NAVY}; font-weight: 800;'>{row[col_unidade_df]}</h2><span style='color: #64748B; font-size: 0.95rem; font-weight: 600;'>{row.get('Cidade', 'N/A')} - {row.get('UF', 'N/A')}</span></div>
+                    <div style='text-align: right; background-color: rgba(5, 60, 216, 0.06); padding: 6px 12px; border-radius: 6px;'><span style='font-size: 0.8rem; color: {HEX_NAVY}; font-weight: 700;'>GR: {gr_responsavel}</span></div>
                 </div>
             </div>
-        """
-        st.markdown(html_card_reav, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-        with st.container(border=True):
-            st.markdown("<p style='color:#022D8A; font-weight:800; font-size:15px; margin-bottom:12px;'>Preenchimento do Desempenho Operacional da Unidade</p>", unsafe_allow_html=True)
-            u1, u2, u3 = st.columns(3)
+    with col_sidebar_estado:
+        uf_atual = row.get("UF", "")
+        df_estado = df[df["UF"] == uf_atual] if "UF" in df.columns else df
+        
+        with st.expander(f"Rede no Estado ({uf_atual}) - {len(df_estado)} unidade(s)", expanded=True):
+            for _, u_row in df_estado.iterrows():
+                nome_u = u_row[col_unidade_df]
+                status_tag = "OK" if nome_u in decisoes_salvas else "..."
+                css_class = "state-unit-selected" if nome_u == unidade_sel else "state-unit-default"
+                st.markdown(f"<div class='state-unit-item {css_class}'><span style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;'>{nome_u.replace('Fast Tennis ', '')}</span><span>{status_tag}</span></div>", unsafe_allow_html=True)
+
+        st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
+        
+        st.markdown(f"<h4 style='font-size:0.95rem; color:{HEX_NAVY}; margin-bottom: 8px;'>Mix de Produtos da Unidade</h4>", unsafe_allow_html=True)
+        rotulo_mes_unit_sel = st.selectbox("Mes de Referencia:", opcoes_rotulos_mes, key="sel_mes_mix_unidade", index=max(0, idx_default_mes))
+        chave_real_unit_mes = dict_meses_rotulados[rotulo_mes_unit_sel]
+        df_mix_u_ref = dict_mix_historico.get(chave_real_unit_mes, pd.DataFrame())
+
+        df_mix_u_valid = pd.DataFrame()
+        if df_mix_u_ref is not None and not df_mix_u_ref.empty:
+            col_u_mix = next((c for c in df_mix_u_ref.columns if "unid" in str(c).lower()), None)
+            col_p_mix = next((c for c in df_mix_u_ref.columns if "plano" in str(c).lower() or "produto" in str(c).lower()), None)
+
+            if col_u_mix and col_p_mix:
+                u_main_norm = normalizar_texto(unidade_sel)
+                def pertence_unidade_sidebar(u_mix_val):
+                    u_mix_norm = normalizar_texto(u_mix_val)
+                    return u_mix_norm in u_main_norm or u_main_norm in u_mix_norm or ("buritis" in u_mix_norm and "buritis" in u_main_norm) or ("orla" in u_mix_norm and "orla" in u_main_norm)
+
+                df_mix_u = df_mix_u_ref[df_mix_u_ref[col_u_mix].apply(pertence_unidade_sidebar)].copy()
+                if not df_mix_u.empty:
+                    df_mix_u["Plano_Cat"] = df_mix_u[col_p_mix].apply(lambda p: categorizar_plano_ampliado(p, mapa_excel_carregado))
+                    df_mix_u_valid = df_mix_u[df_mix_u["Plano_Cat"].notnull()]
+                    if not df_mix_u_valid.empty:
+                        counts = df_mix_u_valid["Plano_Cat"].value_counts()
+                        pcts = (counts / counts.sum() * 100).round(1)
+                        for plano, pct in pcts.items():
+                            st.markdown(f"<div class='mix-bar-container'><div class='mix-label'><span>{plano}</span><span>{pct:.1f}%</span></div><div class='mix-bar-bg'><div class='mix-bar-fill' style='width: {pct}%;'></div></div></div>", unsafe_allow_html=True)
+
+        st.markdown("<div style='margin-top: 0.6rem;'></div>", unsafe_allow_html=True)
+
+        raw_tabela_u = str(row.get("Tabela Praticada", "1"))
+        digits_u = re.findall(r"\d+", raw_tabela_u)
+        num_tabela_u_default = int(digits_u[0]) if digits_u else 1
+
+        # SIMULADOR DE TKM DA UNIDADE
+        with st.expander("Simulador de Impacto de Reajuste (TKM Unidade)", expanded=False):
+            opcoes_simulacao_u = [f"Tabela {t}" for t in range(1, 6)] + [f"Tabela {t} + IPCA (+{PERCENTUAL_IPCA*100:.2f}%)" for t in range(1, 6)]
             
-            with u1:
-                if unidade_no_relatorio:
-                    st.markdown("**Desempenho Financeiro (Carregado Automaticamente)**")
-                    atingimento_ll_auto = st.number_input("% Atingimento Meta Lucro Líquido:", value=atingimento_ll_val, disabled=True, key="m2_ll_auto")
-                    atingimento_fat_auto = st.number_input("% Atingimento Meta Faturamento:", value=atingimento_fat_val, disabled=True, key="m2_fat_auto")
-                else:
-                    st.markdown("**Desempenho Financeiro (Digitação Manual)**")
-                    atingimento_ll_auto = st.number_input("% Atingimento Meta Lucro Líquido:", min_value=-500.0, step=1.0, key="m2_ll_manual")
-                    atingimento_fat_auto = st.number_input("% Atingimento Meta Faturamento:", min_value=0.0, step=1.0, key="m2_fat_manual")
-
-                tkm_real_unidade = st.number_input("TKM Real Praticado (R$):", min_value=0.0, step=5.0, key="m2_tkm_real")
-
-            with u2:
-                st.markdown("**Conversão e Vendas**")
-                perfil_vendedor = st.selectbox("Perfil da Equipe/Vendedor:", ["Selecione...", "Vendedor de alta performance", "Necessidade de desenvolvimento", "Vendedor desalinhado"], key="m2_vendedor")
-                mix_produtos = st.selectbox("Distribuição do Mix:", ["Selecione...", "Consumo Plus saudável", "Smart acima do Plus (8% a 15%)", "Smart acima do Plus (> 15%)"], key="m2_mix")
-                objecoes_preco = st.number_input("% Objeções por Preço:", min_value=0.0, step=1.0, key="m2_objecoes")
-                conversao_unidade = st.number_input("% Conversão de Vendas:", min_value=0.0, step=0.5, key="m2_conv_u")
-
-            with u3:
-                st.markdown("**Engajamento & Concorrência**")
-                lead_conect_unidade = st.number_input("% Lead Conectado:", min_value=0.0, step=0.5, key="m2_lead_u")
-                churn_unidade = st.number_input("% Churn Local:", min_value=0.0, step=0.1, key="m2_churn_u")
-                crescimento_base = st.selectbox("Evolução da Base:", ["Selecione...", "Crescimento saudável e consistente", "Oscilação de alunos", "Crescimento estagnado"], key="m2_cres_base")
-                preco_concorrentes = st.number_input("Preço Médio Concorrentes (Plus 1x):", min_value=0.0, step=10.0, key="m2_conc_p")
-
-            st.write("")
-            col_btn_m2_1, col_btn_m2_2 = st.columns([5, 1.2])
-            with col_btn_m2_2:
-                st.button("Limpar Avaliação", on_click=limpar_campos_m2, use_container_width=True)
-
-        pronto_m2 = (
-            mix_produtos != "Selecione..." and
-            crescimento_base != "Selecione..." and
-            perfil_vendedor != "Selecione..." and
-            media_rede_conversao > 0
-        )
-
-        if not pronto_m2:
-            st.info("Aguardando preenchimento dos indicadores operacionais da unidade acima para compilação da Matriz Estratégica.")
-        else:
-            st.write("")
-            st.markdown('<div class="faixa-resultados">Matriz de Orientação e Diagnóstico</div>', unsafe_allow_html=True)
+            idx_sim_default = max(0, min(4, num_tabela_u_default - 1))
             
-            matriz_sinais = []
+            tabela_sim_str = st.selectbox(
+                "Selecione a Tabela / Reajuste:",
+                options=opcoes_simulacao_u,
+                index=idx_sim_default + 5,
+                key="sel_tab_unidade_sim"
+            )
 
-            s_ll = "Positivo" if atingimento_ll_auto >= 90 else "Atenção" if atingimento_ll_auto >= 80 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Lucro Líquido", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_ll_auto:.1f}%", "Sinal": s_ll})
+            digits_sim = re.findall(r"\d+", tabela_sim_str)
+            num_tabela_sim_u = int(digits_sim[0]) if digits_sim else 1
+            tem_ipca = "IPCA" in tabela_sim_str
 
-            s_fat = "Positivo" if atingimento_fat_auto >= 90 else "Atenção" if atingimento_fat_auto >= 80 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Faturamento", "Referência / Alvo": "≥ 90.0%", "Desempenho Unidade": f"{atingimento_fat_auto:.1f}%", "Sinal": s_fat})
+            tkm_simulado_bruto = 0.0
+            tot_alunos_u = len(df_mix_u_valid) if not df_mix_u_valid.empty else 0
 
-            s_mix = "Positivo" if "saudável" in mix_produtos else "Atenção" if "8%" in mix_produtos else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Mix de Produtos", "Referência / Alvo": "Consumo Saudável", "Desempenho Unidade": mix_produtos, "Sinal": s_mix})
+            if tot_alunos_u > 0:
+                fat_u_sim = 0.0
+                for cat_p, q_p in df_mix_u_valid["Plano_Cat"].value_counts().items():
+                    preco_base = tabela_precos_carregada.get(cat_p, {}).get(num_tabela_sim_u, 0.0)
+                    if tem_ipca:
+                        preco_p = preco_base * (1 + PERCENTUAL_IPCA)
+                    else:
+                        preco_p = preco_base
+                    fat_u_sim += q_p * preco_p
+                tkm_simulado_bruto = fat_u_sim / tot_alunos_u
 
-            # REGRA ATUALIZADA: < 10% POSITIVO | 10% A 14.99% ATENÇÃO | >= 15% CRÍTICO
-            if objecoes_preco < 10.0:
-                s_obj = "Positivo"
-            elif objecoes_preco <= 14.9999:
-                s_obj = "Atenção"
-            else:
-                s_obj = "Crítico"
+            tkm_simulado_liquido = tkm_simulado_bruto * (1 - DESCONTO_MEDIO_REDE)
 
-            matriz_sinais.append({"Critério Avaliado": "Objeções por Preço", "Referência / Alvo": "< 10% Positivo | ≥15% Crítico", "Desempenho Unidade": f"{objecoes_preco:.1f}%", "Sinal": s_obj})
-
-            s_conv = "Positivo" if conversao_unidade >= media_rede_conversao else "Atenção" if conversao_unidade >= (media_rede_conversao * 0.90) else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Conversão", "Referência / Alvo": f"Média Rede ({media_rede_conversao:.1f}%)", "Desempenho Unidade": f"{conversao_unidade:.1f}%", "Sinal": s_conv})
-
-            s_lead = "Positivo" if lead_conect_unidade >= media_rede_lead_conect else "Atenção" if lead_conect_unidade >= (media_rede_lead_conect * 0.90) else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "% Lead Conectado", "Referência / Alvo": f"Média Rede ({media_rede_lead_conect:.1f}%)", "Desempenho Unidade": f"{lead_conect_unidade:.1f}%", "Sinal": s_lead})
-
-            s_tkm = "Positivo" if tkm_real_unidade >= tkm_esperado_rede else "Atenção" if tkm_real_unidade >= (tkm_esperado_rede * 0.90) else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "TKM Praticado", "Referência / Alvo": f"Esp. Tab {tab_praticada_u} (R$ {tkm_esperado_rede})", "Desempenho Unidade": f"R$ {tkm_real_unidade:.0f}", "Sinal": s_tkm})
-
-            s_base = "Positivo" if "saudável" in crescimento_base else "Atenção" if "Oscilação" in crescimento_base else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Crescimento Base", "Referência / Alvo": "Crescimento Saudável", "Desempenho Unidade": "Oscilação/Queda" if s_base != "Positivo" else "Saudável", "Sinal": s_base})
-
-            s_churn = "Positivo" if churn_unidade <= media_rede_churn else "Atenção" if churn_unidade <= (media_rede_churn * 1.15) else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "% Churn", "Referência / Alvo": f"Média Rede ({media_rede_churn:.1f}%)", "Desempenho Unidade": f"{churn_unidade:.1f}%", "Sinal": s_churn})
-
-            s_vend = "Positivo" if "alta performance" in perfil_vendedor else "Atenção" if "desenvolvimento" in perfil_vendedor else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Perfil Vendedor", "Referência / Alvo": "Alta Performance", "Desempenho Unidade": "Desenvolvimento/Desalinhado" if s_vend != "Positivo" else "Alta Perform.", "Sinal": s_vend})
-
-            dif_conc = (preco_plus_esperado - preco_concorrentes) / preco_concorrentes if preco_concorrentes > 0 else 0
-            if dif_conc <= 0.20:
-                s_merc = "Positivo"
-            elif dif_conc <= 0.30:
-                s_merc = "Atenção"
-            else:
-                s_merc = "Crítico"
-            
-            matriz_sinais.append({"Critério Avaliado": "Pesquisa de Mercado", "Referência / Alvo": "Até 20% dif (OK) | >30% Crítico", "Desempenho Unidade": f"{dif_conc*100:+.1f}% vs Conc.", "Sinal": s_merc})
-
-            s_pot = "Positivo" if renda_u >= 15000 and pct_alvo_u >= 0.35 else "Atenção" if renda_u >= 11000 and pct_alvo_u >= 0.25 else "Crítico"
-            matriz_sinais.append({"Critério Avaliado": "Potencial Econômico", "Referência / Alvo": "≥ R$ 15k e ≥ 35% Alvo", "Desempenho Unidade": f"R$ {renda_u:,.0f} | {pct_alvo_u*100:.0f}%", "Sinal": s_pot})
-
-            # CENTRALIZADO NO HTML
-            for item in matriz_sinais:
-                st_val = item["Sinal"]
-                if st_val == "Positivo":
-                    item["Sinal"] = f'<span class="badge-positivo">Positivo</span>'
-                elif st_val == "Atenção":
-                    item["Sinal"] = f'<span class="badge-atencao">Atenção</span>'
-                else:
-                    item["Sinal"] = f'<span class="badge-critico">Crítico</span>'
-
-            df_sinais_html = pd.DataFrame(matriz_sinais).to_html(escape=False, index=False)
-            
             st.markdown(f"""
-                <div style="background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:15px; overflow-x:auto;">
-                    <style>
-                        table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-                        th {{ background-color: #F8F9FA; color: #022D8A; padding: 10px; text-align: center !important; border-bottom: 2px solid #CBD5E0; font-weight: 800; }}
-                        td {{ padding: 10px; border-bottom: 1px solid #E2E8F0; color: #2D3748; text-align: center !important; }}
-                        td:first-child {{ text-align: left !important; font-weight: 700; }}
-                    </style>
-                    {df_sinais_html}
+                <div class='sim-card-inline'>
+                    <span style='font-size:0.7rem; font-weight:700; color:#64748B; text-transform:uppercase;'>TKM LIQUIDO PROJETADO ({rotulo_mes_unit_sel.upper()})</span>
+                    <h3 style='margin:4px 0 2px 0; color:{HEX_BLUE} !important; font-size:1.6rem; font-weight:800;'>R$ {tkm_simulado_liquido:,.2f}</h3>
+                    <span style='font-size:0.68rem; color:#94A3B8; display:block; margin-top:4px;'>Simulação na {tabela_sim_str} ({tot_alunos_u:,} alunos) | Dedução preventiva de {DESCONTO_MEDIO_REDE*100:.2f}% (desconto médio)</span>
                 </div>
             """, unsafe_allow_html=True)
 
-            qtd_positivos = sum(1 for x in matriz_sinais if "Positivo" in x["Sinal"])
-            qtd_atencao = sum(1 for x in matriz_sinais if "Atenção" in x["Sinal"])
-            qtd_criticos = sum(1 for x in matriz_sinais if "Crítico" in x["Sinal"])
-            pct_positivos = (qtd_positivos / len(matriz_sinais)) * 100
+        # EVOLUÇÃO DA BASE DA UNIDADE (COM GRÁFICO ALTAIR PADRONIZADO)
+        st.markdown("<div style='margin-top: 0.6rem;'></div>", unsafe_allow_html=True)
+        with st.expander("Evolucao da Base da Unidade", expanded=True):
+            hist_evolucao_u = []
+            for nome_aba_hist, df_hist in dict_mix_historico.items():
+                qtd_hist = calcular_alunos_mix_unidade_df(df_hist, unidade_sel) or 0
+                label_mes = formatar_nome_mes(nome_aba_hist)
+                ord_mes = obter_ordem_mes(label_mes)
+                hist_evolucao_u.append({"Mes": label_mes, "Alunos": qtd_hist, "Ordem": ord_mes})
 
+            if hist_evolucao_u:
+                df_hist_cron = pd.DataFrame(hist_evolucao_u).sort_values(by="Ordem").reset_index(drop=True)
+                desenhar_grafico_barras_altair(df_hist_cron, "Mes", "Alunos", "numero")
+
+    with col_main:
+        col_top1, col_top2 = st.columns(2)
+        with col_top1:
+            st.markdown(f"<div class='executive-card-half'><div><div class='executive-card-title'>Localizacao & Operacao</div><p style='margin: 3px 0; font-size: 0.88rem;'><strong>Endereco:</strong> {row.get('Endereço', row.get('Endereco', 'N/A'))}</p><p style='margin: 3px 0; font-size: 0.88rem;'><strong>Inicio Operacao:</strong> {formatar_data_br(row.get('Início da Operação', row.get('Inicio da Operacao')))}</p><p style='margin: 3px 0; font-size: 0.88rem;'><strong>Gerente de Resultados (GR):</strong> {gr_responsavel}</p><p style='margin: 3px 0; font-size: 0.88rem;'><strong>Quantidade de Quadras:</strong> {qtd_quadras}</p></div><p style='margin: 0; font-size: 0.98rem; font-weight: 800; color: {HEX_BLUE};'>Maturidade: {row.get('Tempo de Operação (Meses)', row.get('Tempo de Operacao (Meses)', 0))} meses</p></div>", unsafe_allow_html=True)
+
+        with col_top2:
+            val_fat_raw, val_ll_raw = None, None
+            if df_fat is not None and not df_fat.empty:
+                col_u_fat = next((c for c in df_fat.columns if "unid" in str(c).lower()), None)
+                if col_u_fat:
+                    u_main_norm = normalizar_texto(unidade_sel)
+                    row_fat = df_fat[df_fat[col_u_fat].apply(lambda u: normalizar_texto(u) in u_main_norm or u_main_norm in normalizar_texto(u))]
+                    if not row_fat.empty:
+                        col_fat_num = next((c for c in df_fat.columns if "faturamento" in str(c).lower()), None)
+                        col_ll_num = next((c for c in df_fat.columns if "ll" in str(c).lower()), None)
+                        if col_fat_num: val_fat_raw = row_fat.iloc[0].get(col_fat_num)
+                        if col_ll_num: val_ll_raw = row_fat.iloc[0].get(col_ll_num)
+
+            pct_fat_str, cor_fat = formatar_kpi_cor(val_fat_raw)
+            pct_ll_str, cor_ll = formatar_kpi_cor(val_ll_raw)
+            clientes_rec_final = calcular_alunos_mix_unidade_df(df_mix_atual, unidade_sel) or row.get("Clientes Recorrentes", "N/A")
+            pct_nao_fech_str, cor_nao_fech = formatar_nao_fechamento_cor(row.get("% de não fechamento por preço (Pós PE)", row.get("% Não Fechamento", None)))
+
+            st.markdown(f"<div class='executive-card-half'><div><div class='executive-card-title'>Metricas Comerciais & Entorno</div><p style='margin: 3px 0; font-size: 0.88rem; color:#475569;'>Clientes Recorrentes: <span style='color:{HEX_NAVY}; font-size: 1.15rem; font-weight:800;'>{clientes_rec_final}</span></p><p style='margin: 3px 0; font-size: 0.88rem;'><strong>% Atingimento Faturamento:</strong> <span style='color:{cor_fat}; font-weight:800;'>{pct_fat_str}</span> | <strong>% Atingimento LL:</strong> <span style='color:{cor_ll}; font-weight:800;'>{pct_ll_str}</span></p><p style='margin: 3px 0; font-size: 0.88rem;'><strong>% de nao fechamento por preco:</strong> <span style='color:{cor_nao_fech}; font-weight:800;'>{pct_nao_fech_str}</span></p></div><p style='margin: 0; font-size: 0.82rem; color:#64748B;'>Unidade Proxima: {row.get('Unidade Próxima', row.get('Unidade Proxima', '-'))} ({row.get('Distância', row.get('Distancia', '-'))})</p></div>", unsafe_allow_html=True)
+
+        raw_tabela_praticada = str(row.get("Tabela Praticada", "N/A"))
+        tabela_limpa = raw_tabela_praticada.replace("Tabela", "Tabela ").replace("  ", " ")
+        tkm_val = row.get("TKM (último mês)", row.get("TKM (ultimo mes)", 0))
+        tkm_str = f"R$ {tkm_val:,.2f}" if isinstance(tkm_val, (int, float)) else str(tkm_val)
+        obs_excel_txt = obter_observacao_excel(row)
+
+        if obs_excel_txt:
             st.markdown(f"""
-                <div style="background-color:#F8F9FA; border:1px solid #E2E8F0; padding:12px 20px; border-radius:4px; margin-top:12px; display:flex; justify-content:space-around;">
-                    <span style="font-size:14px; color:#2D3748;">Resumo da Avaliação ➔</span>
-                    <span style="font-size:14px;">Positivos: <b style="color:#15803D;">{qtd_positivos} ({pct_positivos:.0f}%)</b></span>
-                    <span style="font-size:14px;">Atenção: <b style="color:#A16207;">{qtd_atencao}</b></span>
-                    <span style="font-size:14px;">Críticos: <b style="color:#B91C1C;">{qtd_criticos}</b></span>
-                </div>
-            """, unsafe_allow_html=True)
-
-            st.write("")
-            st.subheader("3. Recomendação")
-
-            diagnostico_cruzado = ""
-            
-            if s_obj == "Crítico" and s_conv == "Crítico" and "mais de 15%" in mix_produtos:
-                comb_1 = "Objeção de Preço Alta + Conversão Abaixo da Média + Mix Smart > 15%"
-                diagnostico_cruzado += f"""
-                    <div class="box-sinais-cruzados">
-                        <span class="tag-comb-sinais">{comb_1}</span><br>
-                        Sinais de sensibilidade ao valor percebido local com impacto na <b>retenção inicial</b>. A baixa conversão aliada ao fluxo para o plano Smart sugere barreira de preço. Recomenda-se avaliar em Comitê a adequação de 1 nível de tabela para ganho de volume e melhora nos índices de <b>retenção</b> de novos alunos.
-                    </div>
-                """
-            
-            if (s_conv == "Crítico") and ("desenvolvimento" in perfil_vendedor or "desalinhado" in perfil_vendedor):
-                comb_2 = "Atração Aderente + Conversão Abaixo da Média + Equipe Comercial em Desenvolvimento/Desalinhada"
-                diagnostico_cruzado += f"""
-                    <div class="box-sinais-cruzados">
-                        <span class="tag-comb-sinais">{comb_2}</span><br>
-                        Gargalo na conversão do pitch de vendas. O mercado apresenta atração saudável, indicando que o desafio não está no preço nem na <b>retenção</b> primária de atratividade. Priorizar a capacitação da equipe e reciclagem comercial antes de propor alterações tarifárias.
-                    </div>
-                """
-            
-            if s_churn == "Crítico" or s_merc == "Crítico":
-                comb_3 = f"Preço Fast Tennis > 20% vs Concorrência ({dif_conc*100:+.1f}%) + Churn Alto + Base Estagnada/Oscilando"
-                diagnostico_cruzado += f"""
-                    <div class="box-sinais-cruzados">
-                        <span class="tag-comb-sinais">{comb_3}</span><br>
-                        Atenção ao posicionamento perante a concorrência direta. O descolamento tarifário em relação aos players locais coloca em risco a <b>retenção sustentável</b> e a maturação da base. Recomenda-se monitorar de perto os índices de cancelamento e aplicar ações pontuais de <b>retenção</b> do aluno ativo.
-                    </div>
-                """
-
-            if pct_positivos >= 70.0:
-                rec_pop = "<b>Elegível a Manutenção Premium ou Teste de Elevação</b>: Posicionamento tarifário em ponto de equilíbrio ideal. A unidade apresenta consistência de margem, aderência do público e excelente <b>retenção da base de alunos</b>. A diretriz primária é a manutenção da tabela atual ou elevação pontual caso validado em Comitê."
-                cor_pop = "#166534"
-                bg_pop = "#F0FDF4"
-            elif qtd_criticos >= 3:
-                rec_pop = "<b>Reavaliação de Posicionamento / Adequação de Tabela</b>: Alta concentração de indicadores críticos na unidade. Necessária intervenção estratégica imediata para ajuste de margem e preservação da <b>retenção</b> da base."
-                cor_pop = "#991B1B"
-                bg_pop = "#FEF2F2"
-            else:
-                rec_pop = "<b>Ajuste Operacional (Sem Alteração de Preço Imediata)</b>: Cenário neutro ou em transição. O foco mandatório deve estar na correção dos processos comerciais internos, treinamento da equipe e ações focadas na <b>retenção de alunos</b> antes de testar nova sensibilidade de preço."
-                cor_pop = "#975A16"
-                bg_pop = "#FFFDF5"
-
-            st.markdown(f"""
-                <div style="background-color:{bg_pop}; border-left:6px solid {cor_pop}; padding:18px; border-radius:8px; margin-bottom:15px;">
-                    <p style="margin:0; font-size:11px; color:{cor_pop}; font-weight:bold; text-transform:uppercase;">Recomendação</p>
-                    <p style="margin:6px 0 10px 0; font-size:15px; color:#2D3748; line-height:1.5;">{rec_pop}</p>
-                    {f'<div style="margin-top:10px;">{diagnostico_cruzado}</div>' if diagnostico_cruzado else ''}
-                </div>
-            """, unsafe_allow_html=True)
-
-            st.write("")
-            st.markdown("##### Considerações Finais do Comitê")
-            consideracoes_m3 = st.text_area("Insira observações ou parecer técnico para o PDF:", placeholder="Digite aqui comentários operacionais ou justificativas técnicas...", height=80, key="val_m3_consideracoes")
-
-            st.write("")
-            st.markdown("---")
-            with st.expander("📄 Exportar Relatório de Reavaliação (PDF)", expanded=False):
-                linhas_tabela_pdf = ""
-                for x in matriz_sinais:
-                    st_clean = x['Sinal'].replace('<span class="badge-positivo">', '').replace('<span class="badge-atencao">', '').replace('<span class="badge-critico">', '').replace('</span>', '')
-                    cor_fundo = "#DCFCE7" if "Positivo" in st_clean else "#FEF9C3" if "Atenção" in st_clean else "#FEE2E2"
-                    cor_texto = "#15803D" if "Positivo" in st_clean else "#A16207" if "Atenção" in st_clean else "#B91C1C"
-                    linhas_tabela_pdf += f"""<tr>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:left;">{x['Critério Avaliado']}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">{x['Referência / Alvo']}</td>
-                        <td style="padding:6px; border:1px solid #ddd; text-align:center;">{x['Desempenho Unidade']}</td>
-                        <td style="padding:6px; border:1px solid #ddd; background-color:{cor_fundo} !important; color:{cor_texto} !important; font-weight:bold; text-align:center;">{st_clean}</td>
-                    </tr>"""
-
-                html_pdf_m3 = f"""
-                <div style="font-family: Arial, sans-serif; background: #ffffff; padding: 20px; border: 1px solid #CBD5E0; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;">
-                    <style>
-                        @media print {{
-                            body {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                            .no-print {{ display: none !important; }}
-                        }}
-                        * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
-                    </style>
-
-                    <div style="display:flex; justify-content:space-between; align-items:center; background-color:#022D8A !important; padding:15px 20px; border-radius:6px; color:#ffffff !important;">
+                <div class='table-highlight-card-full'>
+                    <div class='executive-card-title' style='margin-bottom:2px; color:{HEX_BLUE};'>TABELA PRATICADA ATUALMENTE</div>
+                    <h2 style='margin: 0; color:{HEX_NAVY} !important; font-size: 2.1rem;'>{tabela_limpa}</h2>
+                    <div style='display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;'>
                         <div>
-                            <h2 style="color:#ffffff !important; margin:0; font-size:20px; text-transform:uppercase;">Relatório de Reavaliação Estratégica</h2>
-                            <small style="color:#0DF205 !important; font-weight:bold;">Fast Tennis - Comitê de Precificação</small>
+                            <p style='margin: 0 0 2px 0; font-size: 0.88rem; color:#475569;'><strong>Tabelas na Unidade:</strong> {row.get('Tabelas na Unidade', tabela_limpa)}</p>
+                            <p style='margin: 0; font-size: 0.88rem; color:#334155;'><strong>TKM (Ultimo Mes):</strong> <span style='font-weight:700; color:{HEX_NAVY};'>{tkm_str}</span> <span style='font-size:0.78rem; color:{HEX_BLUE}; font-weight:600;'>{obter_comparacao_tkm(raw_tabela_praticada, tkm_val)}</span></p>
                         </div>
-                        <span style="font-size:12px; color:#E2E8F0 !important;">Unidade Ativa</span>
+                        <div style='max-width: 48%; text-align: right;'>
+                            <span style='font-size: 0.88rem; color: #475569; font-weight: 600;'>{sanitizar_recomendacao(obs_excel_txt)}</span>
+                        </div>
                     </div>
-                    <hr style="border: 0; border-top: 1px solid #cbd5e0; margin: 15px 0;">
-                    
-                    <h4 style="margin:0 0 5px 0; color:#022D8A !important;">Unidade: {dados_u['Unidade']} ({dados_u['Cidade']})</h4>
-                    <p style="margin:0 0 5px 0; font-size:12px; color:#2D3748;">Endereço: <b>{endereco_re}</b> | Quadras: <b>{num_quadras_re}</b> | Tabela Atual: <b>Tabela {tab_praticada_u}</b></p>
-                    <p style="margin:0 0 15px 0; font-size:12px; color:#00A807 !important;">Cobertura: <b>{cobertura_re}</b></p>
-                    
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
-                        <thead>
-                            <tr style="background-color:#F8F9FA !important; text-align:center; color:#022D8A !important;">
-                                <th style="padding:6px; border:1px solid #ddd; text-align:left;">Critério Avaliado</th>
-                                <th style="padding:6px; border:1px solid #ddd;">Referência / Alvo da Rede</th>
-                                <th style="padding:6px; border:1px solid #ddd;">Desempenho Unidade</th>
-                                <th style="padding:6px; border:1px solid #ddd;">Classificação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {linhas_tabela_pdf}
-                        </tbody>
-                    </table>
-
-                    <div style="background-color:#F8F9FA !important; border:1px solid #E2E8F0; padding:10px; border-radius:4px; margin-bottom:15px; text-align:center; font-size:12px;">
-                        <b>Resumo da Matriz:</b> <span style="color:#15803D !important;">Positivos: {qtd_positivos} ({pct_positivos:.0f}%)</span> | 
-                        <span style="color:#A16207 !important;">Atenção: {qtd_atencao}</span> | 
-                        <span style="color:#B91C1C !important;">Críticos: {qtd_criticos}</span>
-                    </div>
-
-                    <div style="background-color:{bg_pop} !important; border-left:6px solid {cor_pop} !important; padding:15px; border-radius:6px; margin-bottom:20px;">
-                        <h3 style="margin:0 0 5px 0; font-size:13px; color:{cor_pop} !important; text-transform:uppercase;">Recomendação</h3>
-                        <p style="margin:0; font-size:13px; color:#2D3748; line-height:1.4;">{rec_pop}</p>
-                    </div>
-
-                    {f'''
-                    <div style="background-color:#FFFDF5 !important; border-left:4px solid #D69E2E !important; padding:12px; border-radius:4px; margin-bottom:20px; page-break-inside: avoid !important;">
-                        <h4 style="margin:0 0 4px 0; color:#975A16 !important; font-size:11px; text-transform:uppercase;">Considerações Finais do Comitê:</h4>
-                        <p style="margin:0; font-size:12px; color:#2D3748; line-height:1.4;">{consideracoes_m3}</p>
-                    </div>
-                    ''' if consideracoes_m3 else ''}
-                    
-                    <button onclick="window.print()" class="no-print" style="background-color: #0DF205; color: #022D8A; border: none; padding: 10px 24px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size:13px;">Imprimir / Salvar PDF Executivo</button>
                 </div>
-                """
-                st.components.v1.html(html_pdf_m3, height=720, scrolling=True)
-    else:
-        st.info("Aguardando a seleção de uma unidade ativa em operação acima para realizar a avaliação.")
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+                <div class='table-highlight-card-full'>
+                    <div class='executive-card-title' style='margin-bottom:2px; color:{HEX_BLUE};'>TABELA PRATICADA ATUALMENTE</div>
+                    <h2 style='margin: 0; color:{HEX_NAVY} !important; font-size: 2.1rem;'>{tabela_limpa}</h2>
+                    <p style='margin: 4px 0 2px 0; font-size: 0.88rem; color:#475569;'><strong>Tabelas na Unidade:</strong> {row.get('Tabelas na Unidade', tabela_limpa)}</p>
+                    <p style='margin: 2px 0 0 0; font-size: 0.88rem; color:#334155;'><strong>TKM (Ultimo Mes):</strong> <span style='font-weight:700; color:{HEX_NAVY};'>{tkm_str}</span> <span style='font-size:0.78rem; color:{HEX_BLUE}; font-weight:600;'>{obter_comparacao_tkm(raw_tabela_praticada, tkm_val)}</span></p>
+                </div>
+            """, unsafe_allow_html=True)
+
+        # QUADRANTE DE DECISÃO RETRÁTIL
+        with st.expander("Registrar Decisao do Comite Executivo", expanded=True):
+            with st.form("form_registro_comite"):
+                col_f1, col_f2 = st.columns(2)
+                with col_f1: decisao_atuais = st.selectbox("Decisao - Clientes Atuais:", options=opcoes_atuais)
+                with col_f2: decisao_novos = st.selectbox("Decisao - Novos Clientes:", options=opcoes_novos)
+                tabelas_vigentes_selecionadas = st.multiselect("Tabelas vigentes apos reajuste:", options=opcoes_tabelas_governanca)
+                observacoes_comite = st.text_area("Observacoes / Justificativa:", height=90)
+
+                col_b1, col_b2 = st.columns([1, 1])
+                with col_b1: btn_salvar = st.form_submit_button("Salvar Decisao no GitHub")
+                with col_b2: btn_limpar = st.form_submit_button("Resetar Decisao")
+
+                if btn_salvar:
+                    decisoes_salvas[unidade_sel] = {"decisao_atuais": decisao_atuais, "decisao_novos": decisao_novos, "tabelas_vigentes": tabelas_vigentes_selecionadas, "observacoes_comite": observacoes_comite, "data_registro": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                    if salvar_decisoes_github(decisoes_salvas):
+                        st.success("Salvo com sucesso!")
+                        st.rerun()
+
+                if btn_limpar and unidade_sel in decisoes_salvas:
+                    del decisoes_salvas[unidade_sel]
+                    if salvar_decisoes_github(decisoes_salvas):
+                        st.rerun()
