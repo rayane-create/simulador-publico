@@ -423,14 +423,26 @@ def categorizar_plano_ampliado(plano_raw, mapa_excel=None):
 
 def categorizar_plano_v1(plano_raw, mapa_excel=None):
     cat_ampliada = categorizar_plano_ampliado(plano_raw, mapa_excel)
-    # APENAS PLANOS EXTRAORDINÁRIOS FICAM FORA DO MIX PADRÃO (NOW INCLUDES 3X)
-    if cat_ampliada in [
-        "Infinite",
-        "Locacao Recorrente",
-        "Bolsista + familia franqueado",
-    ]:
-        return None
-    return cat_ampliada
+    
+    # LISTA EXATA DOS 11 PLANOS QUE FORMAM O MIX PADRÃO OFICIAL
+    mix_padrao_oficial = [
+        "Aulas em Grupo 1x na Semana Plus",
+        "Aulas em Grupo 2x na Semana Plus",
+        "Aulas em Grupo 3x na Semana Plus",
+        "Aulas em Grupo 1x na Semana Smart",
+        "Aulas em Grupo 2x na Semana Smart",
+        "Aulas em Grupo 3x na Semana Smart",
+        "Aulas em Grupo KIDS 1X na semana",
+        "Aulas em Grupo KIDS 2X na semana",
+        "Aulas em Grupo KIDS 3X na semana",
+        "Aula Em Dupla 1x semana",
+        "Aula Individual 1x semana",
+    ]
+    
+    if cat_ampliada in mix_padrao_oficial:
+        return cat_ampliada
+        
+    return None
 
 def formatar_kpi_cor(valor_num):
     if valor_num is None or pd.isna(valor_num): return "N/A", "#64748B"
